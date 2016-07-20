@@ -10,8 +10,12 @@ from django_filters.views import FilterView
 from .filters import AnnotationFilter
 from .forms import AnnotationForm
 from .models import Annotation, Alignment, Fragment
+from .utils import get_random_alignment
 
 
+##############
+# Static views
+##############
 class StartView(generic.TemplateView):
     template_name = 'annotations/start.html'
 
@@ -42,38 +46,38 @@ class HomeView(generic.TemplateView):
         return context
 
 
-class AnnotationList(FilterView):
-    context_object_name = 'annotations'
-    filterset_class = AnnotationFilter
-
-    def get_queryset(self):
-        return Annotation.objects.filter(alignment__original_fragment__language=self.kwargs['l1'],
-                                         alignment__translated_fragment__language=self.kwargs['l2'])
-
-
-class AnnotationCreate(generic.CreateView, SuccessMessageMixin):
+#################
+# CRUD Annotation
+#################
+class AnnotationMixin(object):
     model = Annotation
     form_class = AnnotationForm
-    success_message = 'Annotation added'
 
     def get_form_kwargs(self):
         """Sets the Alignment as a form kwarg"""
-        kwargs = super(AnnotationCreate, self).get_form_kwargs()
+        kwargs = super(AnnotationMixin, self).get_form_kwargs()
         kwargs['alignment'] = self.get_alignment()
         return kwargs
+
+    def get_context_data(self, **kwargs):
+        """Sets the Alignment on the context"""
+        context = super(AnnotationMixin, self).get_context_data(**kwargs)
+        context['alignment'] = self.get_alignment()
+        return context
+
+    def get_alignment(self):
+        raise NotImplementedError
+
+
+class AnnotationCreate(AnnotationMixin, generic.CreateView, SuccessMessageMixin):
+    success_message = 'Annotation created successfully'
 
     def get_success_url(self):
         """Find a new Alignment to annotate in the same original and translated language"""
         alignment = self.object.alignment
         new_alignment = get_random_alignment(alignment.original_fragment.language,
                                              alignment.translated_fragment.language)
-        return reverse('annotations:annotate', args=(new_alignment.pk,))
-
-    def get_context_data(self, **kwargs):
-        """Sets the Alignment on the context"""
-        context = super(AnnotationCreate, self).get_context_data(**kwargs)
-        context['alignment'] = self.get_alignment()
-        return context
+        return reverse('annotations:create', args=(new_alignment.pk,))
 
     def form_valid(self, form):
         """Sets the User and Alignment on the created instance"""
@@ -86,17 +90,48 @@ class AnnotationCreate(generic.CreateView, SuccessMessageMixin):
         return get_object_or_404(Alignment, pk=self.kwargs['pk'])
 
 
+class AnnotationUpdate(AnnotationMixin, generic.UpdateView, SuccessMessageMixin):
+    success_message = 'Annotation edited successfully'
+
+    def get_context_data(self, **kwargs):
+        """Sets the annotated Words on the context"""
+        context = super(AnnotationUpdate, self).get_context_data(**kwargs)
+        context['annotated_words'] = self.object.words.all()
+        return context
+
+    def get_success_url(self):
+        """Return to the overview per language"""
+        alignment = self.get_alignment()
+        l1 = alignment.original_fragment.language
+        l2 = alignment.translated_fragment.language
+        return reverse('annotations:list', args=(l1, l2,))
+
+    def form_valid(self, form):
+        """Sets the last modified by on the instance"""
+        form.instance.last_modified_by = self.request.user
+        return super(AnnotationUpdate, self).form_valid(form)
+
+    def get_alignment(self):
+        """Retrieves the Alignment by the pk in the kwargs"""
+        return self.object.alignment
+
+
 class AnnotationChoose(generic.RedirectView):
     permanent = False
-    pattern_name = 'annotations:annotate'
+    pattern_name = 'annotations:create'
 
     def get_redirect_url(self, *args, **kwargs):
         new_alignment = get_random_alignment(self.kwargs['l1'], self.kwargs['l2'])
         return super(AnnotationChoose, self).get_redirect_url(new_alignment.pk)
 
 
-def get_random_alignment(language_from, language_to):
-    return Alignment.objects.filter(
-        original_fragment__language=language_from,
-        translated_fragment__language=language_to,
-        annotation=None).order_by('?').first()
+###########
+# List view
+###########
+class AnnotationList(FilterView):
+    context_object_name = 'annotations'
+    filterset_class = AnnotationFilter
+
+    def get_queryset(self):
+        return Annotation.objects.filter(alignment__original_fragment__language=self.kwargs['l1'],
+                                         alignment__translated_fragment__language=self.kwargs['l2'])
