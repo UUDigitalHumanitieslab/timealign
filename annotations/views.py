@@ -69,7 +69,7 @@ class AnnotationMixin(object):
         raise NotImplementedError
 
 
-class AnnotationCreate(AnnotationMixin, generic.CreateView, SuccessMessageMixin):
+class AnnotationCreate(AnnotationMixin, SuccessMessageMixin, generic.CreateView):
     success_message = 'Annotation created successfully'
 
     def get_success_url(self):
@@ -90,7 +90,7 @@ class AnnotationCreate(AnnotationMixin, generic.CreateView, SuccessMessageMixin)
         return get_object_or_404(Alignment, pk=self.kwargs['pk'])
 
 
-class AnnotationUpdate(AnnotationMixin, generic.UpdateView, SuccessMessageMixin):
+class AnnotationUpdate(AnnotationMixin, SuccessMessageMixin, generic.UpdateView):
     success_message = 'Annotation edited successfully'
 
     def get_context_data(self, **kwargs):
