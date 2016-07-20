@@ -1,0 +1,53 @@
+{% extends "annotations/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+<div class="container" style="margin-top: 60px;">
+    <h1>Instructions (part 3)</h1>
+    <div>
+        <p class="lead">
+            After you've selected a language pair, you will be presented with two fragments.
+            The fragment on the right contains a construction in the source language, which is <span class="bg-success">marked in green</span>.
+            On the left, you should find a translation of this fragment, and ideally, you are able to select a matching construction there.
+        </p>
+        <div class="alert alert-info" role="alert">
+            Please select the matching construction on the right by clicking on 'ist' and 'gekommen'. The order of clicking is not important.
+            After that, click the 'Submit' button to continue.
+        </div>
+        {% url "annotations:instructions" 4 as next_url %}
+        {% include "annotations/_annotation_instructions.html" with url=next_url %}
+    </div>
+</div>
+
+<script>
+$(function() {
+    $(".tooltiptext").hide();
+
+    $(".alignment span").each(function() {
+        $(this).qtip({
+            content: {
+                text: $(this).next(".tooltiptext")
+            }
+        });
+    });
+
+    $(".translated span").click(function() {
+        $(this).toggleClass("bg-success");
+    });
+
+    $("#submit").click(function(event) {
+        var all_selected = true;
+        $(".to-select").each(function() {
+            all_selected &= $(this).hasClass("bg-success");
+        });
+
+        if (!all_selected) {
+            event.preventDefault();
+            $(".alert").removeClass("alert-info");
+            $(".alert").addClass("alert-danger");
+        }
+    });
+});
+</script>
+{% endblock %}

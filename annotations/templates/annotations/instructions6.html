@@ -1,0 +1,15 @@
+{% extends "annotations/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+<div class="container" style="margin-top: 60px;">
+    <h1>Instructions (part 6)</h1>
+    <div>
+        <p class="lead">
+            This concludes the instructions. Happy TimeAligning!
+        </p>
+        <a class="btn btn-success btn-lg pull-right" href="{% url 'annotations:instructions' 1 %}" role="button">Back to the start &raquo;</a>
+    </div>
+</div>
+{% endblock %}

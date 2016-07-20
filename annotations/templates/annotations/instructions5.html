@@ -1,0 +1,47 @@
+{% extends "annotations/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+<div class="container" style="margin-top: 60px;">
+    <h1>Instructions (part 5)</h1>
+    <div>
+        <p class="lead">
+            In other cases, the translation of the given fragment is incorrect.
+            In that case, you should clear the checkbox <em>This is a correct translation of the original fragment</em>.
+        </p>
+        <div class="alert alert-info" role="alert">
+            Please clear the correct checkbox.
+            After that, click the 'Submit' button to continue.
+        </div>
+        {% url "annotations:instructions" 6 as next_url %}
+        {% include "annotations/_annotation_instructions.html" with url=next_url %}
+    </div>
+</div>
+
+<script>
+$(function() {
+    $(".tooltiptext").hide();
+
+    $(".alignment span").each(function() {
+        $(this).qtip({
+            content: {
+                text: $(this).next(".tooltiptext")
+            }
+        });
+    });
+
+    $(".translated span").click(function() {
+        $(this).toggleClass("bg-success");
+    });
+
+    $("#submit").click(function(event) {
+        if ($("#id_is_translation").prop("checked")) {
+            event.preventDefault();
+            $(".alert").removeClass("alert-info");
+            $(".alert").addClass("alert-danger");
+        }
+    });
+});
+</script>
+{% endblock %}

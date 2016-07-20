@@ -1,0 +1,60 @@
+{% extends "annotations/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+<style>
+.progress {
+    margin-bottom: 0px;
+}
+</style>
+
+<div class="container" style="margin-top: 60px;">
+    <h1>Welcome!</h1>
+    <p class="lead">
+        Hi <em>{{ user.username }}</em>! Please select your languages of choice below and start annotating.
+    </p>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th width="10%">Original language</th>
+                <th width="10%">Translated language</th>
+                <th width="60%">Annotated</th>
+                <th width="20%">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for l1, l2, annotated, total in languages %}
+            <tr>
+                <td>{{ l1.1 }}</td>
+                <td>{{ l2.1 }}</td>
+                <td>
+                    {% if annotated > 0 %}
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: {% widthratio annotated total 100 %}%">
+                            Annotated {{ annotated }} of {{ total }}
+                        </div>
+                    </div>
+                    {% elif total > 0 %}
+                    No annotations made yet.
+                    {% else %}
+                    No work to do.
+                    {% endif %}
+                </td>
+                <td>
+                    {% if annotated < total %}
+                    <a href="{% url 'annotations:choose' l1.0 l2.0 %}" role="button" class="btn btn-default btn-xs" aria-label="Start annotating">
+                        <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'annotations:list' l1.0 l2.0 %}" role="button" class="btn btn-default btn-xs" aria-label="List view">
+                        <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

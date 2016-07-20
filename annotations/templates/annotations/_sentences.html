@@ -1,0 +1,13 @@
+<ul class="list-group">
+    {% for sentence in sentences %}
+    <li class="list-group-item" id="{{ sentence.xml_id }}">
+        {% for word in sentence.word_set.all %}
+        <span id="{{ word.id }}" {% if word.is_target %}class="selected"{% endif %}>{{ word.word }}</span>
+        <div class="tooltiptext">
+            Part-of-speech: <em>{{ word.pos }}</em><br/>
+            Lemma: <em>{{ word.lemma }}</em>
+        </div>
+        {% endfor %}
+    </li>
+    {% endfor %}
+</ul>

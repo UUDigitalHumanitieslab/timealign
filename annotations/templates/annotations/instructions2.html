@@ -1,0 +1,95 @@
+{% extends "annotations/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+<div class="container" style="margin-top: 60px;">
+    <h1>Instructions (part 2)</h1>
+    <div>
+        <p class="lead">
+            You can start aligning by clicking on "Overview" in the menu.
+            A table such as below will be presented, with the progress per language pair.
+        </p>
+        <div class="alert alert-info" role="alert">
+            Clicking on the play button will start alignment for the selected language pair.
+            Please click the play button for the language pair English-German to continue.
+        </div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th width="10%">Original language</th>
+                    <th width="10%">Translated language</th>
+                    <th width="60%">Annotated</th>
+                    <th width="20%">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>English</td>
+                    <td>German</td>
+                    <td>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 50%">
+                                Annotated 10 of 20
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="{% url 'annotations:instructions' 3 %}" role="button" class="btn btn-default btn-xs" aria-label="Start annotating">
+                            <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>English</td>
+                    <td>Spanish</td>
+                    <td>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 80%">
+                                Annotated 16 of 20
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="#" role="button" class="btn btn-default btn-xs" aria-label="Start annotating">
+                            <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>English</td>
+                    <td>French</td>
+                    <td>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 25%">
+                                Annotated 5 of 20
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="#" role="button" class="btn btn-default btn-xs" aria-label="Start annotating">
+                            <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>English</td>
+                    <td>Dutch</td>
+                    <td>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 45%">
+                                Annotated 9 of 20
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="#" role="button" class="btn btn-default btn-xs" aria-label="Start annotating">
+                            <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

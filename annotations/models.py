@@ -1,0 +1,101 @@
+from django.conf import settings
+from django.db import models
+
+
+class Document(models.Model):
+    title = models.CharField(max_length=200, unique=True)
+
+    def __unicode__(self):
+        return self.title
+
+
+class Fragment(models.Model):
+    GERMAN = 'de'
+    ENGLISH = 'en'
+    SPANISH = 'es'
+    FRENCH = 'fr'
+    DUTCH = 'nl'
+    LANGUAGES = (
+        (GERMAN, 'German'),
+        (ENGLISH, 'English'),
+        (SPANISH, 'Spanish'),
+        (FRENCH, 'French'),
+        (DUTCH, 'Dutch'),
+    )
+    language = models.CharField(max_length=2, choices=LANGUAGES)
+    speaker_language = models.CharField(max_length=2, choices=LANGUAGES)
+
+    document = models.ForeignKey(Document)
+
+    def to_html(self):
+        result = '<ul>'
+        for sentence in self.sentence_set.all():
+            result += sentence.to_html()
+        result += '</ul>'
+        return result
+
+    def __unicode__(self):
+        return '\n'.join([sentence.full() for sentence in self.sentence_set.all()])[:100] + '...'
+
+
+class Sentence(models.Model):
+    xml_id = models.CharField(max_length=20)
+
+    fragment = models.ForeignKey(Fragment)
+
+    def to_html(self):
+        result = '<li>'
+        for word in self.word_set.all():
+            result += word.to_html() + ' '
+        result += '</li>'
+        return result
+
+    def full(self):
+        return ' '.join([word.word for word in self.word_set.all()])[:100] + '...'
+
+    def __unicode__(self):
+        return self.full()
+
+
+class Word(models.Model):
+    xml_id = models.CharField(max_length=20)
+    word = models.CharField(max_length=200)
+    pos = models.CharField(max_length=10)
+    lemma = models.CharField(max_length=200, null=True)
+    is_target = models.BooleanField(default=False)
+
+    sentence = models.ForeignKey(Sentence)
+
+    def to_html(self):
+        return self.word
+
+    def __unicode__(self):
+        return self.word
+
+
+class Alignment(models.Model):
+    type = models.CharField(max_length=10)
+
+    original_fragment = models.ForeignKey(Fragment, null=True, related_name='original')
+    translated_fragment = models.ForeignKey(Fragment, null=True, related_name='translated')
+
+
+class Annotation(models.Model):
+    alignment = models.ForeignKey(Alignment)
+    is_no_target = models.BooleanField('There is no present perfect in the original fragment', default=False)
+    is_translation = models.BooleanField('This is a correct translation of the original fragment', default=True)
+    words = models.ManyToManyField(Word, blank=True)
+    annotated_by = models.ForeignKey(settings.AUTH_USER_MODEL)
+    annotated_at = models.DateTimeField(auto_now=True)
+
+    # person = models.CharField(max_length=2, blank=True)  # single vs. plural
+    # tense = models.CharField(max_length=2, blank=True)  #
+    # mood = models.CharField(max_length=2, blank=True)  # indicative (hard?)
+    # voice = models.CharField(max_length=2, blank=True)  # active vs. passive (hard?)
+
+    class Meta:
+        unique_together = ('alignment', 'annotated_by', )
+
+    def selected_words(self):
+        # TODO: is there a way to order on part of the id?! Or add an extra field...
+        return ' '.join([word.word for word in self.words.all().order_by('xml_id')])
