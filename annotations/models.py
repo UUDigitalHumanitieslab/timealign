@@ -34,6 +34,12 @@ class Fragment(models.Model):
         result += '</ul>'
         return result
 
+    def target_words(self):
+        result = []
+        for sentence in self.sentence_set.all():
+            result.extend([word.word for word in sentence.word_set.filter(is_target=True)])
+        return ' '.join(result)
+
     def __unicode__(self):
         return '\n'.join([sentence.full() for sentence in self.sentence_set.all()])[:100] + '...'
 

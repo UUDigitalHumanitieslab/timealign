@@ -9,21 +9,22 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <th width="10%">Annotated at</th>
-                <th width="10%">Translated language</th>
-                <th width="10%">Translated language</th>
-                <th width="10%">Translated language</th>
+                <th width="10%">Document</th>
+                <th width="10%">Annotated by/at</th>
+                <th width="10%">Source</th>
+                <th width="10%">Translation</th>
                 <th width="10%">Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for annotation in annotations %}
             <tr>
-                <td>{{ annotation.annotated_at }}</td>
-                <td>{{ annotation.annotated_by }}</td>
-                <td>{{ annotation.is_no_target }}</td>
-                <td>{{ annotation.is_translation }}</td>
-                <td>Add edit button here</td>
+                <td>{{ annotation.alignment.original_fragment.document.title }}</td>
+                <td>{{ annotation.annotated_by }} (<em>{{ annotation.annotated_at|date:"j M Y, G:i" }}</em>)</td>
+                <td>{{ annotation.alignment.original_fragment.target_words }}</td>
+                <td>{{ annotation.selected_words }}</td>
+                <td>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
