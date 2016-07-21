@@ -88,7 +88,7 @@ class Alignment(models.Model):
 
 class Annotation(models.Model):
     alignment = models.ForeignKey(Alignment)
-    is_no_target = models.BooleanField('There is no present perfect in the original fragment', default=False)
+    is_no_target = models.BooleanField('The selected words in the original fragment do not form a present perfect', default=False)
     is_translation = models.BooleanField('This is a correct translation of the original fragment', default=True)
     words = models.ManyToManyField(Word, blank=True)
     annotated_by = models.ForeignKey(settings.AUTH_USER_MODEL)
