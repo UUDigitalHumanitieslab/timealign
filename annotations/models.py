@@ -35,10 +35,35 @@ class Fragment(models.Model):
         return result
 
     def target_words(self):
+        """
+        Retrieves the target words for this Fragment.
+        :return: A list of Strings with the target words.
+        """
         result = []
         for sentence in self.sentence_set.all():
             result.extend([word.word for word in sentence.word_set.filter(is_target=True)])
         return ' '.join(result)
+
+    def get_annotations(self):
+        """
+        Returns all Annotations for this Fragment, in all selected LANGUAGES
+        :return: A list of Annotations per LANGUAGE, with None if there's no Annotation or Alignment for this Fragment.
+        """
+        result = []
+        other_languages = [l for l, _ in self.LANGUAGES if l != self.language]
+        for language in other_languages:
+            # Note that there should be only one Alignment per language, so we can use .first() here.
+            alignment = self.original.filter(translated_fragment__language=language).first()
+            if alignment:
+                # TODO: We currently consider only one Annotation per Alignment, YMMV.
+                annotation = alignment.annotation_set.first()
+                if annotation:
+                    result.append(annotation)
+                else:
+                    result.append(None)  # This happens if there's no Annotation yet
+            else:
+                result.append(None)  # This happens if there's no Alignment for this Fragment in the given language
+        return result
 
     def __unicode__(self):
         return '\n'.join([sentence.full() for sentence in self.sentence_set.all()])[:100] + '...'

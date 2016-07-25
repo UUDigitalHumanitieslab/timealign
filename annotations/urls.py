@@ -1,7 +1,7 @@
 from django.conf.urls import url
 
 from .views import StartView, HomeView, InstructionsView, ContactView,\
-    AnnotationCreate, AnnotationUpdate, AnnotationChoose, AnnotationList
+    AnnotationCreate, AnnotationUpdate, AnnotationChoose, AnnotationList, FragmentList
 
 urlpatterns = [
     # Static views
@@ -17,4 +17,5 @@ urlpatterns = [
 
     # List views
     url(r'^list/(?P<l1>\w+)/(?P<l2>\w+)/$', AnnotationList.as_view(), name='list'),
+    url(r'^matrix/(?P<language>\w+)/$', FragmentList.as_view(), name='matrix'),
 ]

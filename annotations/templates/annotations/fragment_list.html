@@ -1,0 +1,45 @@
+{% extends "annotations/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+<div class="container">
+    <h1>Matrix overview</h1>
+
+    <div class="alert alert-info" role="alert">
+        NT means no translation was available, NA means there was no proper translation of the target words in the translated text.
+        Click on a cell to get details on the fragment.
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th width="10%">Document</th>
+                <th width="10%">{{ language }}</th>
+                {% for l in other_languages %}
+                <th width="10%">{{ l }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for fragment in fragments %}
+            <tr>
+                <td>{{ fragment.document.title }}</td>
+                <td>{{ fragment.target_words }}</td>
+                {% for annotation in fragment.get_annotations %}
+                <td>
+                    {% if annotation and annotation.is_translation %}
+                    <a href="{% url 'annotations:edit' annotation.id %}">{{ annotation.selected_words }}</a>
+                    {% elif annotation %}
+                    <a href="{% url 'annotations:edit' annotation.id %}">NA</a>
+                    {% else %}
+                    NT
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

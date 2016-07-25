@@ -37,7 +37,8 @@ class HomeView(generic.TemplateView):
 
         languages = []
         for l1, l2 in permutations(Fragment.LANGUAGES, 2):
-            alignments = Alignment.objects.filter(original_fragment__language=l1[0], translated_fragment__language=l2[0])
+            alignments = Alignment.objects.filter(original_fragment__language=l1[0],
+                                                  translated_fragment__language=l2[0])
             total = alignments.count()
             annotated = alignments.exclude(annotation=None).count()
             languages.append((l1, l2, annotated, total))
@@ -100,7 +101,7 @@ class AnnotationUpdate(AnnotationMixin, SuccessMessageMixin, generic.UpdateView)
         return context
 
     def get_success_url(self):
-        """Return to the overview per language"""
+        """Returns to the overview per language"""
         alignment = self.get_alignment()
         l1 = alignment.original_fragment.language
         l2 = alignment.translated_fragment.language
@@ -133,5 +134,37 @@ class AnnotationList(FilterView):
     filterset_class = AnnotationFilter
 
     def get_queryset(self):
+        """
+        Retrieves all Annotations for the given source (l1) and target (l2) language.
+        :return: A QuerySet of Annotations.
+        """
         return Annotation.objects.filter(alignment__original_fragment__language=self.kwargs['l1'],
                                          alignment__translated_fragment__language=self.kwargs['l2'])
+
+
+class FragmentList(generic.ListView):
+    context_object_name = 'fragments'
+    template_name = 'annotations/fragment_list.html'
+
+    def get_queryset(self):
+        """
+        Retrieves all Fragments for the given language that have an Annotation that contains a target expression.
+        :return: A QuerySet of Fragments.
+        """
+        results = []
+        for annotation in Annotation.objects.filter(alignment__original_fragment__language=self.kwargs['language'],
+                                                    is_no_target=False):
+            results.append(annotation.alignment.original_fragment)
+        return results
+
+    def get_context_data(self, **kwargs):
+        """
+        Sets the current language and other_languages on the context
+        :param kwargs: Contains the current language.
+        :return: The context variables.
+        """
+        context = super(FragmentList, self).get_context_data(**kwargs)
+        language = self.kwargs['language']
+        context['language'] = [f for l, f in Fragment.LANGUAGES if l == language][0]
+        context['other_languages'] = [f for l, f in Fragment.LANGUAGES if l != language]
+        return context
