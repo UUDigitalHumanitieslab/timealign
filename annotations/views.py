@@ -158,11 +158,7 @@ class FragmentList(generic.ListView):
         Retrieves all Fragments for the given language that have an Annotation that contains a target expression.
         :return: A QuerySet of Fragments.
         """
-        results = []
-        for annotation in Annotation.objects.filter(alignment__original_fragment__language=self.kwargs['language'],
-                                                    is_no_target=False):
-            results.append(annotation.alignment.original_fragment)
-        return results
+        return Fragment.objects.filter(language=self.kwargs['language'], original__annotation__is_no_target=False)
 
     def get_context_data(self, **kwargs):
         """
