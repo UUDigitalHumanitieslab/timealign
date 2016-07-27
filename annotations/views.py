@@ -132,6 +132,7 @@ class AnnotationChoose(generic.RedirectView):
 class AnnotationList(FilterView):
     context_object_name = 'annotations'
     filterset_class = AnnotationFilter
+    paginate_by = 25
 
     def get_queryset(self):
         """
@@ -145,6 +146,7 @@ class AnnotationList(FilterView):
 class FragmentList(generic.ListView):
     context_object_name = 'fragments'
     template_name = 'annotations/fragment_list.html'
+    paginate_by = 25
 
     def get_queryset(self):
         """
