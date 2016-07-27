@@ -17,15 +17,18 @@ from .utils import get_random_alignment
 # Static views
 ##############
 class StartView(generic.TemplateView):
+    """Loads a static start view"""
     template_name = 'annotations/start.html'
 
 
 class InstructionsView(generic.TemplateView):
+    """Loads the various steps of the instructions"""
     def get_template_names(self):
         return 'annotations/instructions{}.html'.format(self.kwargs['n'])
 
 
 class ContactView(generic.TemplateView):
+    """Loads a static contact view"""
     template_name = 'annotations/contact.html'
 
 
@@ -33,6 +36,7 @@ class HomeView(generic.TemplateView):
     template_name = 'annotations/home.html'
 
     def get_context_data(self, **kwargs):
+        """Creates a list of tuples with information on the annotation progress"""
         context = super(HomeView, self).get_context_data(**kwargs)
 
         languages = []
@@ -108,12 +112,12 @@ class AnnotationUpdate(AnnotationMixin, SuccessMessageMixin, generic.UpdateView)
         return reverse('annotations:list', args=(l1, l2,))
 
     def form_valid(self, form):
-        """Sets the last modified by on the instance"""
+        """Sets the last modified by on the instance (TODO: actually save this!)"""
         form.instance.last_modified_by = self.request.user
         return super(AnnotationUpdate, self).form_valid(form)
 
     def get_alignment(self):
-        """Retrieves the Alignment by the pk in the kwargs"""
+        """Retrieves the Alignment from the object"""
         return self.object.alignment
 
 
@@ -122,13 +126,14 @@ class AnnotationChoose(generic.RedirectView):
     pattern_name = 'annotations:create'
 
     def get_redirect_url(self, *args, **kwargs):
+        """Redirects to a random Alignment"""
         new_alignment = get_random_alignment(self.kwargs['l1'], self.kwargs['l2'])
         return super(AnnotationChoose, self).get_redirect_url(new_alignment.pk)
 
 
-###########
-# List view
-###########
+############
+# List views
+############
 class AnnotationList(FilterView):
     context_object_name = 'annotations'
     filterset_class = AnnotationFilter
