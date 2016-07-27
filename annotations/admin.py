@@ -10,7 +10,8 @@ class SentenceAdmin(admin.ModelAdmin):
 
 @admin.register(Fragment)
 class FragmentAdmin(admin.ModelAdmin):
-    list_display = ('language', 'speaker_language', 'document')
+    list_display = ('target_words', )
+    list_filter = ('document', 'language', )
 
 
 @admin.register(Alignment)
