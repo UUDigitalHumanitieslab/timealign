@@ -33,6 +33,7 @@ class ContactView(generic.TemplateView):
 
 
 class HomeView(generic.TemplateView):
+    """Loads a static home view, with an overview of the annotation progress"""
     template_name = 'annotations/home.html'
 
     def get_context_data(self, **kwargs):
