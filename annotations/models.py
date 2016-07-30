@@ -65,8 +65,11 @@ class Fragment(models.Model):
                 result.append(None)  # This happens if there's no Alignment for this Fragment in the given language
         return result
 
+    def full(self):
+        return '\n'.join([sentence.full() for sentence in self.sentence_set.all()])
+
     def __unicode__(self):
-        return '\n'.join([sentence.full() for sentence in self.sentence_set.all()])[:100] + '...'
+        return self.full()[:100]
 
 
 class Sentence(models.Model):
@@ -82,10 +85,10 @@ class Sentence(models.Model):
         return result
 
     def full(self):
-        return ' '.join([word.word for word in self.word_set.all()])[:100] + '...'
+        return ' '.join([word.word for word in self.word_set.all()])
 
     def __unicode__(self):
-        return self.full()
+        return self.full()[:100] + '...'
 
 
 class Word(models.Model):
@@ -112,8 +115,12 @@ class Alignment(models.Model):
 
 
 class Annotation(models.Model):
-    is_no_target = models.BooleanField('The selected words in the original fragment do not form a present perfect', default=False)
-    is_translation = models.BooleanField('This is a correct translation of the original fragment', default=True)
+    is_no_target = models.BooleanField(
+        'The selected words in the original fragment do not form a present perfect',
+        default=False)
+    is_translation = models.BooleanField(
+        'This is a correct translation of the original fragment',
+        default=True)
 
     words = models.ManyToManyField(Word, blank=True)
     alignment = models.ForeignKey(Alignment)
