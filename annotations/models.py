@@ -101,7 +101,7 @@ class Word(models.Model):
     sentence = models.ForeignKey(Sentence)
 
     def to_html(self):
-        return self.word
+        return u'<strong>{}</strong>'.format(self.word) if self.is_target else self.word
 
     def __unicode__(self):
         return self.word

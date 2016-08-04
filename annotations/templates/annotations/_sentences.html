@@ -2,11 +2,15 @@
     {% for sentence in sentences %}
     <li class="list-group-item" id="{{ sentence.xml_id }}">
         {% for word in sentence.word_set.all %}
-        <span id="{{ word.id }}" {% if word.is_target or word in annotated_words %}class="selected"{% endif %}>{{ word.word }}</span>
+        <span id="{{ word.id }}"
+              class="{% if word.is_target or word in annotated_words %}selected{% endif %}
+              {% if word.word == filtered %}filtered{% endif %}">{{ word.word }}</span>
+        {% if tooltips %}
         <div class="tooltiptext">
             Part-of-speech: <em>{{ word.pos }}</em><br/>
             Lemma: <em>{{ word.lemma }}</em>
         </div>
+        {% endif %}
         {% endfor %}
     </li>
     {% endfor %}

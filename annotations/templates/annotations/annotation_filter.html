@@ -4,8 +4,16 @@
 
 {% block content %}
 <style>
-.popover{
+.popover {
     max-width: 40em;
+}
+
+.selected {
+    background-color: lightgreen;
+}
+
+.filtered {
+    border: 1px solid black;
 }
 </style>
 
@@ -25,16 +33,18 @@
         <tbody>
             {% for annotation in annotations %}
             <tr>
-                {% with source=annotation.alignment.original_fragment %}
+                {% with source=annotation.alignment.original_fragment translation=annotation.alignment.translated_fragment %}
                 <td>{{ source.document.title }}</td>
                 <td>{{ annotation.annotated_by }} (<em>{{ annotation.annotated_at|date:"j M Y, G:i" }}</em>)</td>
                 <td>
-                    <a data-toggle="popover" title="Source fragment" data-content="{{ source.full }}">
-                    {{ source.target_words }}
+                    <a title="Source fragment" data-toggle="popover"
+                       data-content='{% include "annotations/_sentences.html" with sentences=source.sentence_set.all filtered=filter.form.word_in_source.value %}'>
+                        {{ source.target_words }}
                     </a>
                 </td>
                 <td>
-                    <a data-toggle="popover" title="Translated fragment" data-content="{{ annotation.alignment.translated_fragment.full }}">
+                    <a title="Translated fragment" data-toggle="popover"
+                       data-content='{% include "annotations/_sentences.html" with sentences=translation.sentence_set.all annotated_words=annotation.words.all %}'>
                         {{ annotation.selected_words }}
                     </a>
                 </td>

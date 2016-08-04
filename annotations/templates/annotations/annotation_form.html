@@ -22,10 +22,10 @@
     </div>
     <div class="row alignment">
         <div class="col-md-6">
-            {% include "annotations/_sentences.html" with sentences=f1.sentence_set.all %}
+            {% include "annotations/_sentences.html" with sentences=f1.sentence_set.all tooltips=1 %}
         </div>
         <div class="col-md-6 translated">
-            {% include "annotations/_sentences.html" with sentences=f2.sentence_set.all %}
+            {% include "annotations/_sentences.html" with sentences=f2.sentence_set.all tooltips=1 %}
         </div>
     </div>
 
