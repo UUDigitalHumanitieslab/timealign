@@ -128,8 +128,8 @@ class Annotation(models.Model):
     annotated_by = models.ForeignKey(settings.AUTH_USER_MODEL)
     annotated_at = models.DateTimeField(auto_now=True)
 
+    tense = models.CharField(max_length=200, blank=True)
     # person = models.CharField(max_length=2, blank=True)  # single vs. plural
-    # tense = models.CharField(max_length=2, blank=True)  #
     # mood = models.CharField(max_length=2, blank=True)  # indicative (hard?)
     # voice = models.CharField(max_length=2, blank=True)  # active vs. passive (hard?)
 
