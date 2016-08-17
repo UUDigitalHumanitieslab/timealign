@@ -10,9 +10,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for annotation in Annotation.objects.filter(is_no_target=False).filter(is_translation=True):
-            get_tense(annotation)
-            # annotation.tense = self.get_tense(annotation)
-            # annotation.save()
+            annotation.tense = get_tense(annotation)
+            annotation.save()
 
 
 def get_tense(annotation):
@@ -99,8 +98,8 @@ def get_tense_es(pos_tags, words):
         if pos_tags[0] in ['VEfin', 'VHfin', 'VLfin', 'VMfin', 'VSfin']:
             tense = 'presente'
 
-        if tense == 'other':
-            print(tense, pos_tags, [word.word for word in words])
+        # if tense == 'other':
+        #     print(tense, pos_tags, [word.word for word in words])
 
     return tense
 

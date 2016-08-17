@@ -113,7 +113,7 @@ class AnnotationUpdate(AnnotationMixin, SuccessMessageMixin, generic.UpdateView)
         return reverse('annotations:list', args=(l1, l2,))
 
     def form_valid(self, form):
-        """Sets the last modified by on the instance (TODO: actually save this!)"""
+        """Sets the last modified by on the instance"""
         form.instance.last_modified_by = self.request.user
         return super(AnnotationUpdate, self).form_valid(form)
 

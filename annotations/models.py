@@ -125,10 +125,13 @@ class Annotation(models.Model):
     words = models.ManyToManyField(Word, blank=True)
     alignment = models.ForeignKey(Alignment)
 
-    annotated_by = models.ForeignKey(settings.AUTH_USER_MODEL)
-    annotated_at = models.DateTimeField(auto_now=True)
+    annotated_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='annotated_by')
+    annotated_at = models.DateTimeField(auto_now_add=True)
 
-    tense = models.CharField(max_length=200, blank=True)
+    last_modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='last_modified_by')
+    last_modified_at = models.DateTimeField(auto_now=True)
+
+    tense = models.CharField('Tense of translation', max_length=200, blank=True)
     # person = models.CharField(max_length=2, blank=True)  # single vs. plural
     # mood = models.CharField(max_length=2, blank=True)  # indicative (hard?)
     # voice = models.CharField(max_length=2, blank=True)  # active vs. passive (hard?)

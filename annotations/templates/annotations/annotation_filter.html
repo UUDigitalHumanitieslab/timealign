@@ -23,10 +23,10 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <th width="10%">Document</th>
-                <th width="10%">Annotated by/at</th>
-                <th width="10%">Source</th>
-                <th width="10%">Translation</th>
+                <th width="15%">Document</th>
+                <th width="20%">Annotated by/at</th>
+                <th width="25%">Source</th>
+                <th width="30%">Translation</th>
                 <th width="10%">Actions</th>
             </tr>
         </thead>
@@ -45,7 +45,7 @@
                 <td>
                     <a title="Translated fragment" data-toggle="popover"
                        data-content='{% include "annotations/_sentences.html" with sentences=translation.sentence_set.all annotated_words=annotation.words.all %}'>
-                        {{ annotation.selected_words }}
+                        {{ annotation.selected_words }} ({{ annotation.tense }})
                     </a>
                 </td>
                 <td>
