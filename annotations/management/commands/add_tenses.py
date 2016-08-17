@@ -10,47 +10,142 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for annotation in Annotation.objects.filter(is_no_target=False).filter(is_translation=True):
-            annotation.tense = self.get_tense(annotation)
+            get_tense(annotation)
+            # annotation.tense = self.get_tense(annotation)
             # annotation.save()
 
-    @staticmethod
-    def get_tense(annotation):
-        language = annotation.alignment.translated_fragment.language
-        words = annotation.words.all()
-        pos_tags = [word.pos for word in words]
 
-        tense = 'other'
-        if language == Fragment.FRENCH:
-            if len(pos_tags) == 1:
-                if pos_tags[0] == 'VER:pres':
-                    tense = u'présent'
-            elif pos_tags[0] == 'VER:pres' and pos_tags[1] == 'VER:pper' in pos_tags:
+def get_tense(annotation):
+    language = annotation.alignment.translated_fragment.language
+    words = annotation.words.all()
+    pos_tags = [word.pos for word in words]
+
+    # German POS tags do NOT discern between present and past tense :-(
+    if language == Fragment.GERMAN:
+        tense = get_tense_de(pos_tags)
+    elif language == Fragment.ENGLISH:
+        tense = get_tense_en(pos_tags)
+    elif language == Fragment.SPANISH:
+        tense = get_tense_es(pos_tags, words)
+    elif language == Fragment.FRENCH:
+        tense = get_tense_fr(pos_tags)
+    elif language == Fragment.DUTCH:
+        tense = get_tense_nl(pos_tags)
+
+    return tense
+
+
+def get_tense_de(pos_tags):
+    tense = 'other'
+
+    if len(pos_tags) == 1:
+        if pos_tags[0] in ['VAFIN', 'VAINF', 'VVFIN', 'VVINF', 'VVIZU', 'VMFIN', 'VMINF']:
+            tense = u'Präsens'  # Präterium?
+        if pos_tags[0] in ['ADJA', 'ADJD']:
+            tense = 'Adjektiv'
+    elif len(pos_tags) == 2:
+        # TODO: check this
+        if ('VAFIN' in pos_tags or 'VAINF' in pos_tags) and (
+                    'VVPP' in pos_tags or 'VVFIN' in pos_tags or 'VAPP' in pos_tags):
+            tense = u'Perfect'
+    elif len(pos_tags) == 3:
+        if set(pos_tags) == set(['VVPP', 'VAPP', 'VAFIN']):
+            tense = u'Perfect Passiv'
+        elif set(pos_tags) == set(['PRF', 'VVPP', 'VAFIN']):
+            tense = u'Perfect Reflexiv'
+
+    return tense
+
+
+def get_tense_en(pos_tags):
+    tense = 'other'
+
+    if len(pos_tags) == 1:
+        if pos_tags[0] in ['VBZ', 'VBP', 'VDZ', 'VDP', 'VHZ', 'VHP', 'VVP', 'VVZ']:
+            tense = 'simple present'
+        elif pos_tags[0] in ['VBD', 'VDD', 'VHD', 'VVD']:
+            tense = 'simple past'
+    elif len(pos_tags) == 2:
+        if pos_tags[1] in ['VBD', 'VBN', 'VDD', 'VDN', 'VHD', 'VHN', 'VVD',
+                           'VVN']:  # ending in D not entirely correct, but lots of mistags here
+            if pos_tags[0] in ['VH', 'VHZ', 'VHP']:
+                tense = 'present perfect'
+            elif pos_tags[0] == 'VHD':
+                tense = 'past perfect'
+            elif pos_tags[0] in ['VBZ', 'VBP']:
+                tense = 'simple present passive'
+            elif pos_tags[0] == 'VBD':
+                tense = 'simple past passive'
+    elif len(pos_tags) == 3:
+        if pos_tags[1] == 'VBN':
+            if pos_tags[2] == 'VVN':
+                if pos_tags[0] in ['VHZ', 'VHP']:
+                    tense = 'present perfect passive'
+                elif pos_tags[0] == 'VHD':
+                    tense = 'past perfect passive'
+            elif pos_tags[2] == 'VVG':
+                if pos_tags[0] in ['VHZ', 'VHP']:
+                    tense = 'present perfect continuous'
+                elif pos_tags[0] == 'VHD':
+                    tense = 'past perfect continuous'
+
+    return tense
+
+
+def get_tense_es(pos_tags, words):
+    tense = 'other'
+
+    if len(pos_tags) == 1:
+        if pos_tags[0] in ['VEfin', 'VHfin', 'VLfin', 'VMfin', 'VSfin']:
+            tense = 'presente'
+
+        if tense == 'other':
+            print(tense, pos_tags, [word.word for word in words])
+
+    return tense
+
+
+def get_tense_fr(pos_tags):
+    tense = 'other'
+
+    if len(pos_tags) == 1:
+        if pos_tags[0] == 'VER:pres':
+            tense = u'présent'
+        elif pos_tags[0] == 'VER:impf':
+            tense = u'imparfait'
+    elif len(pos_tags) == 2:
+        if pos_tags[1] == 'VER:pper':
+            if pos_tags[0] == 'VER:pres':
                 tense = u'passé composé'
+            if pos_tags[0] == 'VER:subp':
+                tense = u'passé composé (subjunctive)'
+            elif pos_tags[0] == 'VER:impf':
+                tense = u'plus-que-parfait'
+            elif pos_tags[0] == 'VER:futu':
+                tense = u'futur antérieur'
+    elif len(pos_tags) == 3:
+        if pos_tags == ['VER:pres', 'VER:pper', 'VER:pper']:
+            tense = u'passé composé'
+        if pos_tags == ['VER:subp', 'VER:pper', 'VER:pper']:
+            tense = u'passé composé (subjunctive)'
+        if pos_tags == ['VER:impf', 'VER:pper', 'VER:pper']:
+            tense = u'plus-que-parfait'
+        if pos_tags == ['PRO:PER', 'VER:pres', 'VER:pper']:
+            tense = u'passé composé (reflexive)'
+        if pos_tags == ['PRO:PER', 'VER:subp', 'VER:pper']:
+            tense = u'passé composé (reflexive, subjunctive)'
+        if pos_tags == ['VER:pres', 'PRP', 'VER:infi']:
+            tense = u'passé récent'
 
-        if language == Fragment.GERMAN:
-            if len(pos_tags) == 1:
-                if pos_tags[0] in ['VAFIN', 'VVFIN']:
-                    tense = u'Präsens'
-            elif len(pos_tags) == 2 and 'VAFIN' in pos_tags and 'VVPP' in pos_tags:
-                tense = u'Perfect'
-
-        if language == Fragment.ENGLISH:
-            if len(pos_tags) == 1:
-                if pos_tags[0] == 'VVZ':
-                    tense = 'simple present'
-                elif pos_tags[0] == 'VVD':
-                    tense = 'simple past'
-
-            if tense == 'other':
-                print tense, pos_tags, [word.word for word in words]
-
-        elif language == Fragment.DUTCH:
-            if 'verbpressg' in pos_tags or 'verbprespl' in pos_tags:
-                tense = 'vtt' if 'verbpapa' in pos_tags else 'ott'
-            elif 'verbpastsg' in pos_tags or 'verbpastpl' in pos_tags:
-                tense = 'vvt' if 'verbpapa' in pos_tags else 'ovt'
-            # else:
-            # print tense, pos_tags, [word.word for word in words]
+    return tense
 
 
-        return tense
+def get_tense_nl(pos_tags):
+    tense = 'other'
+
+    if 'verbpressg' in pos_tags or 'verbprespl' in pos_tags or 'verbinf' in pos_tags:
+        tense = 'vtt' if 'verbpapa' in pos_tags else 'ott'
+    elif 'verbpastsg' in pos_tags or 'verbpastpl' in pos_tags:
+        tense = 'vvt' if 'verbpapa' in pos_tags else 'ovt'
+
+    return tense
