@@ -18,4 +18,5 @@ urlpatterns = [
     # List views
     url(r'^list/(?P<l1>\w+)/(?P<l2>\w+)/$', AnnotationList.as_view(), name='list'),
     url(r'^matrix/(?P<language>\w+)/$', FragmentList.as_view(), name='matrix'),
+    url(r'^matrix/(?P<language>\w+)/(?P<showtenses>\w+)/$', FragmentList.as_view(), name='tense_matrix'),
 ]

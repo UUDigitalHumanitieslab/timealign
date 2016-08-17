@@ -24,12 +24,24 @@
         <tbody>
             {% for fragment in fragments %}
             <tr>
-                <td>{{ fragment.document.title }}</td>
-                <td>{{ fragment.target_words }}</td>
+                <td>{{ fragment.document.title }} - {{ fragment.id }}</td>
+                <td>
+                    {% if show_tenses %}
+                    present perfect
+                    {% else %}
+                    {{ fragment.target_words }}
+                    {% endif %}
+                </td>
                 {% for annotation in fragment.get_annotations %}
                 <td>
                     {% if annotation and annotation.is_translation %}
-                    <a href="{% url 'annotations:edit' annotation.id %}">{{ annotation.selected_words }}</a>
+                    <a href="{% url 'annotations:edit' annotation.id %}">
+                        {% if show_tenses %}
+                        {{ annotation.tense }}
+                        {% else %}
+                        {{ annotation.selected_words }}
+                        {% endif %}
+                    </a>
                     {% elif annotation %}
                     <a href="{% url 'annotations:edit' annotation.id %}">NA</a>
                     {% else %}
