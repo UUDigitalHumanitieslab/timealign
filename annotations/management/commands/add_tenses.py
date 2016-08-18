@@ -25,7 +25,7 @@ def get_tense(annotation):
     elif language == Fragment.ENGLISH:
         tense = get_tense_en(pos_tags)
     elif language == Fragment.SPANISH:
-        tense = get_tense_es(pos_tags, words)
+        tense = get_tense_es(pos_tags)
     elif language == Fragment.FRENCH:
         tense = get_tense_fr(pos_tags)
     elif language == Fragment.DUTCH:
