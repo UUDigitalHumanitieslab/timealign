@@ -91,15 +91,31 @@ def get_tense_en(pos_tags):
     return tense
 
 
-def get_tense_es(pos_tags, words):
+def get_tense_es(pos_tags):
     tense = 'other'
 
     if len(pos_tags) == 1:
         if pos_tags[0] in ['VEfin', 'VHfin', 'VLfin', 'VMfin', 'VSfin']:
             tense = 'presente'
+    if len(pos_tags) == 2:
+        if pos_tags[0] == 'VHfin' and pos_tags[1] in ['VEadj', 'VHadj', 'VLadj', 'VMadj', 'VSadj']:
+            tense = 'pretérito perfecto'
+        elif pos_tags[0] == 'SE' and pos_tags[1] == 'VLfin':
+            tense = 'presente (reflexive)'
+        elif pos_tags[0] == 'VEfin' and pos_tags[1] == 'VLadj':
+            tense = 'gerundio'
+    if len(pos_tags) == 3:
+        if pos_tags == ['SE', 'VHfin', 'VLadj']:
+            tense = 'pretérito perfecto (reflexive)'
+        elif pos_tags == ['VHfin', 'VSadj', 'VLadj']:
+            tense = 'pretérito perfecto (processual passive)'
+        elif pos_tags == ['VHfin', 'VSadj', 'VLadj']:
+            tense = 'pretérito perfecto (processual passive)'
+        elif pos_tags == ['VLfin', 'PREP', 'VLinf'] or pos_tags == ['VLfin', 'CSUBI', 'VLinf']:
+            tense = 'simple past (acabar)'
 
-        # if tense == 'other':
-        #     print(tense, pos_tags, [word.word for word in words])
+    # if tense == 'other':
+    #     print(tense, pos_tags, [word.word for word in words])
 
     return tense
 
