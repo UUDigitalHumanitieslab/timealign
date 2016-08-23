@@ -19,13 +19,13 @@ def get_tense(annotation):
     words = annotation.words.all()
     pos_tags = [word.pos for word in words]
 
-    # German POS tags do NOT discern between present and past tense :-(
+    # German and Spanish POS tags do NOT discern between present and past tense :-(
     if language == Fragment.GERMAN:
-        tense = get_tense_de(pos_tags)
+        tense = ''
     elif language == Fragment.ENGLISH:
         tense = get_tense_en(pos_tags)
     elif language == Fragment.SPANISH:
-        tense = get_tense_es(pos_tags)
+        tense = ''
     elif language == Fragment.FRENCH:
         tense = get_tense_fr(pos_tags)
     elif language == Fragment.DUTCH:
@@ -35,6 +35,7 @@ def get_tense(annotation):
 
 
 def get_tense_de(pos_tags):
+    # TODO: this does not yet work correctly
     tense = 'other'
 
     if len(pos_tags) == 1:
@@ -43,7 +44,6 @@ def get_tense_de(pos_tags):
         if pos_tags[0] in ['ADJA', 'ADJD']:
             tense = 'Adjektiv'
     elif len(pos_tags) == 2:
-        # TODO: check this
         if ('VAFIN' in pos_tags or 'VAINF' in pos_tags) and (
                     'VVPP' in pos_tags or 'VVFIN' in pos_tags or 'VAPP' in pos_tags):
             tense = u'Perfect'
@@ -76,9 +76,11 @@ def get_tense_en(pos_tags):
                 tense = 'simple present'
             elif pos_tags[0] == 'VBD':
                 tense = 'simple past'
-
-        # TODO: continuous
-
+        if pos_tags[1] == 'VVG':
+            if pos_tags[0] in ['VBZ', 'VBP']:
+                tense = 'present continous'
+            elif pos_tags[0] == 'VBD':
+                tense = 'past continuous'
     elif len(pos_tags) == 3:
         if pos_tags[1] == 'VBN':
             if pos_tags[2] == 'VVN':
@@ -97,6 +99,7 @@ def get_tense_en(pos_tags):
 
 
 def get_tense_es(pos_tags):
+    # TODO: this does not yet work correctly
     tense = 'other'
 
     if len(pos_tags) == 1:
@@ -153,18 +156,14 @@ def get_tense_fr(pos_tags):
                 tense = u'conditionnel passé'
     elif len(pos_tags) == 3:
         # Passive forms
-        if pos_tags == ['VER:pres', 'VER:pper', 'VER:pper']:
-            tense = u'passé composé'
-        if pos_tags == ['VER:subp', 'VER:pper', 'VER:pper']:
+        if pos_tags == ['VER:pres', 'VER:pper', 'VER:pper'] or pos_tags == ['VER:subp', 'VER:pper', 'VER:pper']:
             tense = u'passé composé'
         if pos_tags == ['VER:impf', 'VER:pper', 'VER:pper']:
             tense = u'plus-que-parfait'
         # Reflexives
-        if pos_tags == ['PRO:PER', 'VER:pres', 'VER:pper']:
+        if pos_tags == ['PRO:PER', 'VER:pres', 'VER:pper'] or pos_tags == ['PRO:PER', 'VER:subp', 'VER:pper']:
             tense = u'passé composé'
-        if pos_tags == ['PRO:PER', 'VER:subp', 'VER:pper']:
-            tense = u'passé composé'
-        # Example: Je viens de chanter
+        # Passé récent. Example: Je viens de chanter
         if pos_tags == ['VER:pres', 'PRP', 'VER:infi']:
             tense = u'passé récent'
 
@@ -175,10 +174,20 @@ def get_tense_nl(pos_tags):
     tense = 'other'
 
     # Check passives?!
-
-    if 'verbpressg' in pos_tags or 'verbprespl' in pos_tags or 'verbinf' in pos_tags:
-        tense = 'vtt' if 'verbpapa' in pos_tags else 'ott'
-    elif 'verbpastsg' in pos_tags or 'verbpastpl' in pos_tags:
-        tense = 'vvt' if 'verbpapa' in pos_tags else 'ovt'
+    if len(pos_tags) == 1:
+        if pos_tags[0] in ['verbpressg', 'verbprespl']:
+            tense = 'ott'
+        elif pos_tags[0] in ['verbpastsg', 'verbpastpl']:
+            tense = 'ovt'
+    if len(pos_tags) == 2:
+        if set(pos_tags) == set(['verbpressg', 'verbpapa']) or set(pos_tags) == set(['verbprespl', 'verbpapa']):
+            tense = 'vtt'
+        if set(pos_tags) == set(['verbpastsg', 'verbpapa']) or set(pos_tags) == set(['verbpastpl', 'verbpapa']):
+            tense = 'vvt'
+    if len(pos_tags) == 3:
+        if set(pos_tags) == set(['pronrefl', 'verbpressg', 'verbpapa']) or set(pos_tags) == set(['pronrefl', 'verbprespl', 'verbpapa']):
+            tense = 'vtt'
+        if set(pos_tags) == set(['pronrefl', 'verbpastsg', 'verbpapa']) or set(pos_tags) == set(['pronrefl', 'verbpastpl', 'verbpapa']):
+            tense = 'vvt'
 
     return tense
