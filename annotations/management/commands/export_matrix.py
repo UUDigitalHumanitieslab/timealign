@@ -2,9 +2,14 @@
 
 from __future__ import division
 
+from collections import defaultdict
 import pickle
 
-from django.core.management.base import BaseCommand
+import numpy as np
+from sklearn import manifold
+from sklearn.decomposition import PCA
+
+from django.core.management.base import BaseCommand, CommandError
 
 from annotations.models import Annotation, Fragment
 
@@ -13,22 +18,63 @@ class Command(BaseCommand):
     help = 'Exports a distance matrix of all (correct) annotations'
 
     def handle(self, *args, **options):
-        tenses = []
-
-        for fragment in Fragment.objects.filter(language=Fragment.ENGLISH):
-            annotations = Annotation.objects.filter(alignment__original_fragment=fragment, is_no_target=False)
+        # For each Fragment, get the tenses
+        fragment_ids = []
+        tenses = defaultdict(list)
+        for fragment in Fragment.objects.all():
+            # Retrieve the Annotations for this Fragment...
+            annotations = Annotation.objects.filter(alignment__original_fragment=fragment,
+                                                    is_translation=True, is_no_target=False).exclude(tense='other')
+            # ... but only allow Fragments that have Alignments in all languages
             if annotations.count() == len(Fragment.LANGUAGES) - 1:
-                tenses.append([annotation.tense for annotation in annotations])
+                fragment_ids.append(fragment.id)
+                tenses[fragment.language].append(pp_name(fragment.language))
+                for annotation in annotations:
+                    tenses[annotation.alignment.translated_fragment.language].append(annotation.tense)
 
+        # Create a list of lists with tenses for all languages
+        tenses_matrix = defaultdict(list)
+        for t in tenses.values():
+            for n, tense in enumerate(t):
+                tenses_matrix[n].append(tense)
+
+        # Create a distance matrix
         matrix = []
-        for t1 in tenses:
+        for t1 in tenses_matrix.values():
             result = []
-            for t2 in tenses:
+            for t2 in tenses_matrix.values():
                 result.append(get_distance(t1, t2))
             matrix.append(result)
 
-        pickle.dump(matrix, open('matrix.p', 'wb'))
+        # Do a Multidimensional Scaling
+        matrix = np.array(matrix)
+        mds = manifold.MDS(n_components=20, dissimilarity='precomputed')
+        pos = mds.fit(matrix).embedding_
+
+        # Do a Principle Components Analysis
+        clf = PCA(n_components=5)
+        pos = clf.fit_transform(pos)
+
+        # Print the explained variance
+        print clf.explained_variance_ratio_
+
+        # Pickle the created objects
+        pickle.dump(pos.tolist(), open('matrix.p', 'wb'))
+        pickle.dump(fragment_ids, open('fragments.p', 'wb'))
         pickle.dump(tenses, open('tenses.p', 'wb'))
+
+
+def pp_name(language):
+    if language == Fragment.ENGLISH:
+        return u'present perfect'
+    elif language == Fragment.GERMAN:
+        return u'Perfekt'
+    elif language == Fragment.DUTCH:
+        return u'vtt'
+    elif language == Fragment.SPANISH:
+        return u'pretérito perfecto compuesto'
+    elif language == Fragment.FRENCH:
+        return u'passé composé'
 
 
 def get_distance(array1, array2):
@@ -44,4 +90,4 @@ def get_distance(array1, array2):
 
         total += 1
 
-    return round(result / total, 2) if total > 0 else 0
+    return 1 - round(result / total, 2) if total > 0 else 0
