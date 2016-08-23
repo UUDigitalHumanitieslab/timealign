@@ -17,8 +17,12 @@
         {% bootstrap_css %}
         {% bootstrap_javascript jquery=1 %}
 
+        {# Load the qTip library %}
         <script src="http://cdn.jsdelivr.net/qtip2/3.0.3/basic/jquery.qtip.min.js"></script>
         <link rel="stylesheet" href="http://cdn.jsdelivr.net/qtip2/3.0.3/basic/jquery.qtip.min.css">
+
+        {# Allow for extra scripts and stylesheets #}
+        {% block head %}{% endblock %}
     </head>
 
     <body>
