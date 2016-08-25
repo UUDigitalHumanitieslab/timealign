@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'bootstrap3',
     'django_filters',
 
+    'core',
     'annotations',
 
     'django.contrib.admin',
@@ -107,4 +108,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-LOGIN_REDIRECT_URL = '/home/'
+LOGIN_REDIRECT_URL = '/annotations/status/'

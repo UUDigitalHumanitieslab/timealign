@@ -19,7 +19,8 @@ urlpatterns = [
     url(r'^accounts/login/$', 'django.contrib.auth.views.login', name='login'),
     url(r'^accounts/logout/$', 'django.contrib.auth.views.logout', name='logout'),
 
-    url(r'^', include('annotations.urls', namespace='annotations')),
+    url(r'^', include('core.urls', namespace='core')),
+    url(r'^annotations/', include('annotations.urls', namespace='annotations')),
 
     url(r'^admin/', include(admin.site.urls)),
 ]

@@ -20,9 +20,9 @@ from .utils import get_random_alignment
 ##############
 # Static views
 ##############
-class StartView(generic.TemplateView):
-    """Loads a static start view"""
-    template_name = 'annotations/start.html'
+class IntroductionView(generic.TemplateView):
+    """Loads a static introduction view"""
+    template_name = 'annotations/introduction.html'
 
 
 class InstructionsView(generic.TemplateView):
@@ -31,9 +31,24 @@ class InstructionsView(generic.TemplateView):
         return 'annotations/instructions{}.html'.format(self.kwargs['n'])
 
 
-class ContactView(generic.TemplateView):
-    """Loads a static contact view"""
-    template_name = 'annotations/contact.html'
+class StatusView(generic.TemplateView):
+    """Loads a static home view, with an overview of the annotation progress"""
+    template_name = 'annotations/home.html'
+
+    def get_context_data(self, **kwargs):
+        """Creates a list of tuples with information on the annotation progress"""
+        context = super(StatusView, self).get_context_data(**kwargs)
+
+        languages = []
+        for l1, l2 in permutations(Fragment.LANGUAGES, 2):
+            alignments = Alignment.objects.filter(original_fragment__language=l1[0],
+                                                  translated_fragment__language=l2[0])
+            total = alignments.count()
+            annotated = alignments.exclude(annotation=None).count()
+            languages.append((l1, l2, annotated, total))
+        context['languages'] = languages
+
+        return context
 
 
 class PlotMatrixView(generic.TemplateView):
@@ -81,26 +96,6 @@ class PlotMatrixView(generic.TemplateView):
         context['d1'] = d1
         context['d2'] = d2
         context['max_dimensions'] = range(1, len(model[0]) + 1)  # We choose dimensions to be 1-based
-
-        return context
-
-
-class HomeView(generic.TemplateView):
-    """Loads a static home view, with an overview of the annotation progress"""
-    template_name = 'annotations/home.html'
-
-    def get_context_data(self, **kwargs):
-        """Creates a list of tuples with information on the annotation progress"""
-        context = super(HomeView, self).get_context_data(**kwargs)
-
-        languages = []
-        for l1, l2 in permutations(Fragment.LANGUAGES, 2):
-            alignments = Alignment.objects.filter(original_fragment__language=l1[0],
-                                                  translated_fragment__language=l2[0])
-            total = alignments.count()
-            annotated = alignments.exclude(annotation=None).count()
-            languages.append((l1, l2, annotated, total))
-        context['languages'] = languages
 
         return context
 
@@ -190,6 +185,7 @@ class AnnotationChoose(generic.RedirectView):
 ############
 class FragmentDetail(generic.DetailView):
     model = Fragment
+
 
 ############
 # List views

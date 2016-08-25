@@ -1,4 +1,4 @@
-{% extends "annotations/base.html" %}
+{% extends "base/base.html" %}
 
 {% load bootstrap3 %}
 
@@ -9,11 +9,24 @@
 {% endblock %}
 
 {% block content %}
-<div id="chart">
-    <svg style="height: 600px; width: 800px"></svg>
+<h2>Results</h2>
+
+<div class="alert alert-info" role="alert">
+    This scatter plot shows the results from a PCA on a Multidimensional Scaling of the dissimilarity matrix of tense pairs.
+    Please see the methodology section for more details.
 </div>
 
-<h3>Filters</h3>
+<div id="chart">
+    <svg style="height: 490px; width: 100%"></svg>
+</div>
+
+<h2>Filters</h2>
+
+<div class="alert alert-info" role="alert">
+    Below, you can change the labels and the dimensions displayed on the x- and y-axis.
+    Click the green button to confirm your selection and update the scatter plot.
+</div>
+
 <div class="row">
     Language:
     <div id="language" class="btn-group" data-toggle="buttons">
@@ -23,7 +36,7 @@
         </label>
         {% endfor %}
     </div>
-    Dimensions 1:
+    Dimension on x-axis:
     <div id="d1" class="btn-group" data-toggle="buttons">
         {% for d in max_dimensions %}
         <label class="btn btn-primary active">
@@ -31,7 +44,7 @@
         </label>
         {% endfor %}
     </div>
-    Dimension 2:
+    Dimension on y-axis:
     <div id="d2" class="btn-group" data-toggle="buttons">
         {% for d in max_dimensions %}
         <label class="btn btn-primary active">
@@ -39,7 +52,7 @@
         </label>
         {% endfor %}
     </div>
-    <button type="submit" class="btn btn-primary">
+    <button type="submit" class="btn btn-success">
         {% bootstrap_icon "ok" %} Go!
     </button>
 </div>

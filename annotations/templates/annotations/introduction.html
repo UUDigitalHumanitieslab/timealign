@@ -1,4 +1,4 @@
-{% extends "annotations/base.html" %}
+{% extends "base/base.html" %}
 
 {% load bootstrap3 %}
 
@@ -8,6 +8,7 @@
         <h1>TimeAlign</h1>
         <p>
             This web application allows easy selection of aligned verb phrases.
+            <a class="btn btn-primary btn-lg" href="{% url 'annotations:instructions' 1 %}" role="button">View instructions &raquo;</a>
             <a class="btn btn-primary btn-lg" href="{% url 'login' %}" role="button">Sign in &raquo;</a>
         </p>
     </div>

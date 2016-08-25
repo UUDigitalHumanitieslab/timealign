@@ -1,15 +1,14 @@
 from django.conf.urls import url
 
-from .views import StartView, HomeView, InstructionsView, ContactView,\
-    AnnotationCreate, AnnotationUpdate, AnnotationChoose, AnnotationList, FragmentList,\
-    PlotMatrixView, FragmentDetail
+from .views import InstructionsView, IntroductionView, StatusView, \
+    AnnotationCreate, AnnotationUpdate, AnnotationChoose, FragmentDetail, \
+    AnnotationList, FragmentList, PlotMatrixView
 
 urlpatterns = [
     # Static views
-    url(r'^$', StartView.as_view(), name='start'),
-    url(r'^home/$', HomeView.as_view(), name='home'),
+    url(r'^introduction/$', IntroductionView.as_view(), name='introduction'),
     url(r'^instructions/(?P<n>\d+)/$', InstructionsView.as_view(), name='instructions'),
-    url(r'^contact/$', ContactView.as_view(), name='contact'),
+    url(r'^status/$', StatusView.as_view(), name='status'),
 
     # Creating and editing Annotations
     url(r'^create/(?P<pk>\d+)/$', AnnotationCreate.as_view(), name='create'),
