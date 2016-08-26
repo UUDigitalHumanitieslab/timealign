@@ -14,7 +14,7 @@ from django_filters.views import FilterView
 from .filters import AnnotationFilter
 from .forms import AnnotationForm
 from .models import Annotation, Alignment, Fragment
-from .utils import get_random_alignment
+from .utils import get_random_alignment, get_color
 
 
 ##############
@@ -72,8 +72,8 @@ class PlotMatrixView(generic.TemplateView):
         j = defaultdict(list)
         for n, l in enumerate(model):
             # Retrieve x/y dimensions, add some jitter
-            x = l[d1 - 1] + random.random() / 100
-            y = l[d2 - 1] + random.random() / 100
+            x = l[d1 - 1] + random.uniform(-.5, .5) / 100
+            y = l[d2 - 1] + random.uniform(-.5, .5) / 100
 
             f = fragments[n]
             t = [tenses[l][n] for l in tenses.keys()]
@@ -86,6 +86,7 @@ class PlotMatrixView(generic.TemplateView):
         for k, v in j.items():
             d = dict()
             d['key'] = k
+            d['color'] = get_color(k)
             d['values'] = v
             matrix.append(d)
 

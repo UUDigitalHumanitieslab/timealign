@@ -61,24 +61,28 @@
     var matrix = {{ matrix|safe }};
 
     nv.addGraph(function() {
+        // Start a scatter plot, force the X and Y axis to good defaults,
+        // and use specific colors for tenses rather than the defaults
         var chart = nv.models.scatterChart()
-            .color(d3.scale.category10().range())
             .forceX([-.5, .5])
-            .forceY([-.5, .5]);
+            .forceY([-.5, .5])
+            .color(function(d) { return d.color; });
 
-        //Axis settings
+        // Set a proper tick format for the axes
         chart.xAxis.tickFormat(d3.format('.02f'));
         chart.yAxis.tickFormat(d3.format('.02f'));
 
-        //Configure how the tooltip looks.
+        // Show the tenses in the tooltip
         chart.tooltip.contentGenerator(function(e) {
             return '<h4>' + e.point.tenses + '</h4>';
         });
 
+        // Create a click-through to the data
         chart.scatter.dispatch.on("elementClick", function(e) {
             window.location = "{% url 'annotations:show' 999 %}".replace(999, e.point.fragment_id);
         });
 
+        // Add the data to the chart and start creating the chart
         d3.select('#chart svg')
             .datum(matrix)
             .transition()
@@ -86,7 +90,6 @@
             .call(chart);
 
         nv.utils.windowResize(chart.update);
-
         return chart;
     });
 </script>
