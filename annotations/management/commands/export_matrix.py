@@ -48,15 +48,8 @@ class Command(BaseCommand):
 
         # Do a Multidimensional Scaling
         matrix = np.array(matrix)
-        mds = manifold.MDS(n_components=20, dissimilarity='precomputed')
-        pos = mds.fit(matrix).embedding_
-
-        # Do a Principle Components Analysis
-        clf = PCA(n_components=5)
-        pos = clf.fit_transform(pos)
-
-        # Print the explained variance
-        print clf.explained_variance_ratio_
+        mds = manifold.MDS(n_components=5, dissimilarity='precomputed')
+        pos = mds.fit_transform(matrix)
 
         # Pickle the created objects
         pickle.dump(pos.tolist(), open('matrix.p', 'wb'))
