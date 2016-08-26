@@ -27,7 +27,7 @@ def get_color(tense):
         return '#1f77b4'
     elif tense in [u'Präsens', u'simple present', u'presente', u'présent', u'ott']:
         return '#ff7f0e'
-    elif tense in [u'Präterium', u'simple past', u'pretérito perfecto simple', u'ovt']:
+    elif tense in [u'Präteritum', u'simple past', u'pretérito perfecto simple', u'ovt']:
         return '#2ca02c'
     elif tense in [u'Plusquamperfekt', u'past perfect', u'pretérito pluscuamperfecto', u'plus-que-parfait', u'vvt']:
         return '#d62728'
