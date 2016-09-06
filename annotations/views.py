@@ -9,6 +9,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 from django.views import generic
 
+from braces.views import LoginRequiredMixin, PermissionRequiredMixin
 from django_filters.views import FilterView
 
 from .filters import AnnotationFilter
@@ -31,9 +32,10 @@ class InstructionsView(generic.TemplateView):
         return 'annotations/instructions{}.html'.format(self.kwargs['n'])
 
 
-class StatusView(generic.TemplateView):
+class StatusView(PermissionRequiredMixin, generic.TemplateView):
     """Loads a static home view, with an overview of the annotation progress"""
     template_name = 'annotations/home.html'
+    permission_required = 'annotations.change_annotation'
 
     def get_context_data(self, **kwargs):
         """Creates a list of tuples with information on the annotation progress"""
@@ -51,7 +53,7 @@ class StatusView(generic.TemplateView):
         return context
 
 
-class PlotMatrixView(generic.TemplateView):
+class PlotMatrixView(LoginRequiredMixin, generic.TemplateView):
     """Loads the matrix plot view"""
     template_name = 'annotations/plot_matrix.html'
 
@@ -104,9 +106,10 @@ class PlotMatrixView(generic.TemplateView):
 #################
 # CRUD Annotation
 #################
-class AnnotationMixin(object):
+class AnnotationMixin(SuccessMessageMixin, PermissionRequiredMixin):
     model = Annotation
     form_class = AnnotationForm
+    permission_required = 'annotations.change_annotation'
 
     def get_form_kwargs(self):
         """Sets the Alignment as a form kwarg"""
@@ -124,7 +127,7 @@ class AnnotationMixin(object):
         raise NotImplementedError
 
 
-class AnnotationCreate(AnnotationMixin, SuccessMessageMixin, generic.CreateView):
+class AnnotationCreate(AnnotationMixin, generic.CreateView):
     success_message = 'Annotation created successfully'
 
     def get_success_url(self):
@@ -145,7 +148,7 @@ class AnnotationCreate(AnnotationMixin, SuccessMessageMixin, generic.CreateView)
         return get_object_or_404(Alignment, pk=self.kwargs['pk'])
 
 
-class AnnotationUpdate(AnnotationMixin, SuccessMessageMixin, generic.UpdateView):
+class AnnotationUpdate(AnnotationMixin, generic.UpdateView):
     success_message = 'Annotation edited successfully'
 
     def get_context_data(self, **kwargs):
@@ -171,9 +174,10 @@ class AnnotationUpdate(AnnotationMixin, SuccessMessageMixin, generic.UpdateView)
         return self.object.alignment
 
 
-class AnnotationChoose(generic.RedirectView):
+class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
     permanent = False
     pattern_name = 'annotations:create'
+    permission_required = 'annotations.change_annotation'
 
     def get_redirect_url(self, *args, **kwargs):
         """Redirects to a random Alignment"""
@@ -184,17 +188,18 @@ class AnnotationChoose(generic.RedirectView):
 ############
 # CRUD Fragment
 ############
-class FragmentDetail(generic.DetailView):
+class FragmentDetail(LoginRequiredMixin, generic.DetailView):
     model = Fragment
 
 
 ############
 # List views
 ############
-class AnnotationList(FilterView):
+class AnnotationList(PermissionRequiredMixin, FilterView):
     context_object_name = 'annotations'
     filterset_class = AnnotationFilter
     paginate_by = 25
+    permission_required = 'annotations.change_annotation'
 
     def get_queryset(self):
         """
@@ -205,10 +210,11 @@ class AnnotationList(FilterView):
                                          alignment__translated_fragment__language=self.kwargs['l2'])
 
 
-class FragmentList(generic.ListView):
+class FragmentList(PermissionRequiredMixin, generic.ListView):
     context_object_name = 'fragments'
     template_name = 'annotations/fragment_list.html'
     paginate_by = 25
+    permission_required = 'annotations.change_annotation'
 
     def get_queryset(self):
         """

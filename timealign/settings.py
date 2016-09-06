@@ -108,4 +108,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-LOGIN_REDIRECT_URL = '/annotations/status/'
+LOGIN_REDIRECT_URL = '/annotations/plot/'
