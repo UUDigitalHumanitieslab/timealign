@@ -14,13 +14,21 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from django.contrib.flatpages import views
 
 urlpatterns = [
     url(r'^accounts/login/$', 'django.contrib.auth.views.login', name='login'),
     url(r'^accounts/logout/$', 'django.contrib.auth.views.logout', name='logout'),
 
-    url(r'^', include('core.urls', namespace='core')),
-    url(r'^annotations/', include('annotations.urls', namespace='annotations')),
+    url(r'^timealign/', include('annotations.urls', namespace='annotations')),
 
     url(r'^admin/', include(admin.site.urls)),
+
+    url(r'^$', views.flatpage, {'url': '/home/'}, name='home'),
+    url(r'^project/$', views.flatpage, {'url': '/project/'}, name='project'),
+    url(r'^project/nl-summary/$', views.flatpage, {'url': '/nl-summary/'}, name='nl-summary'),
+    url(r'^student-research/$', views.flatpage, {'url': '/student-research/'}, name='student-research'),
+    url(r'^perfectextractor/$', views.flatpage, {'url': '/perfectextractor/'}, name='perfectextractor'),
+    url(r'^timealign/taggers/$', views.flatpage, {'url': '/taggers/'}, name='taggers'),
+    url(r'^contact/$', views.flatpage, {'url': '/contact/'}, name='contact'),
 ]

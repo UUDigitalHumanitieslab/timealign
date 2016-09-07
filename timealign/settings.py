@@ -44,6 +44,9 @@ INSTALLED_APPS = (
     'annotations',
 
     'django.contrib.admin',
+
+    'django.contrib.sites',
+    'django.contrib.flatpages',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -55,6 +58,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
 )
 
 ROOT_URLCONF = 'timealign.urls'
@@ -108,4 +112,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-LOGIN_REDIRECT_URL = '/annotations/plot/'
+LOGIN_REDIRECT_URL = '/timealign/plot/'
+
+
+# Flatpages
+# https://docs.djangoproject.com/en/1.8/ref/contrib/flatpages/
+
+SITE_ID = 1

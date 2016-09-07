@@ -1,3 +1,5 @@
+{% load bootstrap3 %}
+
 <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
         <div class="navbar-header">
@@ -7,15 +9,23 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">Time in Translation</a>
+            <span class="navbar-brand">Time in Translation</span>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-                <li><a href="{% url 'core:start' %}">Home</a></li>
+                <li><a href="{% url 'home' %}">{% bootstrap_icon "home" %}</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">The project <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{% url 'project' %}">Project description</a></li>
+                        <li><a href="{% url 'nl-summary' %}">Summary in Dutch</a></li>
+                    </ul>
+                </li>
+                <li><a href="{% url 'student-research' %}">Student research</a></li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">PerfectExtractor <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li><a href="{% url 'core:introduction' %}">Introduction</a></li>
+                        <li><a href="{% url 'perfectextractor' %}">Introduction</a></li>
                         <li><a href="https://github.com/UUDigitalHumanitieslab/time-in-translation" target="_blank">Source code</a></li>
                     </ul>
                 </li>
@@ -27,19 +37,19 @@
                         {% if user.is_authenticated and perms.annotations.change_annotation %}
                         <li><a href="{% url 'annotations:status' %}">Status overview</a></li>
                         {% endif %}
+                        <li><a href="{% url 'taggers' %}">Morphological taggers</a></li>
                         <li><a href="https://github.com/UUDigitalHumanitieslab/timealign" target="_blank">Source code</a></li>
                     </ul>
                 </li>
                 {% if user.is_authenticated %}
                 <li><a href="{% url 'annotations:plot' %}">Results</a></li>
                 {% endif %}
-                <li><a href="{% url 'core:people' %}">People</a></li>
-                <li><a href="{% url 'core:contact' %}">Contact</a></li>
+                <li><a href="{% url 'contact' %}">Contact</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 {% if user.is_authenticated %}
                 <li><p class="navbar-text">Signed in as <em>{{ user.username }}</em></p></li>
-                <li><a href="{% url 'logout' %}?next={% url 'core:start' %}">Log out</a></li>
+                <li><a href="{% url 'logout' %}?next={% url 'home' %}">Log out</a></li>
                 {% else %}
                 <li><a href="{% url 'login' %}">Log in</a></li>
                 {% endif %}
