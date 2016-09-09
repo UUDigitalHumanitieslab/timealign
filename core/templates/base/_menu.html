@@ -14,36 +14,41 @@
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
                 <li><a href="{% url 'home' %}">{% bootstrap_icon "home" %}</a></li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">The project <span class="caret"></span></a>
+                <li>
+                    <a href="#">The project <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li><a href="{% url 'project' %}">Project description</a></li>
+                        <li><a href="{% url 'project' %}">Project Description</a></li>
                         <li><a href="{% url 'nl-summary' %}">Summary in Dutch</a></li>
                     </ul>
                 </li>
-                <li><a href="{% url 'student-research' %}">Student research</a></li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">PerfectExtractor <span class="caret"></span></a>
+                <li><a href="{% url 'student-research' %}">Student Research</a></li>
+                <li>
+                    <a href="#">Translation Mining <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li><a href="{% url 'perfectextractor' %}">Introduction</a></li>
-                        <li><a href="https://github.com/UUDigitalHumanitieslab/time-in-translation" target="_blank">Source code</a></li>
-                    </ul>
-                </li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">TimeAlign <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="{% url 'annotations:introduction' %}">Introduction</a></li>
-                        <li><a href="{% url 'annotations:instructions' 1 %}">Instructions</a></li>
-                        {% if user.is_authenticated and perms.annotations.change_annotation %}
-                        <li><a href="{% url 'annotations:status' %}">Status overview</a></li>
+                        <li><a href="{% url 'translation-mining' %}">Introduction</a></li>
+                        <li>
+                            <a href="#">PerfectExtractor <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{% url 'perfectextractor' %}">Introduction</a></li>
+                                <li><a href="https://github.com/UUDigitalHumanitieslab/time-in-translation" target="_blank">Source Code</a></li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a href="#">TimeAlign <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{% url 'annotations:introduction' %}">Introduction</a></li>
+                                <li><a href="{% url 'annotations:instructions' 1 %}">Instructions</a></li>
+                                {% if user.is_authenticated and perms.annotations.change_annotation %}
+                                <li><a href="{% url 'annotations:status' %}">Status Overview</a></li>
+                                {% endif %}
+                                <li><a href="https://github.com/UUDigitalHumanitieslab/timealign" target="_blank">Source Code</a></li>
+                            </ul>
+                        </li>
+                        {% if user.is_authenticated %}
+                        <li><a href="{% url 'annotations:plot' %}">Results</a></li>
                         {% endif %}
-                        <li><a href="{% url 'taggers' %}">Morphological taggers</a></li>
-                        <li><a href="https://github.com/UUDigitalHumanitieslab/timealign" target="_blank">Source code</a></li>
                     </ul>
                 </li>
-                {% if user.is_authenticated %}
-                <li><a href="{% url 'annotations:plot' %}">Results</a></li>
-                {% endif %}
                 <li><a href="{% url 'contact' %}">Contact</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">

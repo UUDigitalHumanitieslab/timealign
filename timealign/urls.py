@@ -29,6 +29,6 @@ urlpatterns = [
     url(r'^project/nl-summary/$', views.flatpage, {'url': '/nl-summary/'}, name='nl-summary'),
     url(r'^student-research/$', views.flatpage, {'url': '/student-research/'}, name='student-research'),
     url(r'^perfectextractor/$', views.flatpage, {'url': '/perfectextractor/'}, name='perfectextractor'),
-    url(r'^timealign/taggers/$', views.flatpage, {'url': '/taggers/'}, name='taggers'),
+    url(r'^translation-mining/$', views.flatpage, {'url': '/translation-mining/'}, name='translation-mining'),
     url(r'^contact/$', views.flatpage, {'url': '/contact/'}, name='contact'),
 ]
