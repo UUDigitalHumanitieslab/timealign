@@ -4,6 +4,7 @@ import json
 import pickle
 import random
 
+from django.conf import settings
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
@@ -45,10 +46,15 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
         for l1, l2 in permutations(Fragment.LANGUAGES, 2):
             alignments = Alignment.objects.filter(original_fragment__language=l1[0],
                                                   translated_fragment__language=l2[0])
+
+            if settings.CURRENT_DOCUMENTS:
+                alignments = alignments.filter(original_fragment__document__title__in=settings.CURRENT_DOCUMENTS)
+
             total = alignments.count()
             annotated = alignments.exclude(annotation=None).count()
             languages.append((l1, l2, annotated, total))
         context['languages'] = languages
+        context['current_documents'] = settings.CURRENT_DOCUMENTS
 
         return context
 
@@ -206,8 +212,13 @@ class AnnotationList(PermissionRequiredMixin, FilterView):
         Retrieves all Annotations for the given source (l1) and target (l2) language.
         :return: A QuerySet of Annotations.
         """
-        return Annotation.objects.filter(alignment__original_fragment__language=self.kwargs['l1'],
-                                         alignment__translated_fragment__language=self.kwargs['l2'])
+        annotations = Annotation.objects.filter(alignment__original_fragment__language=self.kwargs['l1'],
+                                                alignment__translated_fragment__language=self.kwargs['l2'])
+
+        if settings.CURRENT_DOCUMENTS:
+            annotations = annotations.filter(alignment__original_fragment__document__title__in=settings.CURRENT_DOCUMENTS)
+
+        return annotations
 
 
 class FragmentList(PermissionRequiredMixin, generic.ListView):
@@ -221,11 +232,16 @@ class FragmentList(PermissionRequiredMixin, generic.ListView):
         Retrieves all Fragments for the given language that have an Annotation that contains a target expression.
         :return: A list of Fragments.
         """
-        fragments = []
-        for fragment in Fragment.objects.filter(language=self.kwargs['language']):
+        results = []
+        fragments = Fragment.objects.filter(language=self.kwargs['language'])
+
+        if settings.CURRENT_DOCUMENTS:
+            fragments = fragments.filter(document__title__in=settings.CURRENT_DOCUMENTS)
+
+        for fragment in fragments:
             if Annotation.objects.filter(alignment__original_fragment=fragment, is_no_target=False).exists():
-                fragments.append(fragment)
-        return fragments
+                results.append(fragment)
+        return results
 
     def get_context_data(self, **kwargs):
         """

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from django.conf import settings
+
 from .models import Alignment
 
 
@@ -10,10 +12,14 @@ def get_random_alignment(language_from, language_to):
     :param language_to: The target language
     :return: A random Alignment object
     """
-    return Alignment.objects.filter(
-        original_fragment__language=language_from,
-        translated_fragment__language=language_to,
-        annotation=None).order_by('?').first()
+    alignments = Alignment.objects.filter(original_fragment__language=language_from,
+                                          translated_fragment__language=language_to,
+                                          annotation=None)
+
+    if settings.CURRENT_DOCUMENTS:
+        alignments = alignments.filter(original_fragment__document__title__in=settings.CURRENT_DOCUMENTS)
+
+    return alignments.order_by('?').first()
 
 
 def get_color(tense):

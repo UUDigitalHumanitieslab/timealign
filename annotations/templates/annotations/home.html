@@ -59,5 +59,14 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {% if current_documents %}
+    <h3>Current work-in-progress documents</h3>
+    <ul>
+    {% for doc in current_documents %}
+        <li>{{ doc }}</li>
+    {% endfor %}
+    </ul>
+    {% endif %}
 </div>
 {% endblock %}

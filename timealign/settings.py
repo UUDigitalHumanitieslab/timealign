@@ -119,3 +119,10 @@ LOGIN_REDIRECT_URL = '/timealign/plot/'
 # https://docs.djangoproject.com/en/1.8/ref/contrib/flatpages/
 
 SITE_ID = 1
+
+
+# Current work-in-progress documents.
+# Setting this to a value other than 'None' or an empty lis will limit
+# the status overview to only show views of the current documents.
+
+CURRENT_DOCUMENTS = ['ep-00-01-17.xml', 'ep-00-12-11.xml']
