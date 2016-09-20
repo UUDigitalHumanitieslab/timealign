@@ -5,6 +5,7 @@ import pickle
 import random
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
@@ -188,6 +189,12 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
     def get_redirect_url(self, *args, **kwargs):
         """Redirects to a random Alignment"""
         new_alignment = get_random_alignment(self.kwargs['l1'], self.kwargs['l2'])
+
+        # If no new alignment has been found, redirect to the status overview
+        if not new_alignment:
+            messages.success(self.request, 'All work is done for this language pair!')
+            return reverse('annotations:status')
+
         return super(AnnotationChoose, self).get_redirect_url(new_alignment.pk)
 
 
