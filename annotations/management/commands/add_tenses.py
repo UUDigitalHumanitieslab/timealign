@@ -44,8 +44,7 @@ def get_tense_de(pos_tags):
         if pos_tags[0] in ['ADJA', 'ADJD']:
             tense = 'Adjektiv'
     elif len(pos_tags) == 2:
-        if ('VAFIN' in pos_tags or 'VAINF' in pos_tags) and (
-                    'VVPP' in pos_tags or 'VVFIN' in pos_tags or 'VAPP' in pos_tags):
+        if ('VAFIN' in pos_tags or 'VAINF' in pos_tags) and ('VVPP' in pos_tags or 'VVFIN' in pos_tags or 'VAPP' in pos_tags):
             tense = u'Perfect'
     elif len(pos_tags) == 3:
         if set(pos_tags) == set(['VVPP', 'VAPP', 'VAFIN']):

@@ -9,6 +9,7 @@ from sklearn.decomposition import PCA
 
 # TODO: This is test functionality and should eventually be deleted
 
+
 def tenses2colors(ts):
     return ['b' if t == 'present perfect' else 'g' for t in ts]
 

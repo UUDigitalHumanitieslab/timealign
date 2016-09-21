@@ -30,5 +30,3 @@ class AnnotationForm(forms.ModelForm):
         if not cleaned_data['is_no_target'] and cleaned_data['is_translation']:
             if not cleaned_data['words']:
                 self.add_error('is_translation', 'Please select the words composing the translation.')
-
-

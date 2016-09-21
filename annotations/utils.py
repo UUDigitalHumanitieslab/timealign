@@ -50,4 +50,4 @@ def get_color(tense):
     elif tense in [u'participio']:
         return '#17becf'
     else:
-        print tense
+        return ''
