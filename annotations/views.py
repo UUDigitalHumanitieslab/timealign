@@ -138,11 +138,10 @@ class AnnotationCreate(AnnotationMixin, generic.CreateView):
     success_message = 'Annotation created successfully'
 
     def get_success_url(self):
-        """Find a new Alignment to annotate in the same original and translated language"""
+        """Go to the choose-view to select a new Alignment"""
         alignment = self.object.alignment
-        new_alignment = get_random_alignment(alignment.original_fragment.language,
-                                             alignment.translated_fragment.language)
-        return reverse('annotations:create', args=(new_alignment.pk,))
+        return reverse('annotations:choose', args=(alignment.original_fragment.language,
+                                                   alignment.translated_fragment.language))
 
     def form_valid(self, form):
         """Sets the User and Alignment on the created instance"""
