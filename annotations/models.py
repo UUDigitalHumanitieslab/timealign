@@ -2,8 +2,21 @@ from django.conf import settings
 from django.db import models
 
 
+class Corpus(models.Model):
+    title = models.CharField(max_length=200, unique=True)
+
+    class Meta:
+        verbose_name_plural = 'Corpora'
+
+    def __unicode__(self):
+        return self.title
+
+
 class Document(models.Model):
     title = models.CharField(max_length=200, unique=True)
+    description = models.CharField(max_length=200, blank=True)
+
+    corpus = models.ForeignKey(Corpus)
 
     def __unicode__(self):
         return self.title
@@ -95,7 +108,7 @@ class Word(models.Model):
     xml_id = models.CharField(max_length=20)
     word = models.CharField(max_length=200)
     pos = models.CharField(max_length=10)
-    lemma = models.CharField(max_length=200, null=True)
+    lemma = models.CharField(max_length=200, blank=True)
     is_target = models.BooleanField(default=False)
 
     sentence = models.ForeignKey(Sentence)
