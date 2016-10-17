@@ -1,11 +1,12 @@
 from django.test import TestCase
 
-from .models import Document, Fragment, Sentence, Word, Alignment, Annotation
+from .models import Corpus, Document, Fragment, Sentence, Word, Alignment, Annotation
 
 
 class FragmentTestCase(TestCase):
     def setUp(self):
-        d = Document.objects.create(title='test')
+        c = Corpus.objects.create(title='test')
+        d = Document.objects.create(title='test', corpus=c)
 
         self.f_en = Fragment.objects.create(language='en', document=d)
         s = Sentence.objects.create(xml_id='en1', fragment=self.f_en)
