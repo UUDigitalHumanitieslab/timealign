@@ -7,7 +7,9 @@
     <h1>Matrix overview</h1>
 
     <div class="alert alert-info" role="alert">
-        NT means no translation was available, NA means there was no proper translation of the target words in the translated text.
+        NT means no translation was available,
+        NA means there was no proper translation of the target words in the translated text,
+        - means the selected words in the original fragment did not form a present perfect.
         Click on a cell to get details on the fragment.
     </div>
 
@@ -34,7 +36,7 @@
                 </td>
                 {% for annotation in fragment.get_annotations %}
                 <td>
-                    {% if annotation and annotation.is_translation %}
+                    {% if annotation and annotation.is_translation and not annotation.is_no_target %}
                     <a href="{% url 'annotations:edit' annotation.id %}">
                         {% if show_tenses %}
                         {{ annotation.tense }}
@@ -42,6 +44,8 @@
                         {{ annotation.selected_words }}
                         {% endif %}
                     </a>
+                    {% elif annotation and annotation.is_no_target %}
+                    <a href="{% url 'annotations:edit' annotation.id %}">-</a>
                     {% elif annotation %}
                     <a href="{% url 'annotations:edit' annotation.id %}">NA</a>
                     {% else %}
