@@ -8,8 +8,14 @@ from annotations.models import Annotation, Fragment
 class Command(BaseCommand):
     help = 'Automatically add tenses for existing (correct) Annotations'
 
+    def add_arguments(self, parser):
+        parser.add_argument('corpus', type=str)
+
     def handle(self, *args, **options):
-        for annotation in Annotation.objects.filter(is_no_target=False).filter(is_translation=True):
+        annotations = Annotation.objects. \
+            filter(is_no_target=False, is_translation=True,
+                   alignment__translated_fragment__document__corpus__title=options['corpus'])
+        for annotation in annotations:
             annotation.tense = get_tense(annotation)
             annotation.save()
 

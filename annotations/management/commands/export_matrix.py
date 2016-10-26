@@ -17,14 +17,19 @@ from annotations.models import Annotation, Fragment
 class Command(BaseCommand):
     help = 'Exports a distance matrix of all (correct) annotations'
 
+    def add_arguments(self, parser):
+        parser.add_argument('corpus', type=str)
+
     def handle(self, *args, **options):
         # For each Fragment, get the tenses
         fragment_ids = []
         tenses = defaultdict(list)
-        for fragment in Fragment.objects.all():
+        for fragment in Fragment.objects.filter(document__corpus__title=options['corpus']):
             # Retrieve the Annotations for this Fragment...
-            annotations = Annotation.objects.filter(alignment__original_fragment=fragment,
-                                                    is_translation=True, is_no_target=False).exclude(tense='other')
+            annotations = Annotation.objects \
+                .exclude(tense='other') \
+                .filter(is_no_target=False, is_translation=True,
+                        alignment__original_fragment=fragment)
             # ... but only allow Fragments that have Alignments in all languages
             if annotations.count() == len(Fragment.LANGUAGES) - 1:
                 fragment_ids.append(fragment.id)
