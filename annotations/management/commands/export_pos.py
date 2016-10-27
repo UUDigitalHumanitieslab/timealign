@@ -2,6 +2,7 @@
 
 from django.core.management.base import BaseCommand, CommandError
 
+import codecs
 import csv
 
 from annotations.models import Annotation, Fragment
@@ -19,13 +20,15 @@ class Command(BaseCommand):
             if language not in [l[0] for l in Fragment.LANGUAGES]:
                 raise CommandError('Language {} does not exist'.format(language))
 
-            with open('pos_' + language + '.csv', 'wb') as csvfile:
-                csvfile.write(u'\uFEFF'.encode('utf-8'))  # the UTF-8 BOM to hint Excel we are using that...
+            with codecs.open('pos_' + language + '.csv', 'w', 'utf-8') as csvfile:
+                csvfile.write(u'\uFEFF')  # the UTF-8 BOM to hint Excel we are using that...
                 csv_writer = csv.writer(csvfile, delimiter=';')
-                csv_writer.writerow(['id', 'cat?',
-                                     'w1', 'w2', 'w3', 'w4', 'w5',
-                                     'pos1', 'pos2', 'pos3', 'pos4', 'pos5',
-                                     'full fragment'])
+
+                header = ['id', 'tense?',
+                          'w1', 'w2', 'w3', 'w4', 'w5',
+                          'pos1', 'pos2', 'pos3', 'pos4', 'pos5',
+                          'full fragment']
+                csv_writer.writerow(header)
 
                 annotations = Annotation.objects. \
                     filter(is_no_target=False, is_translation=True,
@@ -33,9 +36,9 @@ class Command(BaseCommand):
                            alignment__translated_fragment__document__corpus__title=options['corpus'])
                 for annotation in annotations:
                     words = annotation.words.all()
-                    w = [word.word.encode('utf8') for word in words]
+                    w = [word.word for word in words]
                     pos = [word.pos for word in words]
-                    f = annotation.alignment.translated_fragment.full().encode('utf8')
+                    f = annotation.alignment.translated_fragment.full()
                     csv_writer.writerow([annotation.pk, ''] + pad_list(w, 5) + pad_list(pos, 5) + [f])
 
 
