@@ -16,7 +16,7 @@ from django_filters.views import FilterView
 
 from .filters import AnnotationFilter
 from .forms import AnnotationForm
-from .models import Annotation, Alignment, Fragment
+from .models import Annotation, Alignment, Fragment, Corpus
 from .utils import get_random_alignment, get_color
 
 
@@ -60,22 +60,25 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
         return context
 
 
-class PlotMatrixView(LoginRequiredMixin, generic.TemplateView):
+class PlotMatrixView(LoginRequiredMixin, generic.DetailView):
     """Loads the matrix plot view"""
+    model = Corpus
     template_name = 'annotations/plot_matrix.html'
 
     def get_context_data(self, **kwargs):
         context = super(PlotMatrixView, self).get_context_data(**kwargs)
 
         # Retrieve kwargs
+        pk = self.object.pk
         language = self.kwargs.get('language', Fragment.ENGLISH)
         d1 = int(self.kwargs.get('d1', 1))  # We choose dimensions to be 1-based
         d2 = int(self.kwargs.get('d2', 2))
 
         # Retrieve lists generated with command python manage.py export_matrix
-        model = pickle.load(open('matrix.p', 'rb'))
-        tenses = pickle.load(open('tenses.p', 'rb'))
-        fragments = pickle.load(open('fragments.p', 'rb'))
+        pre = 'plots/{}_'.format(pk)
+        model = pickle.load(open(pre + 'matrix.p', 'rb'))
+        tenses = pickle.load(open(pre + 'tenses.p', 'rb'))
+        fragments = pickle.load(open(pre + 'fragments.p', 'rb'))
 
         # Turn the pickled model into a scatterplot dictionary
         j = defaultdict(list)
@@ -207,6 +210,12 @@ class FragmentDetail(LoginRequiredMixin, generic.DetailView):
 ############
 # List views
 ############
+class CorporaList(PermissionRequiredMixin, generic.ListView):
+    model = Corpus
+    context_object_name = 'corpora'
+    permission_required = 'annotations.change_annotation'
+
+
 class AnnotationList(PermissionRequiredMixin, FilterView):
     context_object_name = 'annotations'
     filterset_class = AnnotationFilter

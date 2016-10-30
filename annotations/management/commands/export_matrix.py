@@ -7,11 +7,10 @@ import pickle
 
 import numpy as np
 from sklearn import manifold
-from sklearn.decomposition import PCA
 
 from django.core.management.base import BaseCommand, CommandError
 
-from annotations.models import Annotation, Fragment
+from annotations.models import Corpus, Fragment, Annotation
 
 
 class Command(BaseCommand):
@@ -21,10 +20,15 @@ class Command(BaseCommand):
         parser.add_argument('corpus', type=str)
 
     def handle(self, *args, **options):
+        try:
+            corpus = Corpus.objects.get(title=options['corpus'])
+        except Corpus.DoesNotExist:
+            raise CommandError('Corpus with title {} does not exist'.format[options['corpus']])
+
         # For each Fragment, get the tenses
         fragment_ids = []
         tenses = defaultdict(list)
-        for fragment in Fragment.objects.filter(document__corpus__title=options['corpus']):
+        for fragment in Fragment.objects.filter(document__corpus=corpus):
             # Retrieve the Annotations for this Fragment...
             annotations = Annotation.objects \
                 .exclude(tense='other') \
@@ -57,9 +61,10 @@ class Command(BaseCommand):
         pos = mds.fit_transform(matrix)
 
         # Pickle the created objects
-        pickle.dump(pos.tolist(), open('matrix.p', 'wb'))
-        pickle.dump(fragment_ids, open('fragments.p', 'wb'))
-        pickle.dump(tenses, open('tenses.p', 'wb'))
+        pre = 'plots/{}_'.format(corpus.pk)
+        pickle.dump(pos.tolist(), open(pre + 'matrix.p', 'wb'))
+        pickle.dump(fragment_ids, open(pre + 'fragments.p', 'wb'))
+        pickle.dump(tenses, open(pre + 'tenses.p', 'wb'))
 
 
 def pp_name(language):

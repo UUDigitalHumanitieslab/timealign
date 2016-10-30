@@ -1,0 +1,16 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+
+<h2>Show results for:</h2>
+<ul>
+    {% for corpus in corpora %}
+    <li>
+        <a href="{% url 'annotations:plot' corpus.pk %}">{{ corpus.title }}</a>
+    </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

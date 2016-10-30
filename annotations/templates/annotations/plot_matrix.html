@@ -9,10 +9,10 @@
 {% endblock %}
 
 {% block content %}
-<h2>Results</h2>
+<h2>Results ({{ corpus.title }})</h2>
 
 <div class="alert alert-info" role="alert">
-    This scatter plot shows the results from a PCA on a Multidimensional Scaling of the dissimilarity matrix of tense pairs.
+    This scatter plot shows the results Multidimensional Scaling of the dissimilarity matrix of tense tuples.
     Please see the <a href="{% url 'project' %}" class="alert-link">project summary</a> for more details.
 </div>
 
@@ -104,7 +104,7 @@ $(function() {
         var l = $("#language > .btn.active > input").val();
         var d1 = $("#d1 > .btn.active > input").val();
         var d2 = $("#d2 > .btn.active > input").val();
-        var url = "{% url 'annotations:plot' 'language' 1111 2222 %}";
+        var url = "{% url 'annotations:plot' corpus.pk 'language' 1111 2222 %}";
         window.location = url.replace("language", l).replace('1111', d1).replace('2222', d2);
     });
 });

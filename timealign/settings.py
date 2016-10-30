@@ -112,7 +112,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-LOGIN_REDIRECT_URL = '/timealign/plot/'
+LOGIN_REDIRECT_URL = '/timealign/plot/1'
 
 
 # Flatpages
