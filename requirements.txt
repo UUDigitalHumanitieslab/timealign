@@ -7,5 +7,5 @@
 django-bootstrap3==7.1.0
 django-braces==1.10.0
 django-filter==0.15.3
-Django==1.8.15            # rq.filter: >=1.8,<1.9
+Django==1.8.16            # rq.filter: >=1.8,<1.9
 lxml==3.6.4
