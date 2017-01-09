@@ -76,7 +76,7 @@ class PlotMatrixView(LoginRequiredMixin, generic.DetailView):
 
         # Retrieve lists generated with command python manage.py export_matrix
         pre = 'plots/{}_'.format(pk)
-        model = pickle.load(open(pre + 'matrix.p', 'rb'))
+        model = pickle.load(open(pre + 'model.p', 'rb'))
         tenses = pickle.load(open(pre + 'tenses.p', 'rb'))
         fragments = pickle.load(open(pre + 'fragments.p', 'rb'))
 

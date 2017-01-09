@@ -62,7 +62,8 @@ class Command(BaseCommand):
 
         # Pickle the created objects
         pre = 'plots/{}_'.format(corpus.pk)
-        pickle.dump(pos.tolist(), open(pre + 'matrix.p', 'wb'))
+        pickle.dump(matrix, open(pre + 'matrix.p', 'wb'))
+        pickle.dump(pos.tolist(), open(pre + 'model.p', 'wb'))
         pickle.dump(fragment_ids, open(pre + 'fragments.p', 'wb'))
         pickle.dump(tenses, open(pre + 'tenses.p', 'wb'))
 
