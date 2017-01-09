@@ -1,5 +1,11 @@
-.idea/
+# Compiled Python
 *.pyc
 
 # Output of python manage.py export_matrix
 plots/
+
+# Databases
+*.sqlite3
+
+# IDE settings
+.idea/
