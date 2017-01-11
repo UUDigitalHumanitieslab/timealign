@@ -3,6 +3,7 @@
 from __future__ import division
 
 from collections import defaultdict
+import os
 import pickle
 
 import numpy as np
@@ -61,7 +62,11 @@ class Command(BaseCommand):
         pos = mds.fit_transform(matrix)
 
         # Pickle the created objects
-        pre = 'plots/{}_'.format(corpus.pk)
+        plots_dir = 'plots'
+        if not os.path.exists(plots_dir):
+            os.makedirs(plots_dir)
+
+        pre = '{}/{}_'.format(plots_dir, corpus.pk)
         pickle.dump(matrix, open(pre + 'matrix.p', 'wb'))
         pickle.dump(pos.tolist(), open(pre + 'model.p', 'wb'))
         pickle.dump(fragment_ids, open(pre + 'fragments.p', 'wb'))
