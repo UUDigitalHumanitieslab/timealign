@@ -3,6 +3,7 @@ import csv
 from lxml import etree
 
 from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 
 from annotations.models import Document, Fragment, Sentence, Word, Alignment
 
@@ -25,30 +26,31 @@ class Command(BaseCommand):
                     if n == 0:
                         language_from = row[5]
                         languages_to = dict()
-                        for i in xrange(10, 30, 5):
+                        for i in xrange(10, 25, 5):
                             if not row[i]:
                                 break
                             else:
                                 languages_to[i] = row[i]
                         continue
 
-                    doc, _ = Document.objects.get_or_create(title=row[0])
+                    with transaction.atomic():
+                        doc, _ = Document.objects.get_or_create(title=row[0])
 
-                    from_fragment = Fragment.objects.create(language=language_from,
-                                                            speaker_language=row[1],
-                                                            document=doc)
-                    self.add_sentences(from_fragment, row[4], row[3].split(' '))
+                        from_fragment = Fragment.objects.create(language=language_from,
+                                                                speaker_language=row[1],
+                                                                document=doc)
+                        self.add_sentences(from_fragment, row[4], row[3].split(' '))
 
-                    for m, language_to in languages_to.items():
-                        if row[m]:
-                            to_fragment = Fragment.objects.create(language=language_to,
-                                                                  speaker_language=row[1],
-                                                                  document=doc)
-                            self.add_sentences(to_fragment, row[m - 1])
+                        for m, language_to in languages_to.items():
+                            if row[m]:
+                                to_fragment = Fragment.objects.create(language=language_to,
+                                                                      speaker_language=row[1],
+                                                                      document=doc)
+                                self.add_sentences(to_fragment, row[m - 1])
 
-                            Alignment.objects.create(original_fragment=from_fragment,
-                                                     translated_fragment=to_fragment,
-                                                     type=row[m - 2])
+                                Alignment.objects.create(original_fragment=from_fragment,
+                                                         translated_fragment=to_fragment,
+                                                         type=row[m - 2])
 
                     print 'Line {} processed'.format(n)
 
