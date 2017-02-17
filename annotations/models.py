@@ -4,12 +4,21 @@ from django.db import models
 
 class Corpus(models.Model):
     title = models.CharField(max_length=200, unique=True)
+    annotators = models.ManyToManyField(settings.AUTH_USER_MODEL)
 
     class Meta:
         verbose_name_plural = 'Corpora'
 
     def __unicode__(self):
         return self.title
+
+    def get_annotators(self):
+        result = 'none'
+        if self.annotators.exists():
+            result = ','.join([user.username for user in self.annotators.all()])
+        return result
+
+    get_annotators.short_description = 'Annotators'
 
 
 class Document(models.Model):

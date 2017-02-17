@@ -5,7 +5,7 @@ from .models import Corpus, Document, Fragment, Sentence, Alignment
 
 @admin.register(Corpus)
 class CorpusAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('title', 'get_annotators', )
 
 
 @admin.register(Document)

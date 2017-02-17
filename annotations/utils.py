@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from django.conf import settings
-
-from .models import Alignment
+from .models import Corpus, Alignment
 
 
-def get_random_alignment(language_from, language_to):
+def get_random_alignment(user, language_from, language_to):
     """
     Retrieves a random Alignment from the database.
+    :param user: The current User
     :param language_from: The source language
     :param language_to: The target language
     :return: A random Alignment object
@@ -16,10 +15,22 @@ def get_random_alignment(language_from, language_to):
                                           translated_fragment__language=language_to,
                                           annotation=None)
 
-    if settings.CURRENT_DOCUMENTS:
-        alignments = alignments.filter(original_fragment__document__title__in=settings.CURRENT_DOCUMENTS)
+    alignments = alignments.filter(original_fragment__document__corpus__in=get_available_corpora(user))
 
     return alignments.order_by('?').first()
+
+
+def get_available_corpora(user):
+    """
+    Returns the available Corpora for a User.
+    A staff user can see data from all corpora, other users are limited to corpora where they are an annotator.
+    :param user: The current User
+    :return: The available Corpora for this User
+    """
+    if user.is_staff:
+        return Corpus.objects.all()
+    else:
+        return user.corpus_set.all()
 
 
 def get_color(tense):
@@ -27,7 +38,7 @@ def get_color(tense):
     This function maps a tense on a color from the d3 color scale.
     See https://github.com/d3/d3-3.x-api-reference/blob/master/Ordinal-Scales.md#categorical-colors for details.
     :param tense: The given tense
-    :return: A color from the d3 color scale.
+    :return: A color from the d3 color scale
     """
     if tense in [u'Perfekt', u'present perfect', u'pretérito perfecto compuesto', u'passé composé', u'vtt']:
         return '#1f77b4'

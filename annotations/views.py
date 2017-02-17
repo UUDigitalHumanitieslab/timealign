@@ -4,7 +4,6 @@ import json
 import pickle
 import random
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse
@@ -17,7 +16,7 @@ from django_filters.views import FilterView
 from .filters import AnnotationFilter
 from .forms import AnnotationForm
 from .models import Annotation, Alignment, Fragment, Corpus
-from .utils import get_random_alignment, get_color
+from .utils import get_random_alignment, get_color, get_available_corpora
 
 
 ##############
@@ -43,19 +42,20 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
         """Creates a list of tuples with information on the annotation progress"""
         context = super(StatusView, self).get_context_data(**kwargs)
 
+        corpora = get_available_corpora(self.request.user)
+
         languages = []
         for l1, l2 in permutations(Fragment.LANGUAGES, 2):
             alignments = Alignment.objects.filter(original_fragment__language=l1[0],
                                                   translated_fragment__language=l2[0])
 
-            if settings.CURRENT_DOCUMENTS:
-                alignments = alignments.filter(original_fragment__document__title__in=settings.CURRENT_DOCUMENTS)
+            alignments = alignments.filter(original_fragment__document__corpus__in=corpora)
 
             total = alignments.count()
             annotated = alignments.exclude(annotation=None).count()
             languages.append((l1, l2, annotated, total))
         context['languages'] = languages
-        context['current_documents'] = settings.CURRENT_DOCUMENTS
+        context['current_corpora'] = corpora
 
         return context
 
@@ -190,7 +190,7 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
         """Redirects to a random Alignment"""
-        new_alignment = get_random_alignment(self.kwargs['l1'], self.kwargs['l2'])
+        new_alignment = get_random_alignment(self.request.user, self.kwargs['l1'], self.kwargs['l2'])
 
         # If no new alignment has been found, redirect to the status overview
         if not new_alignment:
@@ -230,8 +230,7 @@ class AnnotationList(PermissionRequiredMixin, FilterView):
         annotations = Annotation.objects.filter(alignment__original_fragment__language=self.kwargs['l1'],
                                                 alignment__translated_fragment__language=self.kwargs['l2'])
 
-        if settings.CURRENT_DOCUMENTS:
-            annotations = annotations.filter(alignment__original_fragment__document__title__in=settings.CURRENT_DOCUMENTS)
+        annotations = annotations.filter(alignment__original_fragment__document__corpus__in=get_available_corpora(self.request.user))
 
         return annotations
 
@@ -250,8 +249,7 @@ class FragmentList(PermissionRequiredMixin, generic.ListView):
         results = []
         fragments = Fragment.objects.filter(language=self.kwargs['language'])
 
-        if settings.CURRENT_DOCUMENTS:
-            fragments = fragments.filter(document__title__in=settings.CURRENT_DOCUMENTS)
+        fragments = fragments.filter(document__corpus__in=get_available_corpora(self.request.user))
 
         for fragment in fragments:
             if Annotation.objects.filter(alignment__original_fragment=fragment, is_no_target=False).exists():

@@ -60,11 +60,11 @@
         </tbody>
     </table>
 
-    {% if current_documents %}
-    <h3>Current work-in-progress documents</h3>
+    {% if current_corpora %}
+    <h3>You are currently working on:</h3>
     <ul>
-    {% for doc in current_documents %}
-        <li>{{ doc }}</li>
+    {% for corpus in current_corpora %}
+        <li>{{ corpus.title }}</li>
     {% endfor %}
     </ul>
     {% endif %}
