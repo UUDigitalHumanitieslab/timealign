@@ -1,0 +1,16 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+<div class="jumbotron">
+    <div class="container">
+        <h1>VPSelect</h1>
+        <p>
+            This web application allows easy selection of verb phrases.
+            <a class="btn btn-primary btn-lg" href="{% url 'selections:instructions' 1 %}" role="button">View instructions &raquo;</a>
+            <a class="btn btn-primary btn-lg" href="{% url 'login' %}" role="button">Sign in &raquo;</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

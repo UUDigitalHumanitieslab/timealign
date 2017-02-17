@@ -59,12 +59,19 @@ class Fragment(models.Model):
     def target_words(self):
         """
         Retrieves the target words for this Fragment.
-        :return: A list of Strings with the target words.
+        :return: A list of Strings with the target Words.
         """
         result = []
         for sentence in self.sentence_set.all():
             result.extend([word.word for word in sentence.word_set.filter(is_target=True)])
         return ' '.join(result)
+
+    def selected_words(self):
+        """
+        Retrieves the selected Words for this Fragment.
+        :return: A list of Strings with the selected Words.
+        """
+        return ' '.join([word.word for word in self.selection_set.first().words.all()])
 
     def get_annotations(self):
         """

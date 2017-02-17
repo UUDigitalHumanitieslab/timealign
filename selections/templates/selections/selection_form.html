@@ -1,0 +1,58 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+<style>
+.selected {
+    background-color: lightgreen;
+}
+</style>
+
+<div class="container">
+    <h1>VPSelect</h1>
+
+    {% include "annotations/_sentences.html" with sentences=fragment.sentence_set.all tooltips=1 %}
+
+    <form action="" method="post" class="form">{% csrf_token %}
+        {% bootstrap_form form %}
+        <button type="submit" class="btn btn-primary">
+            {% bootstrap_icon "ok" %} Submit
+        </button>
+        <a href="{% url 'selections:choose' fragment.language %}" role="button" class="btn btn-warning">
+            {% bootstrap_icon "arrow-right" %} Go to another fragment
+        </a>
+    </form>
+</div>
+
+<script>
+$(function() {
+    $(".tooltiptext").hide();
+
+    $("span").each(function() {
+        $(this).qtip({
+            content: {
+                text: $(this).next(".tooltiptext")
+            }
+        });
+    });
+
+    $("span").click(function() {
+        var selected = $("select[name=words]").val() || [];
+        if ($(this).hasClass("selected")) {
+            var index = selected.indexOf($(this).attr("id"));
+            selected.splice(index, 1);
+            $(this).removeClass("selected");
+        }
+        else {
+            selected.push($(this).attr("id"));
+            $(this).addClass("selected");
+        }
+
+        $("select[name=words]").val(selected);
+    });
+
+    $("select[name=words]").parent().hide();
+});
+</script>
+{% endblock %}

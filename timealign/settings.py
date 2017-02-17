@@ -42,6 +42,7 @@ INSTALLED_APPS = (
 
     'core',
     'annotations',
+    'selections',
 
     'django.contrib.admin',
 

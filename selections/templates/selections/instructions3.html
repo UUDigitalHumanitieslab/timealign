@@ -1,0 +1,53 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+<div class="container">
+    <h1>Instructions (part 3)</h1>
+    <div>
+        <p class="lead">
+            After you've selected a language you will be presented with a fragment.
+            Ideally, you are able to select a verb phrase (or multiple) here.
+        </p>
+        <div class="alert alert-info" role="alert">
+            Please select the first verb phrase in this fragment by clicking on 'has' and 'played'.
+            The order of clicking is not important.
+            After that, click the 'Submit' button to continue.
+        </div>
+        {% url "selections:instructions" 4 as next_url %}
+        {% include "selections/_selection_instructions.html" with url=next_url %}
+    </div>
+</div>
+
+<script>
+$(function() {
+    $(".tooltiptext").hide();
+
+    $("span").each(function() {
+        $(this).qtip({
+            content: {
+                text: $(this).next(".tooltiptext")
+            }
+        });
+    });
+
+    $("span").click(function() {
+        $(this).toggleClass("bg-success");
+    });
+
+    $("#submit").click(function(event) {
+        var all_selected = true;
+        $(".to-select").each(function() {
+            all_selected &= $(this).hasClass("bg-success");
+        });
+
+        if (!all_selected) {
+            event.preventDefault();
+            $(".alert").removeClass("alert-info");
+            $(".alert").addClass("alert-danger");
+        }
+    });
+});
+</script>
+{% endblock %}

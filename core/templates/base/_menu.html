@@ -30,7 +30,18 @@
                             <a href="#">PerfectExtractor <span class="caret"></span></a>
                             <ul class="dropdown-menu">
                                 <li><a href="{% url 'perfectextractor' %}">Introduction</a></li>
-                                <li><a href="https://github.com/UUDigitalHumanitieslab/time-in-translation" target="_blank">Source Code</a></li>
+                                <li><a href="https://github.com/UUDigitalHumanitieslab/perfectextractor" target="_blank">Source Code</a></li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a href="#">VPSelect <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="{% url 'selections:introduction' %}">Introduction</a></li>
+                                <li><a href="{% url 'selections:instructions' 1 %}">Instructions</a></li>
+                                {% if user.is_authenticated and perms.selections.change_selection %}
+                                <li><a href="{% url 'selections:status' %}">Status Overview</a></li>
+                                {% endif %}
+                                <li><a href="https://github.com/UUDigitalHumanitieslab/timealign" target="_blank">Source Code</a></li>
                             </ul>
                         </li>
                         <li>
