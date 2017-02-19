@@ -22,10 +22,13 @@ class Corpus(models.Model):
 
 
 class Document(models.Model):
-    title = models.CharField(max_length=200, unique=True)
+    title = models.CharField(max_length=200)
     description = models.CharField(max_length=200, blank=True)
 
     corpus = models.ForeignKey(Corpus)
+
+    class Meta:
+        unique_together = ('corpus', 'title', )
 
     def __unicode__(self):
         return self.title
