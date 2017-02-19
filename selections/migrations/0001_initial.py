@@ -14,13 +14,21 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
+            name='PreProcessFragment',
+            fields=[
+                ('fragment_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='annotations.Fragment')),
+                ('needs_selection', models.BooleanField(default=False)),
+            ],
+            bases=('annotations.fragment',),
+        ),
+        migrations.CreateModel(
             name='Selection',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('is_no_target', models.BooleanField(default=False, verbose_name=b'This fragment does not contain a verb phrase')),
                 ('selected_at', models.DateTimeField(auto_now_add=True)),
                 ('last_modified_at', models.DateTimeField(auto_now=True)),
-                ('fragment', models.ForeignKey(to='annotations.Fragment')),
+                ('fragment', models.ForeignKey(to='selections.PreProcessFragment')),
                 ('last_modified_by', models.ForeignKey(related_name='selection_last_modified_by', to=settings.AUTH_USER_MODEL, null=True)),
                 ('selected_by', models.ForeignKey(related_name='selected_by', to=settings.AUTH_USER_MODEL)),
                 ('words', models.ManyToManyField(to='annotations.Word', blank=True)),

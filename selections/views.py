@@ -7,12 +7,11 @@ from django.views import generic
 from braces.views import PermissionRequiredMixin
 from django_filters.views import FilterView
 
-from annotations.models import Fragment
 from annotations.utils import get_available_corpora
 
 from .filters import SelectionFilter
 from .forms import SelectionForm
-from .models import Selection
+from .models import PreProcessFragment, Selection
 from .utils import get_random_fragment
 
 
@@ -42,14 +41,15 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
         corpora = get_available_corpora(self.request.user)
 
         languages = []
-        for language in Fragment.LANGUAGES:
-            fragments = Fragment.objects.filter(language=language[0],)
+        for language in PreProcessFragment.LANGUAGES:
+            fragments = PreProcessFragment.objects.filter(language=language[0], needs_selection=True)
 
+            # Only select PreProcessFragments from the available corpora for the current User
             fragments = fragments.filter(document__corpus__in=corpora)
 
             total = fragments.count()
-            selected = fragments.exclude(selection=None).count()
-            languages.append((language, selected, total))
+            completed = fragments.exclude(selection=None).count()
+            languages.append((language, completed, total))
         context['languages'] = languages
         context['current_corpora'] = corpora
 
@@ -65,13 +65,13 @@ class SelectionMixin(SuccessMessageMixin, PermissionRequiredMixin):
     permission_required = 'selections.change_selection'
 
     def get_form_kwargs(self):
-        """Sets the Fragment as a form kwarg"""
+        """Sets the PreProcessFragment as a form kwarg"""
         kwargs = super(SelectionMixin, self).get_form_kwargs()
         kwargs['fragment'] = self.get_fragment()
         return kwargs
 
     def get_context_data(self, **kwargs):
-        """Sets the Fragment on the context"""
+        """Sets the PreProcessFragment on the context"""
         context = super(SelectionMixin, self).get_context_data(**kwargs)
         context['fragment'] = self.get_fragment()
         return context
@@ -95,7 +95,7 @@ class SelectionCreate(SelectionMixin, generic.CreateView):
 
     def get_fragment(self):
         """Retrieves the Fragment by the pk in the kwargs"""
-        return get_object_or_404(Fragment, pk=self.kwargs['pk'])
+        return get_object_or_404(PreProcessFragment, pk=self.kwargs['pk'])
 
 
 class SelectionUpdate(SelectionMixin, generic.UpdateView):
@@ -117,7 +117,7 @@ class SelectionUpdate(SelectionMixin, generic.UpdateView):
         return super(SelectionUpdate, self).form_valid(form)
 
     def get_fragment(self):
-        """Retrieves the Fragment from the object"""
+        """Retrieves the PreProcessFragment from the object"""
         return self.object.fragment
 
 

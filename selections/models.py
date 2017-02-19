@@ -4,13 +4,18 @@ from django.db import models
 from annotations.models import Fragment, Word
 
 
+class PreProcessFragment(Fragment):
+    # Whether the Fragment has to be pre-processed in VPSelect
+    needs_selection = models.BooleanField(default=False)
+
+
 class Selection(models.Model):
     is_no_target = models.BooleanField(
         'This fragment does not contain a verb phrase',
         default=False)
 
     words = models.ManyToManyField(Word, blank=True)
-    fragment = models.ForeignKey(Fragment)
+    fragment = models.ForeignKey(PreProcessFragment)
 
     selected_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='selected_by')
     selected_at = models.DateTimeField(auto_now_add=True)
