@@ -4,7 +4,7 @@ from django.db import models
 
 class Corpus(models.Model):
     title = models.CharField(max_length=200, unique=True)
-    annotators = models.ManyToManyField(settings.AUTH_USER_MODEL)
+    annotators = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
 
     class Meta:
         verbose_name_plural = 'Corpora'
