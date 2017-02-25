@@ -40,12 +40,14 @@ class Fragment(models.Model):
     SPANISH = 'es'
     FRENCH = 'fr'
     DUTCH = 'nl'
+    PORTUGUESE = 'pt'
     LANGUAGES = (
         (GERMAN, 'German'),
         (ENGLISH, 'English'),
         (SPANISH, 'Spanish'),
         (FRENCH, 'French'),
         (DUTCH, 'Dutch'),
+        (PORTUGUESE, 'Portuguese')
     )
     language = models.CharField(max_length=2, choices=LANGUAGES)
     speaker_language = models.CharField(max_length=2, choices=LANGUAGES)
