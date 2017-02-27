@@ -227,12 +227,10 @@ class AnnotationList(PermissionRequiredMixin, FilterView):
         Retrieves all Annotations for the given source (l1) and target (l2) language.
         :return: A QuerySet of Annotations.
         """
-        annotations = Annotation.objects.filter(alignment__original_fragment__language=self.kwargs['l1'],
-                                                alignment__translated_fragment__language=self.kwargs['l2'])
-
-        annotations = annotations.filter(alignment__original_fragment__document__corpus__in=get_available_corpora(self.request.user))
-
-        return annotations
+        return Annotation.objects.filter(alignment__original_fragment__language=self.kwargs['l1'],
+                                         alignment__translated_fragment__language=self.kwargs['l2']) \
+            .filter(alignment__original_fragment__document__corpus__in=get_available_corpora(self.request.user)) \
+            .order_by('-annotated_at')
 
 
 class FragmentList(PermissionRequiredMixin, generic.ListView):
@@ -247,9 +245,8 @@ class FragmentList(PermissionRequiredMixin, generic.ListView):
         :return: A list of Fragments.
         """
         results = []
-        fragments = Fragment.objects.filter(language=self.kwargs['language'])
-
-        fragments = fragments.filter(document__corpus__in=get_available_corpora(self.request.user))
+        fragments = Fragment.objects.filter(language=self.kwargs['language']) \
+            .filter(document__corpus__in=get_available_corpora(self.request.user))
 
         for fragment in fragments:
             if Annotation.objects.filter(alignment__original_fragment=fragment, is_no_target=False).exists():
