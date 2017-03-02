@@ -74,7 +74,7 @@ class PlotMatrixView(LoginRequiredMixin, generic.DetailView):
 
         # Retrieve kwargs
         pk = self.object.pk
-        language = self.kwargs.get('language', self.object.languages.first())
+        language = self.kwargs.get('language', self.object.languages.first().iso)
         d1 = int(self.kwargs.get('d1', 1))  # We choose dimensions to be 1-based
         d2 = int(self.kwargs.get('d2', 2))
 
