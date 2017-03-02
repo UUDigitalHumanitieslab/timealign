@@ -5,7 +5,7 @@ from lxml import etree
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from annotations.models import Corpus, Document, Fragment, Sentence, Word, Alignment
+from annotations.models import Language, Corpus, Document, Fragment, Sentence, Word, Alignment
 
 
 class Command(BaseCommand):
@@ -36,27 +36,25 @@ class Command(BaseCommand):
                 csv_reader = csv.reader(f, delimiter=';')
                 for n, row in enumerate(csv_reader):
                     if n == 0:
-                        language_from = row[5]
+                        language_from = Language.objects.get(iso=row[5])
                         languages_to = dict()
                         for i in xrange(10, 30, 5):
                             if not row[i]:
                                 break
                             else:
-                                languages_to[i] = row[i]
+                                languages_to[i] = Language.objects.get(iso=row[i])
                         continue
 
                     with transaction.atomic():
                         doc, _ = Document.objects.get_or_create(corpus=corpus, title=row[0])
 
                         from_fragment = Fragment.objects.create(language=language_from,
-                                                                speaker_language=row[1],
                                                                 document=doc)
                         add_sentences(from_fragment, row[4], row[3].split(' '))
 
                         for m, language_to in languages_to.items():
                             if row[m]:
                                 to_fragment = Fragment.objects.create(language=language_to,
-                                                                      speaker_language=row[1],
                                                                       document=doc)
                                 add_sentences(to_fragment, row[m - 1])
 

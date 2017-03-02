@@ -2,8 +2,17 @@ from django.conf import settings
 from django.db import models
 
 
+class Language(models.Model):
+    iso = models.CharField(max_length=2, unique=True)
+    title = models.CharField(max_length=200)
+
+    def __unicode__(self):
+        return self.title
+
+
 class Corpus(models.Model):
     title = models.CharField(max_length=200, unique=True)
+    languages = models.ManyToManyField(Language)
     annotators = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
 
     class Meta:
@@ -12,10 +21,15 @@ class Corpus(models.Model):
     def __unicode__(self):
         return self.title
 
+    def get_languages(self):
+        return ', '.join([language.iso for language in self.languages.all()])
+
+    get_languages.short_description = 'Languages'
+
     def get_annotators(self):
         result = 'none'
         if self.annotators.exists():
-            result = ','.join([user.username for user in self.annotators.all()])
+            result = ', '.join([user.username for user in self.annotators.all()])
         return result
 
     get_annotators.short_description = 'Annotators'
@@ -35,23 +49,7 @@ class Document(models.Model):
 
 
 class Fragment(models.Model):
-    GERMAN = 'de'
-    ENGLISH = 'en'
-    SPANISH = 'es'
-    FRENCH = 'fr'
-    DUTCH = 'nl'
-    PORTUGUESE = 'pt'
-    LANGUAGES = (
-        (GERMAN, 'German'),
-        (ENGLISH, 'English'),
-        (SPANISH, 'Spanish'),
-        (FRENCH, 'French'),
-        (DUTCH, 'Dutch'),
-        (PORTUGUESE, 'Portuguese')
-    )
-    language = models.CharField(max_length=2, choices=LANGUAGES)
-    speaker_language = models.CharField(max_length=2, choices=LANGUAGES)
-
+    language = models.ForeignKey(Language)
     document = models.ForeignKey(Document)
 
     def to_html(self):
@@ -73,11 +71,11 @@ class Fragment(models.Model):
 
     def get_annotations(self):
         """
-        Returns all Annotations for this Fragment, in all selected LANGUAGES
-        :return: A list of Annotations per LANGUAGE, with None if there's no Annotation or Alignment for this Fragment.
+        Returns all Annotations for this Fragment, in all selected languages
+        :return: A list of Annotations per language, with None if there's no Annotation or Alignment for this Fragment.
         """
         result = []
-        other_languages = [l for l, _ in self.LANGUAGES if l != self.language]
+        other_languages = self.document.corpus.languages.exclude(pk=self.language.pk)
         for language in other_languages:
             # Note that there should be only one Alignment per language, so we can use .first() here.
             alignment = self.original.filter(translated_fragment__language=language).first()

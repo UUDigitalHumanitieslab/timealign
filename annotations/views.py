@@ -15,7 +15,7 @@ from django_filters.views import FilterView
 
 from .filters import AnnotationFilter
 from .forms import AnnotationForm
-from .models import Annotation, Alignment, Fragment, Corpus
+from .models import Language, Corpus, Fragment, Alignment, Annotation
 from .utils import get_random_alignment, get_color, get_available_corpora
 
 
@@ -44,17 +44,21 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
 
         corpora = get_available_corpora(self.request.user)
 
-        languages = []
-        for l1, l2 in permutations(Fragment.LANGUAGES, 2):
-            alignments = Alignment.objects.filter(original_fragment__language=l1[0],
-                                                  translated_fragment__language=l2[0])
+        languages = set()
+        for corpus in corpora:
+            for language in corpus.languages.all():
+                languages.add(language)
 
-            alignments = alignments.filter(original_fragment__document__corpus__in=corpora)
+        language_totals = []
+        for l1, l2 in permutations(languages, 2):
+            alignments = Alignment.objects.filter(original_fragment__language=l1,
+                                                  translated_fragment__language=l2,
+                                                  original_fragment__document__corpus__in=corpora)
 
             total = alignments.count()
             annotated = alignments.exclude(annotation=None).count()
-            languages.append((l1, l2, annotated, total))
-        context['languages'] = languages
+            language_totals.append((l1, l2, annotated, total))
+        context['languages'] = language_totals
         context['current_corpora'] = corpora
 
         return context
@@ -70,7 +74,7 @@ class PlotMatrixView(LoginRequiredMixin, generic.DetailView):
 
         # Retrieve kwargs
         pk = self.object.pk
-        language = self.kwargs.get('language', Fragment.ENGLISH)
+        language = self.kwargs.get('language', self.object.languages.first())
         d1 = int(self.kwargs.get('d1', 1))  # We choose dimensions to be 1-based
         d2 = int(self.kwargs.get('d2', 2))
 
@@ -105,7 +109,6 @@ class PlotMatrixView(LoginRequiredMixin, generic.DetailView):
         # Add all variables to the context
         context['matrix'] = json.dumps(matrix)
         context['language'] = language
-        context['languages'] = Fragment.LANGUAGES
         context['d1'] = d1
         context['d2'] = d2
         context['max_dimensions'] = range(1, len(model[0]) + 1)  # We choose dimensions to be 1-based
@@ -143,8 +146,8 @@ class AnnotationCreate(AnnotationMixin, generic.CreateView):
     def get_success_url(self):
         """Go to the choose-view to select a new Alignment"""
         alignment = self.object.alignment
-        return reverse('annotations:choose', args=(alignment.original_fragment.language,
-                                                   alignment.translated_fragment.language))
+        return reverse('annotations:choose', args=(alignment.original_fragment.language.iso,
+                                                   alignment.translated_fragment.language.iso))
 
     def form_valid(self, form):
         """Sets the User and Alignment on the created instance"""
@@ -169,8 +172,8 @@ class AnnotationUpdate(AnnotationMixin, generic.UpdateView):
     def get_success_url(self):
         """Returns to the overview per language"""
         alignment = self.get_alignment()
-        l1 = alignment.original_fragment.language
-        l2 = alignment.translated_fragment.language
+        l1 = alignment.original_fragment.language.iso
+        l2 = alignment.translated_fragment.language.iso
         return reverse('annotations:list', args=(l1, l2,))
 
     def form_valid(self, form):
@@ -190,7 +193,9 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
         """Redirects to a random Alignment"""
-        new_alignment = get_random_alignment(self.request.user, self.kwargs['l1'], self.kwargs['l2'])
+        l1 = Language.objects.get(iso=self.kwargs['l1'])
+        l2 = Language.objects.get(iso=self.kwargs['l2'])
+        new_alignment = get_random_alignment(self.request.user, l1, l2)
 
         # If no new alignment has been found, redirect to the status overview
         if not new_alignment:
@@ -227,8 +232,8 @@ class AnnotationList(PermissionRequiredMixin, FilterView):
         Retrieves all Annotations for the given source (l1) and target (l2) language.
         :return: A QuerySet of Annotations.
         """
-        return Annotation.objects.filter(alignment__original_fragment__language=self.kwargs['l1'],
-                                         alignment__translated_fragment__language=self.kwargs['l2']) \
+        return Annotation.objects.filter(alignment__original_fragment__language__iso=self.kwargs['l1'],
+                                         alignment__translated_fragment__language__iso=self.kwargs['l2']) \
             .filter(alignment__original_fragment__document__corpus__in=get_available_corpora(self.request.user)) \
             .order_by('-annotated_at')
 
@@ -245,7 +250,7 @@ class FragmentList(PermissionRequiredMixin, generic.ListView):
         :return: A list of Fragments.
         """
         results = []
-        fragments = Fragment.objects.filter(language=self.kwargs['language']) \
+        fragments = Fragment.objects.filter(language__iso=self.kwargs['language']) \
             .filter(document__corpus__in=get_available_corpora(self.request.user))
 
         for fragment in fragments:
@@ -261,8 +266,9 @@ class FragmentList(PermissionRequiredMixin, generic.ListView):
         """
         context = super(FragmentList, self).get_context_data(**kwargs)
         language = self.kwargs['language']
-        context['language'] = [f for l, f in Fragment.LANGUAGES if l == language][0]
-        context['other_languages'] = [f for l, f in Fragment.LANGUAGES if l != language]
+        corpus = context['fragments'][0].document.corpus
+        context['language'] = Language.objects.filter(iso=language)
+        context['other_languages'] = corpus.languages.exclude(iso=language)
 
         context['show_tenses'] = self.kwargs.get('showtenses', False)
 

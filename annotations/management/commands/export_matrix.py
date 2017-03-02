@@ -36,7 +36,7 @@ class Command(BaseCommand):
                 .filter(is_no_target=False, is_translation=True,
                         alignment__original_fragment=fragment)
             # ... but only allow Fragments that have Alignments in all languages
-            if annotations.count() == len(Fragment.LANGUAGES) - 1:
+            if annotations.count() == corpus.languages.count() - 1:
                 fragment_ids.append(fragment.id)
                 tenses[fragment.language].append(pp_name(fragment.language))
                 for annotation in annotations:

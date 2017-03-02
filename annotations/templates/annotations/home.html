@@ -27,8 +27,8 @@
         <tbody>
             {% for l1, l2, annotated, total in languages %}
             <tr>
-                <td>{{ l1.1 }}</td>
-                <td>{{ l2.1 }}</td>
+                <td>{{ l1.title }}</td>
+                <td>{{ l2.title }}</td>
                 <td>
                     {% if annotated > 0 %}
                     <div class="progress">
@@ -44,14 +44,14 @@
                 </td>
                 <td>
                     {% if annotated < total %}
-                    <a href="{% url 'annotations:choose' l1.0 l2.0 %}" role="button" class="btn btn-default btn-xs" title="Start annotating">
+                    <a href="{% url 'annotations:choose' l1.iso l2.iso %}" role="button" class="btn btn-default btn-xs" title="Start annotating">
                         <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
                     </a>
                     {% endif %}
-                    <a href="{% url 'annotations:list' l1.0 l2.0 %}" role="button" class="btn btn-default btn-xs" title="List view">
+                    <a href="{% url 'annotations:list' l1.iso l2.iso %}" role="button" class="btn btn-default btn-xs" title="List view">
                         <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
                     </a>
-                    <a href="{% url 'annotations:matrix' l1.0 %}" role="button" class="btn btn-default btn-xs" title="Matrix view">
+                    <a href="{% url 'annotations:matrix' l1.iso %}" role="button" class="btn btn-default btn-xs" title="Matrix view">
                         <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
                     </a>
                 </td>

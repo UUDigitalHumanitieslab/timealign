@@ -35,8 +35,8 @@ class Command(BaseCommand):
         robjects.r.assign('matrix', matrix)
         robjects.r.assign('fragment_ids', robjects.StrVector(fragment_ids))
 
-        for (language, _) in Fragment.LANGUAGES:
-            robjects.r.assign('tenses_{}'.format(language), robjects.StrVector(tenses[language]))
+        for language in corpus.languages:
+            robjects.r.assign('tenses_{}'.format(language.iso), robjects.StrVector(tenses[language]))
 
         # Save the workspace
         filename = '{}.RData'.format(corpus.title)
