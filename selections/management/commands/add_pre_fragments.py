@@ -5,7 +5,8 @@ from lxml import etree
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from annotations.models import Language, Corpus, Document, Fragment, Sentence, Word, Alignment
+from annotations.models import Language, Corpus, Document, Sentence, Word
+from selections.models import PreProcessFragment
 
 
 class Command(BaseCommand):
@@ -16,7 +17,7 @@ class Command(BaseCommand):
         parser.add_argument('filenames', type=str, nargs='+')
 
         parser.add_argument('--delete', action='store_true', dest='delete', default=False,
-                            help='Delete existing Fragments (and contents) for this Corpus')
+                            help='Delete existing PreProcessFragments (and contents) for this Corpus')
 
     def handle(self, *args, **options):
         # Retrieve the Corpus from the database
@@ -29,49 +30,30 @@ class Command(BaseCommand):
             raise CommandError('No documents specified')
 
         if options['delete']:
-            Fragment.objects.filter(document__corpus=corpus).delete()
+            PreProcessFragment.objects.filter(document__corpus=corpus).delete()
 
         for filename in options['filenames']:
             with open(filename, 'rb') as f:
                 csv_reader = csv.reader(f, delimiter=';')
                 for n, row in enumerate(csv_reader):
                     if n == 0:
-                        language_from = Language.objects.get(iso=row[5])
-                        languages_to = dict()
-                        for i in xrange(10, 30, 5):
-                            if not row[i]:
-                                break
-                            else:
-                                languages_to[i] = Language.objects.get(iso=row[i])
-                        continue
+                        language = Language.objects.get(iso=row[5])
 
                     with transaction.atomic():
                         doc, _ = Document.objects.get_or_create(corpus=corpus, title=row[0])
 
-                        from_fragment = Fragment.objects.create(language=language_from,
-                                                                document=doc)
-                        add_sentences(from_fragment, row[4], row[3].split(' '))
-
-                        for m, language_to in languages_to.items():
-                            if row[m]:
-                                to_fragment = Fragment.objects.create(language=language_to,
-                                                                      document=doc)
-                                add_sentences(to_fragment, row[m - 1])
-
-                                Alignment.objects.create(original_fragment=from_fragment,
-                                                         translated_fragment=to_fragment,
-                                                         type=row[m - 2])
+                        from_fragment = PreProcessFragment.objects.create(language=language, document=doc)
+                        add_sentences(from_fragment, row[4])
 
                     print 'Line {} processed'.format(n)
 
 
-def add_sentences(fragment, xml, target_ids=[]):
+def add_sentences(fragment, xml):
     for s in etree.fromstring(xml).xpath('.//s'):
         sentence = Sentence.objects.create(xml_id=s.get('id'), fragment=fragment)
         for w in s.xpath('.//w'):
             xml_id = w.get('id')
             pos = w.get('tree') or w.get('pos') or '?'
-            is_target = xml_id in target_ids
             Word.objects.create(xml_id=xml_id, word=w.text,
                                 pos=pos, lemma=w.get('lem', '?'),
-                                is_target=is_target, sentence=sentence)
+                                sentence=sentence)

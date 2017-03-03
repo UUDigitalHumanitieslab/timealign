@@ -7,6 +7,7 @@ from django.views import generic
 from braces.views import PermissionRequiredMixin
 from django_filters.views import FilterView
 
+from annotations.models import Language
 from annotations.utils import get_available_corpora
 
 from .filters import SelectionFilter
@@ -40,17 +41,21 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
 
         corpora = get_available_corpora(self.request.user)
 
-        languages = []
-        for language in PreProcessFragment.LANGUAGES:
-            fragments = PreProcessFragment.objects.filter(language=language[0], needs_selection=True)
+        languages = set()
+        for corpus in corpora:
+            for language in corpus.languages.all():
+                languages.add(language)
 
+        language_totals = []
+        for language in languages:
             # Only select PreProcessFragments from the available corpora for the current User
-            fragments = fragments.filter(document__corpus__in=corpora)
+            fragments = PreProcessFragment.objects.filter(language=language) \
+                .filter(document__corpus__in=corpora)
 
             total = fragments.count()
             completed = fragments.exclude(selection=None).count()
-            languages.append((language, completed, total))
-        context['languages'] = languages
+            language_totals.append((language, completed, total))
+        context['languages'] = language_totals
         context['current_corpora'] = corpora
 
         return context
@@ -85,7 +90,7 @@ class SelectionCreate(SelectionMixin, generic.CreateView):
 
     def get_success_url(self):
         """Go to the choose-view to select a new Alignment"""
-        return reverse('selections:choose', args=(self.get_fragment().language, ))
+        return reverse('selections:choose', args=(self.get_fragment().language.iso, ))
 
     def form_valid(self, form):
         """Sets the User and Fragment on the created instance"""
@@ -109,7 +114,7 @@ class SelectionUpdate(SelectionMixin, generic.UpdateView):
 
     def get_success_url(self):
         """Returns to the overview per language"""
-        return reverse('selections:list', args=(self.get_fragment().language,))
+        return reverse('selections:list', args=(self.get_fragment().language.iso,))
 
     def form_valid(self, form):
         """Sets the last modified by on the instance"""
@@ -128,7 +133,8 @@ class SelectionChoose(PermissionRequiredMixin, generic.RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
         """Redirects to a random Alignment"""
-        new_alignment = get_random_fragment(self.request.user, self.kwargs['language'])
+        l = Language.objects.get(iso=self.kwargs['language'])
+        new_alignment = get_random_fragment(self.request.user, l)
 
         # If no new alignment has been found, redirect to the status overview
         if not new_alignment:
@@ -152,8 +158,5 @@ class SelectionList(PermissionRequiredMixin, FilterView):
         Retrieves all Selections for the given language.
         :return: A QuerySet of Selections.
         """
-        selections = Selection.objects.filter(fragment__language=self.kwargs['language'])
-
-        selections = selections.filter(fragment__document__corpus__in=get_available_corpora(self.request.user))
-
-        return selections
+        return Selection.objects.filter(fragment__language__iso=self.kwargs['language']) \
+            .filter(fragment__document__corpus__in=get_available_corpora(self.request.user))

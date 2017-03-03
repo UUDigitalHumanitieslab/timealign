@@ -8,8 +8,8 @@ from django.conf import settings
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('annotations', '0012_corpus_annotators'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('annotations', '0014_auto_20170227_2203'),
     ]
 
     operations = [
@@ -17,7 +17,6 @@ class Migration(migrations.Migration):
             name='PreProcessFragment',
             fields=[
                 ('fragment_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='annotations.Fragment')),
-                ('needs_selection', models.BooleanField(default=False)),
             ],
             bases=('annotations.fragment',),
         ),

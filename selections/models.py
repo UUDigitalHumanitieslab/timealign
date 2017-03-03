@@ -5,8 +5,12 @@ from annotations.models import Fragment, Word
 
 
 class PreProcessFragment(Fragment):
-    # Whether the Fragment has to be pre-processed in VPSelect
-    needs_selection = models.BooleanField(default=False)
+    def selected_words(self):
+        """
+        Retrieves the selected Words for this PreProcessFragment.
+        :return: A list of Strings with the selected Words.
+        """
+        return ' '.join([word.word for word in self.selection_set.first().words.all()])
 
 
 class Selection(models.Model):
