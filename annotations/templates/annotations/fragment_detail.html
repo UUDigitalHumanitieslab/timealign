@@ -14,7 +14,7 @@
 
     <h2>Source</h2>
     <h3>
-        {{ fragment.get_language_display }}
+        {{ fragment.language.title }}
         <span class="label label-default pull-right">{{ fragment.document.title }} - {{ fragment.id }}</span>
     </h3>
     {% include "annotations/_sentences.html" with sentences=fragment.sentence_set.all tooltips=1 %}
@@ -24,7 +24,7 @@
     {% if forloop.counter|divisibleby:2 %}<div class="row">{% endif %}
         <div class="col-md-6">
             <h3>
-                {{ annotation.alignment.translated_fragment.get_language_display }}
+                {{ annotation.alignment.translated_fragment.language.title }}
                 <span class="label label-primary pull-right">{{ annotation.tense }}</span>
             </h3>
             {% include "annotations/_sentences.html" with sentences=annotation.alignment.translated_fragment.sentence_set.all tooltips=1 annotated_words=annotation.words.all %}

@@ -1,11 +1,16 @@
 from django.contrib import admin
 
-from .models import Corpus, Document, Fragment, Sentence, Alignment
+from .models import Language, Corpus, Document, Fragment, Sentence, Alignment
+
+
+@admin.register(Language)
+class Language(admin.ModelAdmin):
+    list_display = ('iso', 'title', )
 
 
 @admin.register(Corpus)
 class CorpusAdmin(admin.ModelAdmin):
-    list_display = ('title', 'get_annotators', )
+    list_display = ('title', 'get_languages', 'get_annotators', )
 
 
 @admin.register(Document)

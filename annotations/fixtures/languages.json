@@ -1,0 +1,57 @@
+[{
+  "fields": {
+    "iso": "de",
+    "title": "German"
+  },
+  "model": "annotations.language",
+  "pk": 1
+},
+  {
+    "fields": {
+      "iso": "en",
+      "title": "English"
+    },
+    "model": "annotations.language",
+    "pk": 2
+  },
+  {
+    "fields": {
+      "iso": "es",
+      "title": "Spanish"
+    },
+    "model": "annotations.language",
+    "pk": 3
+  },
+  {
+    "fields": {
+      "iso": "fr",
+      "title": "French"
+    },
+    "model": "annotations.language",
+    "pk": 4
+  },
+  {
+    "fields": {
+      "iso": "it",
+      "title": "Italian"
+    },
+    "model": "annotations.language",
+    "pk": 5
+  },
+  {
+    "fields": {
+      "iso": "nl",
+      "title": "Dutch"
+    },
+    "model": "annotations.language",
+    "pk": 6
+  },
+  {
+    "fields": {
+      "iso": "pt",
+      "title": "Portuguese"
+    },
+    "model": "annotations.language",
+    "pk": 7
+  }
+]

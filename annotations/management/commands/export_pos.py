@@ -6,7 +6,7 @@ import codecs
 import csv
 import cStringIO
 
-from annotations.models import Annotation, Fragment, Word
+from annotations.models import Corpus, Annotation, Fragment, Word
 
 
 class Command(BaseCommand):
@@ -18,8 +18,14 @@ class Command(BaseCommand):
         parser.add_argument('--add_sources', action='store_true', dest='add_sources', default=False)
 
     def handle(self, *args, **options):
+        # Retrieve the Corpus from the database
+        try:
+            corpus = Corpus.objects.get(title=options['corpus'])
+        except Corpus.DoesNotExist:
+            raise CommandError('Corpus with title {} does not exist'.format[options['corpus']])
+
         for language in options['languages']:
-            if language not in [l[0] for l in Fragment.LANGUAGES]:
+            if not corpus.languages.filter(iso=language):
                 raise CommandError('Language {} does not exist'.format(language))
 
             with open('pos_' + language + '.csv', 'wb') as csvfile:
@@ -35,7 +41,7 @@ class Command(BaseCommand):
                 annotations = Annotation.objects. \
                     filter(is_no_target=False, is_translation=True,
                            alignment__translated_fragment__language=language,
-                           alignment__translated_fragment__document__corpus__title=options['corpus'])
+                           alignment__translated_fragment__document__corpus=corpus)
                 for annotation in annotations:
                     words = annotation.words.all()
                     w = [word.word for word in words]

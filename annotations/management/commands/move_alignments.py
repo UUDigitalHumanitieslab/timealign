@@ -29,7 +29,7 @@ class Command(BaseCommand):
                 r = map(str, range(int(s.xml_id) - 4, int(s.xml_id) + 4))
                 sentences = Sentence.objects.\
                     filter(fragment__document=to_doc, xml_id__in=r).\
-                    filter(fragment__language=options['base_language'])
+                    filter(fragment__language__iso=options['base_language'])
                 for sentence in sentences:
                     if sentence.fragment.target_words() == fragment.target_words():
                         alignments = Alignment.objects.filter(original_fragment=fragment)

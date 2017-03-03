@@ -17,9 +17,9 @@
         <thead>
             <tr>
                 <th width="10%">Document</th>
-                <th width="10%">{{ language }}</th>
+                <th width="10%">{{ language.title }}</th>
                 {% for l in other_languages %}
-                <th width="10%">{{ l }}</th>
+                <th width="10%">{{ l.title }}</th>
                 {% endfor %}
             </tr>
         </thead>

@@ -36,11 +36,11 @@ class Command(BaseCommand):
                 .filter(is_no_target=False, is_translation=True,
                         alignment__original_fragment=fragment)
             # ... but only allow Fragments that have Alignments in all languages
-            if annotations.count() == len(Fragment.LANGUAGES) - 1:
+            if annotations.count() == corpus.languages.count() - 1:
                 fragment_ids.append(fragment.id)
-                tenses[fragment.language].append(pp_name(fragment.language))
+                tenses[fragment.language.iso].append(pp_name(fragment.language.iso))
                 for annotation in annotations:
-                    tenses[annotation.alignment.translated_fragment.language].append(annotation.tense)
+                    tenses[annotation.alignment.translated_fragment.language.iso].append(annotation.tense)
 
         # Create a list of lists with tenses for all languages
         tenses_matrix = defaultdict(list)
@@ -74,15 +74,15 @@ class Command(BaseCommand):
 
 
 def pp_name(language):
-    if language == Fragment.ENGLISH:
+    if language == 'en':
         return u'present perfect'
-    elif language == Fragment.GERMAN:
+    elif language == 'de':
         return u'Perfekt'
-    elif language == Fragment.DUTCH:
+    elif language == 'nl':
         return u'vtt'
-    elif language == Fragment.SPANISH:
+    elif language == 'es':
         return u'pretérito perfecto compuesto'
-    elif language == Fragment.FRENCH:
+    elif language == 'fr':
         return u'passé composé'
 
 

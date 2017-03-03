@@ -21,20 +21,20 @@ class Command(BaseCommand):
 
 
 def get_tense(annotation):
-    language = annotation.alignment.translated_fragment.language
+    language = annotation.alignment.translated_fragment.language.iso
     words = annotation.words.all()
     pos_tags = [word.pos for word in words]
 
     # German and Spanish POS tags do NOT discern between present and past tense :-(
-    if language == Fragment.GERMAN:
+    if language == 'de':
         tense = ''
-    elif language == Fragment.ENGLISH:
+    elif language == 'en':
         tense = get_tense_en(pos_tags)
-    elif language == Fragment.SPANISH:
+    elif language == 'es':
         tense = ''
-    elif language == Fragment.FRENCH:
+    elif language == 'fr':
         tense = get_tense_fr(pos_tags)
-    elif language == Fragment.DUTCH:
+    elif language == 'nl':
         tense = get_tense_nl(pos_tags)
 
     return tense
