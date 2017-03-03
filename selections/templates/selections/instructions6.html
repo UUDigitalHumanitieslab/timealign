@@ -7,9 +7,54 @@
     <h1>Instructions (part 6)</h1>
     <div>
         <p class="lead">
-            This concludes the instructions. Happy VPSelecting!
+            Then, select the second verb phrase.
+            Your previous selection will be marked with a border.
         </p>
-        <a class="btn btn-success btn-lg pull-right" href="{% url 'annotations:instructions' 1 %}" role="button">Back to the start &raquo;</a>
+        <div class="alert alert-info" role="alert">
+            Please select the second verb phrase in this fragment by clicking on 'said'.
+            After that, click the 'Submit' button to continue.
+        </div>
+        {% url "selections:instructions" 7 as next_url %}
+        {% include "selections/_selection_instructions.html" with url=next_url %}
     </div>
 </div>
+
+<script>
+$(function() {
+    $(".tooltiptext").hide();
+
+    $("span").each(function() {
+        $(this).qtip({
+            content: {
+                text: $(this).next(".tooltiptext")
+            }
+        });
+    });
+
+    $("span").click(function() {
+        $(this).toggleClass("bg-success");
+    });
+
+    $(".to-select-first").css("border", "1px solid");
+
+    $("#submit").click(function(event) {
+        var all_selected = true;
+        $(".to-select-second").each(function() {
+            all_selected &= $(this).hasClass("bg-success");
+        });
+
+        if (!all_selected) {
+            event.preventDefault();
+            $(".alert").removeClass("alert-info");
+            $(".alert").addClass("alert-danger");
+        }
+    });
+
+    $("#submit_other").click(function(event) {
+        event.preventDefault();
+        $(".alert").removeClass("alert-info");
+        $(".alert").addClass("alert-danger");
+    });
+});
+</script>
 {% endblock %}

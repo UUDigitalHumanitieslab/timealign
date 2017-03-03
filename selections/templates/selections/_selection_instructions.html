@@ -10,34 +10,34 @@
             Part-of-speech: <em>NNP</em><br/>
             Lemma: <em>Mary</em>
         </div>
-        <span class="to-select">has</span>
+        <span class="to-select-first">has</span>
         <div class="tooltiptext">
             Part-of-speech: <em>VBZ</em><br/>
             Lemma: <em>have</em>
         </div>
         <span>just</span>
         <div class="tooltiptext">
-            Part-of-speech: <em>VBN</em><br/>
+            Part-of-speech: <em>RB</em><br/>
             Lemma: <em>just</em>
         </div>
-        <span class="to-select">played</span>
+        <span class="to-select-first">played</span>
         <div class="tooltiptext">
             Part-of-speech: <em>VBN</em><br/>
             Lemma: <em>play</em>
         </div>
         <span>a</span>
         <div class="tooltiptext">
-            Part-of-speech: <em>VBN</em><br/>
+            Part-of-speech: <em>DT</em><br/>
             Lemma: <em>a</em>
         </div>
         <span>great</span>
         <div class="tooltiptext">
-            Part-of-speech: <em>VBN</em><br/>
+            Part-of-speech: <em>JJ</em><br/>
             Lemma: <em>great</em>
         </div>
         <span>move</span>
         <div class="tooltiptext">
-            Part-of-speech: <em>VBN</em><br/>
+            Part-of-speech: <em>NN</em><br/>
             Lemma: <em>move</em>
         </div>
         <span>"</span>
@@ -50,9 +50,9 @@
             Part-of-speech: <em>.</em><br/>
             Lemma: <em>,</em>
         </div>
-        <span>said</span>
+        <span class="to-select-second">said</span>
         <div class="tooltiptext">
-            Part-of-speech: <em>VBN</em><br/>
+            Part-of-speech: <em>VBD</em><br/>
             Lemma: <em>say</em>
         </div>
         <span>John</span>
@@ -72,9 +72,12 @@
     <div class="col-md-6"></div>
     <div class="col-md-6">
         <form action="" method="post" class="form">
-            <div class="form-group"><div class="checkbox"><label for="id_is_no_target"><input class="" id="id_is_no_target" name="is_no_target" type="checkbox" /> There is no present perfect in the original fragment</label></div></div>
+            <div class="form-group"><div class="checkbox"><label for="id_is_no_target"><input class="" id="id_is_no_target" name="is_no_target" type="checkbox" /> This fragment does not contain a verb phrase</label></div></div>
             <a id="submit" href="{{ url }}" class="btn btn-primary" role="button">
                 <span class="glyphicon glyphicon-ok"></span> Submit
+            </a>
+            <a id="submit_other" href="{{ url }}" class="btn btn-primary" role="button">
+                <span class="glyphicon glyphicon-ok"></span> Submit and select another VP
             </a>
         </form>
     </div>

@@ -23,7 +23,7 @@
 $(function() {
     $(".tooltiptext").hide();
 
-    $(".alignment span").each(function() {
+    $("span").each(function() {
         $(this).qtip({
             content: {
                 text: $(this).next(".tooltiptext")
@@ -31,7 +31,7 @@ $(function() {
         });
     });
 
-    $(".translated span").click(function() {
+    $("span").click(function() {
         $(this).toggleClass("bg-success");
     });
 
@@ -41,6 +41,12 @@ $(function() {
             $(".alert").removeClass("alert-info");
             $(".alert").addClass("alert-danger");
         }
+    });
+
+    $("#submit_other").click(function(event) {
+        event.preventDefault();
+        $(".alert").removeClass("alert-info");
+        $(".alert").addClass("alert-danger");
     });
 });
 </script>

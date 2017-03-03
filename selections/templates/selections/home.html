@@ -26,7 +26,7 @@
         <tbody>
             {% for language, annotated, total in languages %}
             <tr>
-                <td>{{ language.1 }}</td>
+                <td>{{ language.title }}</td>
                 <td>
                     {% if annotated > 0 %}
                     <div class="progress">
@@ -42,11 +42,11 @@
                 </td>
                 <td>
                     {% if annotated < total %}
-                    <a href="{% url 'selections:choose' language.0 %}" role="button" class="btn btn-default btn-xs" title="Start annotating">
+                    <a href="{% url 'selections:choose' language.iso %}" role="button" class="btn btn-default btn-xs" title="Start annotating">
                         <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
                     </a>
                     {% endif %}
-                    <a href="{% url 'selections:list' language.0 %}" role="button" class="btn btn-default btn-xs" title="List view">
+                    <a href="{% url 'selections:list' language.iso %}" role="button" class="btn btn-default btn-xs" title="List view">
                         <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
                     </a>
                 </td>

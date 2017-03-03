@@ -38,7 +38,7 @@ $(function() {
 
     $("#submit").click(function(event) {
         var all_selected = true;
-        $(".to-select").each(function() {
+        $(".to-select-first").each(function() {
             all_selected &= $(this).hasClass("bg-success");
         });
 
@@ -47,6 +47,12 @@ $(function() {
             $(".alert").removeClass("alert-info");
             $(".alert").addClass("alert-danger");
         }
+    });
+
+    $("#submit_other").click(function(event) {
+        event.preventDefault();
+        $(".alert").removeClass("alert-info");
+        $(".alert").addClass("alert-danger");
     });
 });
 </script>
