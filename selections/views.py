@@ -13,7 +13,7 @@ from annotations.utils import get_available_corpora
 from .filters import SelectionFilter
 from .forms import SelectionForm
 from .models import PreProcessFragment, Selection
-from .utils import get_random_fragment
+from .utils import get_random_fragment, get_selection_order
 
 
 ##############
@@ -84,18 +84,29 @@ class SelectionMixin(SuccessMessageMixin, PermissionRequiredMixin):
     def get_fragment(self):
         raise NotImplementedError
 
+    def is_final(self):
+        return 'is_final' in self.request.POST
+
 
 class SelectionCreate(SelectionMixin, generic.CreateView):
     success_message = 'Verb phrase selection successfully created'
 
     def get_success_url(self):
         """Go to the choose-view to select a new Alignment"""
-        return reverse('selections:choose', args=(self.get_fragment().language.iso, ))
+        if self.is_final():
+            return reverse('selections:choose', args=(self.get_fragment().language.iso, ))
+        else:
+            return reverse('selections:create', args=(self.get_fragment().pk, ))
 
     def form_valid(self, form):
         """Sets the User and Fragment on the created instance"""
-        form.instance.selected_by = self.request.user
-        form.instance.fragment = self.get_fragment()
+        fragment = self.get_fragment()
+        user = self.request.user
+
+        form.instance.selected_by = user
+        form.instance.fragment = fragment
+        form.instance.order = get_selection_order(fragment, user)
+        form.instance.is_final = self.is_final()
         return super(SelectionCreate, self).form_valid(form)
 
     def get_fragment(self):
@@ -114,10 +125,14 @@ class SelectionUpdate(SelectionMixin, generic.UpdateView):
 
     def get_success_url(self):
         """Returns to the overview per language"""
-        return reverse('selections:list', args=(self.get_fragment().language.iso,))
+        if self.is_final():
+            return reverse('selections:list', args=(self.get_fragment().language.iso,))
+        else:
+            return reverse('selections:create', args=(self.get_fragment().pk, ))
 
     def form_valid(self, form):
         """Sets the last modified by on the instance"""
+        form.instance.is_final = self.is_final()
         form.instance.last_modified_by = self.request.user
         return super(SelectionUpdate, self).form_valid(form)
 

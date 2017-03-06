@@ -25,8 +25,11 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('is_no_target', models.BooleanField(default=False, verbose_name=b'This fragment does not contain a verb phrase')),
+                ('order', models.PositiveIntegerField(default=1)),
+                ('is_final', models.BooleanField(default=True)),
                 ('selected_at', models.DateTimeField(auto_now_add=True)),
                 ('last_modified_at', models.DateTimeField(auto_now=True)),
+                ('tense', models.CharField(max_length=200, verbose_name=b'Tense', blank=True)),
                 ('fragment', models.ForeignKey(to='selections.PreProcessFragment')),
                 ('last_modified_by', models.ForeignKey(related_name='selection_last_modified_by', to=settings.AUTH_USER_MODEL, null=True)),
                 ('selected_by', models.ForeignKey(related_name='selected_by', to=settings.AUTH_USER_MODEL)),
@@ -35,6 +38,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='selection',
-            unique_together=set([('fragment', 'selected_by')]),
+            unique_together=set([('fragment', 'selected_by', 'order')]),
         ),
     ]

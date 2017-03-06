@@ -18,6 +18,9 @@ class Selection(models.Model):
         'This fragment does not contain a verb phrase',
         default=False)
 
+    order = models.PositiveIntegerField(default=1)
+    is_final = models.BooleanField(default=True)
+
     words = models.ManyToManyField(Word, blank=True)
     fragment = models.ForeignKey(PreProcessFragment)
 
@@ -27,8 +30,11 @@ class Selection(models.Model):
     last_modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='selection_last_modified_by')
     last_modified_at = models.DateTimeField(auto_now=True)
 
+    tense = models.CharField('Tense', max_length=200, blank=True)
+
     class Meta:
-        unique_together = ('fragment', 'selected_by', )
+        unique_together = ('fragment', 'selected_by', 'order')
+        get_latest_by = 'order'
 
     def selected_words(self):
         # TODO: is there a way to order on part of the id?! Or add an extra field...
