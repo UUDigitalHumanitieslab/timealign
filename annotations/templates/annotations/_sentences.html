@@ -1,17 +1,37 @@
 <ul class="list-group">
     {% for sentence in sentences %}
     <li class="list-group-item" id="{{ sentence.xml_id }}">
+        {% spaceless %}
         {% for word in sentence.word_set.all %}
         <span id="{{ word.id }}"
-              class="{% if word.is_target or word in annotated_words %}selected{% endif %}
-              {% if word.word == filtered %}filtered{% endif %}">{{ word.word }}</span>
+              class="
+              word
+
+              {% if word.is_target or word in annotated_words %}
+              selected
+              {% endif %}
+
+              {% if word.word == filtered %}
+              filtered
+              {% endif %}">{{ word.word }}</span>
+
         {% if tooltips %}
         <div class="tooltiptext">
             Part-of-speech: <em>{{ word.pos }}</em><br/>
             Lemma: <em>{{ word.lemma }}</em>
         </div>
         {% endif %}
+
+        {% for k, v in selected_words.items %}
+        {% if word.xml_id in v %}
+        <sup class="prev">{{ k }}</sup>
+        {% endif %}
         {% endfor %}
+
+        <span>&nbsp;</span>
+
+        {% endfor %}
+        {% endspaceless %}
     </li>
     {% endfor %}
 </ul>

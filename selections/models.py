@@ -5,17 +5,19 @@ from annotations.models import Fragment, Word
 
 
 class PreProcessFragment(Fragment):
-    def selected_words(self):
-        """
-        Retrieves the selected Words for this PreProcessFragment.
-        :return: A list of Strings with the selected Words.
-        """
-        return ' '.join([word.word for word in self.selection_set.first().words.all()])
+    def selected_words(self, user):
+        result = dict()
+
+        selections = self.selection_set.filter(selected_by=user)
+        for selection in selections:
+            result[selection.order] = [word.xml_id for word in selection.words.all()]
+
+        return result
 
 
 class Selection(models.Model):
     is_no_target = models.BooleanField(
-        'This fragment does not contain a verb phrase',
+        'This fragment does not contain (additional) verb phrases',
         default=False)
 
     order = models.PositiveIntegerField(default=1)
@@ -37,5 +39,9 @@ class Selection(models.Model):
         get_latest_by = 'order'
 
     def selected_words(self):
+        """
+        Retrieves the selected Words for this Selection.
+        :return: A list of Strings with the selected Words.
+        """
         # TODO: is there a way to order on part of the id?! Or add an extra field...
         return ' '.join([word.word for word in self.words.all().order_by('xml_id')])

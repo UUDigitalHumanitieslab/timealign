@@ -1,4 +1,4 @@
-from django_filters import FilterSet, CharFilter
+from django_filters import FilterSet, CharFilter, OrderingFilter
 
 from .models import Selection
 
@@ -9,6 +9,14 @@ class SelectionFilter(FilterSet):
                                   lookup_expr='iexact',
                                   help_text='Use this to filter for words in the text (case-insensitive)')
 
+    o = OrderingFilter(
+        fields=(
+            ('selected_at', 'annotated_at'),
+            ('last_modified_at', 'last_modified_at'),
+            ('fragment__document', 'document'),
+        ),
+    )
+
     class Meta:
         model = Selection
-        fields = ['is_no_target']
+        fields = ['is_no_target', 'selected_by']

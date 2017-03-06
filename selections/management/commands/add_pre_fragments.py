@@ -36,14 +36,16 @@ class Command(BaseCommand):
             with open(filename, 'rb') as f:
                 csv_reader = csv.reader(f, delimiter=';')
                 for n, row in enumerate(csv_reader):
+                    # Skip header row
                     if n == 0:
-                        language = Language.objects.get(iso=row[5])
+                        continue
 
                     with transaction.atomic():
+                        language = Language.objects.get(iso=row[1])
                         doc, _ = Document.objects.get_or_create(corpus=corpus, title=row[0])
 
                         from_fragment = PreProcessFragment.objects.create(language=language, document=doc)
-                        add_sentences(from_fragment, row[4])
+                        add_sentences(from_fragment, row[2])
 
                     print 'Line {} processed'.format(n)
 

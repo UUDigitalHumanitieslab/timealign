@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.views import generic
 
 from braces.views import PermissionRequiredMixin
@@ -64,7 +64,7 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
 ################
 # CRUD Selection
 ################
-class SelectionMixin(SuccessMessageMixin, PermissionRequiredMixin):
+class SelectionMixin(PermissionRequiredMixin):
     model = Selection
     form_class = SelectionForm
     permission_required = 'selections.change_selection'
@@ -73,12 +73,14 @@ class SelectionMixin(SuccessMessageMixin, PermissionRequiredMixin):
         """Sets the PreProcessFragment as a form kwarg"""
         kwargs = super(SelectionMixin, self).get_form_kwargs()
         kwargs['fragment'] = self.get_fragment()
+        kwargs['user'] = self.request.user
         return kwargs
 
     def get_context_data(self, **kwargs):
         """Sets the PreProcessFragment on the context"""
         context = super(SelectionMixin, self).get_context_data(**kwargs)
         context['fragment'] = self.get_fragment()
+        context['selected_words'] = self.get_fragment().selected_words(self.request.user)
         return context
 
     def get_fragment(self):
@@ -89,8 +91,6 @@ class SelectionMixin(SuccessMessageMixin, PermissionRequiredMixin):
 
 
 class SelectionCreate(SelectionMixin, generic.CreateView):
-    success_message = 'Verb phrase selection successfully created'
-
     def get_success_url(self):
         """Go to the choose-view to select a new Alignment"""
         if self.is_final():
@@ -115,8 +115,6 @@ class SelectionCreate(SelectionMixin, generic.CreateView):
 
 
 class SelectionUpdate(SelectionMixin, generic.UpdateView):
-    success_message = 'Verb phrase selection successfully edited'
-
     def get_context_data(self, **kwargs):
         """Sets the selected Words on the context"""
         context = super(SelectionUpdate, self).get_context_data(**kwargs)

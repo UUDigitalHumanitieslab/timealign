@@ -50,7 +50,7 @@
 $(function() {
     $(".tooltiptext").hide();
 
-    $(".alignment span").each(function() {
+    $(".alignment .word").each(function() {
         $(this).qtip({
             content: {
                 text: $(this).next(".tooltiptext")
@@ -58,7 +58,7 @@ $(function() {
         });
     });
 
-    $(".translated span").click(function() {
+    $(".translated .word").click(function() {
         var selected = $("select[name=words]").val() || [];
         if ($(this).hasClass("selected")) {
             var index = selected.indexOf($(this).attr("id"));

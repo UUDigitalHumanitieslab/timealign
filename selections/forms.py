@@ -15,6 +15,7 @@ class SelectionForm(forms.ModelForm):
         Filters the Words on the translated language.
         """
         self.fragment = kwargs.pop('fragment', None)
+        self.user = kwargs.pop('user', None)
         sentences = self.fragment.sentence_set.all()
 
         super(SelectionForm, self).__init__(*args, **kwargs)
@@ -29,4 +30,8 @@ class SelectionForm(forms.ModelForm):
 
         if not cleaned_data['is_no_target']:
             if not cleaned_data['words']:
-                self.add_error('is_translation', 'Please select the words composing the verb phrase.')
+                self.add_error('is_no_target', 'Please select the words composing the verb phrase.')
+            else:
+                for _, prev_ids in self.fragment.selected_words(self.user).items():
+                    if set(prev_ids).intersection([w.xml_id for w in cleaned_data['words']]):
+                        self.add_error('is_no_target', 'This word has already been selected.')
