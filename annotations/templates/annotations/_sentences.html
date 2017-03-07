@@ -1,8 +1,8 @@
 <ul class="list-group">
     {% for sentence in sentences %}
     <li class="list-group-item" id="{{ sentence.xml_id }}">
-        {% spaceless %}
         {% for word in sentence.word_set.all %}
+        {% spaceless %}
         <span id="{{ word.id }}"
               class="
               word
@@ -27,11 +27,8 @@
         <sup class="prev">{{ k }}</sup>
         {% endif %}
         {% endfor %}
-
-        <span>&nbsp;</span>
-
-        {% endfor %}
         {% endspaceless %}
+        {% endfor %}
     </li>
     {% endfor %}
 </ul>
