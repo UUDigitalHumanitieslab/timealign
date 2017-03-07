@@ -55,7 +55,7 @@ def add_sentences(fragment, xml):
         sentence = Sentence.objects.create(xml_id=s.get('id'), fragment=fragment)
         for w in s.xpath('.//w'):
             xml_id = w.get('id')
-            pos = w.get('tree') or w.get('pos') or '?'
+            pos = w.get('tree') or w.get('pos') or w.get('hun') or '?'
             Word.objects.create(xml_id=xml_id, word=w.text,
                                 pos=pos, lemma=w.get('lem', '?'),
                                 sentence=sentence)
