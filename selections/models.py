@@ -17,7 +17,7 @@ class PreProcessFragment(Fragment):
 
 class Selection(models.Model):
     is_no_target = models.BooleanField(
-        'This fragment does not contain (additional) verb phrases',
+        'This fragment does not contain a verb phrase',
         default=False)
 
     order = models.PositiveIntegerField(default=1)

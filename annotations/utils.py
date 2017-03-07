@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from .models import Corpus, Alignment
+from django.db.models import Count
+
+from .models import Corpus, Alignment, Annotation
 
 
 def get_random_alignment(user, language_from, language_to):
@@ -62,3 +64,12 @@ def get_color(tense):
         return '#17becf'
     else:
         return ''
+
+
+def get_distinct_tenses(language):
+    return Annotation.objects \
+        .filter(alignment__translated_fragment__language=language) \
+        .exclude(tense__exact='') \
+        .values('tense') \
+        .annotate(Count('tense')) \
+        .order_by('-tense__count')

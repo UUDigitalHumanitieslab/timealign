@@ -7,7 +7,7 @@ class AnnotationForm(forms.ModelForm):
     class Meta:
         model = Annotation
         fields = [
-            'is_no_target', 'is_translation', 'tense', 'words',
+            'is_no_target', 'is_translation', 'words',
         ]
 
     def __init__(self, *args, **kwargs):
