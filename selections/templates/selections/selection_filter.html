@@ -38,7 +38,12 @@
                 <td>
                     <a title="Fragment" data-toggle="popover"
                        data-content='{% include "annotations/_sentences.html" with sentences=fragment.sentence_set.all annotated_words=selection.words.all filtered=filter.form.word_in_fragment.value %}'>
-                        {{ selection.selected_words }} ({{ selection.tense }})
+                        {% if selection.is_no_target %}
+                        &empty;
+                        {% else %}
+                        {{ selection.selected_words }}
+                        ({{ selection.tense }})
+                        {% endif %}
                     </a>
                 </td>
                 <td>

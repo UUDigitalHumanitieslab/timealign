@@ -107,6 +107,10 @@ class SelectionCreate(SelectionMixin, generic.CreateView):
         form.instance.fragment = fragment
         form.instance.order = get_selection_order(fragment, user)
         form.instance.is_final = self.is_final()
+
+        if form.instance.is_no_target:
+            form.instance.tense = ''
+
         return super(SelectionCreate, self).form_valid(form)
 
     def get_fragment(self):
@@ -132,6 +136,10 @@ class SelectionUpdate(SelectionMixin, generic.UpdateView):
         """Sets the last modified by on the instance"""
         form.instance.is_final = self.is_final()
         form.instance.last_modified_by = self.request.user
+
+        if form.instance.is_no_target:
+            form.instance.tense = ''
+
         return super(SelectionUpdate, self).form_valid(form)
 
     def get_fragment(self):
