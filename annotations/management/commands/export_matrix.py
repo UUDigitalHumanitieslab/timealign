@@ -24,7 +24,7 @@ class Command(BaseCommand):
         try:
             corpus = Corpus.objects.get(title=options['corpus'])
         except Corpus.DoesNotExist:
-            raise CommandError('Corpus with title {} does not exist'.format[options['corpus']])
+            raise CommandError('Corpus with title {} does not exist'.format(options['corpus']))
 
         # For each Fragment, get the tenses
         fragment_ids = []
