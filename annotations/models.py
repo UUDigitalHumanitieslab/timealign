@@ -148,6 +148,7 @@ class Annotation(models.Model):
         default=True)
 
     words = models.ManyToManyField(Word, blank=True)
+    comments = models.TextField(blank=True)
     alignment = models.ForeignKey(Alignment)
 
     annotated_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='annotated_by')

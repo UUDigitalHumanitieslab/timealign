@@ -7,8 +7,11 @@ class AnnotationForm(forms.ModelForm):
     class Meta:
         model = Annotation
         fields = [
-            'is_no_target', 'is_translation', 'words',
+            'is_no_target', 'is_translation', 'comments', 'words',
         ]
+        widgets = {
+            'comments': forms.Textarea(attrs={'rows': 2}),
+        }
 
     def __init__(self, *args, **kwargs):
         """
