@@ -92,6 +92,18 @@ class SelectionMixin(PermissionRequiredMixin):
         return 'is_final' in self.request.POST
 
 
+class SelectionUpdateMixin(SelectionMixin):
+    def get_context_data(self, **kwargs):
+        """Sets the selected Words on the context"""
+        context = super(SelectionUpdateMixin, self).get_context_data(**kwargs)
+        context['annotated_words'] = self.object.words.all()
+        return context
+
+    def get_fragment(self):
+        """Retrieves the PreProcessFragment from the object"""
+        return self.object.fragment
+
+
 class SelectionCreate(SelectionMixin, generic.CreateView):
     def get_success_url(self):
         """Go to the choose-view to select a new Alignment"""
@@ -120,15 +132,12 @@ class SelectionCreate(SelectionMixin, generic.CreateView):
         return get_object_or_404(PreProcessFragment, pk=self.kwargs['pk'])
 
 
-class SelectionUpdate(SelectionMixin, generic.UpdateView):
-    def get_context_data(self, **kwargs):
-        """Sets the selected Words on the context"""
-        context = super(SelectionUpdate, self).get_context_data(**kwargs)
-        context['annotated_words'] = self.object.words.all()
-        return context
-
+class SelectionUpdate(SelectionUpdateMixin, generic.UpdateView):
     def get_success_url(self):
-        """Returns to the overview per language"""
+        """
+        Returns to the overview per language on final Selection,
+        otherwise, show a new Selection for the current PreProcessFragment
+        """
         if self.is_final():
             return reverse('selections:list', args=(self.get_fragment().language.iso,))
         else:
@@ -144,9 +153,11 @@ class SelectionUpdate(SelectionMixin, generic.UpdateView):
 
         return super(SelectionUpdate, self).form_valid(form)
 
-    def get_fragment(self):
-        """Retrieves the PreProcessFragment from the object"""
-        return self.object.fragment
+
+class SelectionDelete(SelectionUpdateMixin, generic.DeleteView):
+    def get_success_url(self):
+        """Returns to the overview per Language"""
+        return reverse('selections:list', args=(self.get_fragment().language.iso,))
 
 
 class SelectionChoose(PermissionRequiredMixin, generic.RedirectView):

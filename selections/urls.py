@@ -1,7 +1,7 @@
 from django.conf.urls import url
 
 from .views import InstructionsView, IntroductionView, StatusView, \
-    SelectionCreate, SelectionUpdate, SelectionChoose, SelectionList
+    SelectionCreate, SelectionUpdate, SelectionDelete, SelectionChoose, SelectionList
 
 urlpatterns = [
     # Static views
@@ -12,6 +12,7 @@ urlpatterns = [
     # Creating and editing Selections
     url(r'^create/(?P<pk>\d+)/$', SelectionCreate.as_view(), name='create'),
     url(r'^edit/(?P<pk>\d+)/$', SelectionUpdate.as_view(), name='edit'),
+    url(r'^delete/(?P<pk>\d+)/$', SelectionDelete.as_view(), name='delete'),
     url(r'^choose/(?P<language>\w+)/$', SelectionChoose.as_view(), name='choose'),
 
     # List views

@@ -140,6 +140,25 @@ class AnnotationMixin(SuccessMessageMixin, PermissionRequiredMixin):
         raise NotImplementedError
 
 
+class AnnotationUpdateMixin(AnnotationMixin):
+    def get_context_data(self, **kwargs):
+        """Sets the annotated Words on the context"""
+        context = super(AnnotationUpdateMixin, self).get_context_data(**kwargs)
+        context['annotated_words'] = self.object.words.all()
+        return context
+
+    def get_success_url(self):
+        """Returns to the overview per language"""
+        alignment = self.get_alignment()
+        l1 = alignment.original_fragment.language.iso
+        l2 = alignment.translated_fragment.language.iso
+        return reverse('annotations:list', args=(l1, l2, ))
+
+    def get_alignment(self):
+        """Retrieves the Alignment from the object"""
+        return self.object.alignment
+
+
 class AnnotationCreate(AnnotationMixin, generic.CreateView):
     success_message = 'Annotation created successfully'
 
@@ -160,30 +179,17 @@ class AnnotationCreate(AnnotationMixin, generic.CreateView):
         return get_object_or_404(Alignment, pk=self.kwargs['pk'])
 
 
-class AnnotationUpdate(AnnotationMixin, generic.UpdateView):
+class AnnotationUpdate(AnnotationUpdateMixin, generic.UpdateView):
     success_message = 'Annotation edited successfully'
-
-    def get_context_data(self, **kwargs):
-        """Sets the annotated Words on the context"""
-        context = super(AnnotationUpdate, self).get_context_data(**kwargs)
-        context['annotated_words'] = self.object.words.all()
-        return context
-
-    def get_success_url(self):
-        """Returns to the overview per language"""
-        alignment = self.get_alignment()
-        l1 = alignment.original_fragment.language.iso
-        l2 = alignment.translated_fragment.language.iso
-        return reverse('annotations:list', args=(l1, l2,))
 
     def form_valid(self, form):
         """Sets the last modified by on the instance"""
         form.instance.last_modified_by = self.request.user
         return super(AnnotationUpdate, self).form_valid(form)
 
-    def get_alignment(self):
-        """Retrieves the Alignment from the object"""
-        return self.object.alignment
+
+class AnnotationDelete(AnnotationUpdateMixin, generic.DeleteView):
+    success_message = 'Annotation deleted successfully'
 
 
 class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):

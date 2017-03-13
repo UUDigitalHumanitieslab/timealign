@@ -1,7 +1,7 @@
 from django.conf.urls import url
 
 from .views import InstructionsView, IntroductionView, StatusView, \
-    AnnotationCreate, AnnotationUpdate, AnnotationChoose, FragmentDetail, \
+    AnnotationCreate, AnnotationUpdate, AnnotationDelete, AnnotationChoose, FragmentDetail, \
     CorporaList, AnnotationList, FragmentList, PlotMatrixView
 
 urlpatterns = [
@@ -13,6 +13,7 @@ urlpatterns = [
     # Creating and editing Annotations
     url(r'^create/(?P<pk>\d+)/$', AnnotationCreate.as_view(), name='create'),
     url(r'^edit/(?P<pk>\d+)/$', AnnotationUpdate.as_view(), name='edit'),
+    url(r'^delete/(?P<pk>\d+)/$', AnnotationDelete.as_view(), name='delete'),
     url(r'^choose/(?P<l1>\w+)/(?P<l2>\w+)/$', AnnotationChoose.as_view(), name='choose'),
 
     # Showing Fragments
