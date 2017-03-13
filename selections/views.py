@@ -39,7 +39,8 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
         """Creates a list of tuples with information on the selection progress"""
         context = super(StatusView, self).get_context_data(**kwargs)
 
-        corpora = get_available_corpora(self.request.user)
+        user = self.request.user
+        corpora = get_available_corpora(user)
 
         languages = set()
         for corpus in corpora:
@@ -49,11 +50,12 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
         language_totals = []
         for language in languages:
             # Only select PreProcessFragments from the available corpora for the current User
-            fragments = PreProcessFragment.objects.filter(language=language) \
+            fragments = PreProcessFragment.objects \
+                .filter(language=language) \
                 .filter(document__corpus__in=corpora)
 
             total = fragments.count()
-            completed = fragments.exclude(selection=None).count()
+            completed = fragments.filter(selection__selected_by=user, selection__is_final=True).count()
             language_totals.append((language, completed, total))
         context['languages'] = language_totals
         context['current_corpora'] = corpora
@@ -179,5 +181,7 @@ class SelectionList(PermissionRequiredMixin, FilterView):
         Retrieves all Selections for the given language.
         :return: A QuerySet of Selections.
         """
-        return Selection.objects.filter(fragment__language__iso=self.kwargs['language']) \
-            .filter(fragment__document__corpus__in=get_available_corpora(self.request.user))
+        corpora = get_available_corpora(self.request.user)
+        return Selection.objects \
+            .filter(fragment__language__iso=self.kwargs['language']) \
+            .filter(fragment__document__corpus__in=corpora)
