@@ -35,7 +35,7 @@ class Command(BaseCommand):
         robjects.r.assign('matrix', matrix)
         robjects.r.assign('fragment_ids', robjects.StrVector(fragment_ids))
 
-        for language in corpus.languages:
+        for language in corpus.languages.all():
             robjects.r.assign('tenses_{}'.format(language.iso), robjects.StrVector(tenses[language]))
 
         # Save the workspace

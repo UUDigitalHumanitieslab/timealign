@@ -7,6 +7,6 @@
 numpy==1.12.0
 rpy2==2.8.5
 scikit-learn==0.18.1
-scipy==0.18.1
+scipy==0.19.0
 singledispatch==3.4.0.3   # via rpy2
 six==1.10.0               # via rpy2, singledispatch
