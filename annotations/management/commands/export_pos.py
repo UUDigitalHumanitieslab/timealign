@@ -37,7 +37,7 @@ class Command(BaseCommand):
 
                 annotations = Annotation.objects. \
                     filter(is_no_target=False, is_translation=True,
-                           alignment__translated_fragment__language=language,
+                           alignment__translated_fragment__language__iso=language,
                            alignment__translated_fragment__document__corpus=corpus)
                 for annotation in annotations:
                     words = annotation.words.all()
@@ -47,7 +47,7 @@ class Command(BaseCommand):
                     csv_writer.writerow([str(annotation.pk), annotation.tense, 'target'] + pad_list(w, 5) + pad_list(pos, 5) + [f])
 
                 if options['add_sources']:
-                    fragments = Fragment.objects.filter(language=language)
+                    fragments = Fragment.objects.filter(language__iso=language)
                     for fragment in fragments:
                         words = Word.objects.filter(sentence__fragment=fragment, is_target=True)
                         if words:
