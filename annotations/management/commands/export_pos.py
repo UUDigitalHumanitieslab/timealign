@@ -29,7 +29,7 @@ class Command(BaseCommand):
                 csvfile.write(u'\uFEFF'.encode('utf-8'))  # the UTF-8 BOM to hint Excel we are using that...
                 csv_writer = UnicodeWriter(csvfile, delimiter=';')
 
-                header = ['id', 'tense', 'source/target'
+                header = ['id', 'tense', 'source/target',
                           'w1', 'w2', 'w3', 'w4', 'w5',
                           'pos1', 'pos2', 'pos3', 'pos4', 'pos5',
                           'full fragment']
