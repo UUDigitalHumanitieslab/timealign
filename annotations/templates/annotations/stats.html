@@ -1,0 +1,60 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+<h2>
+    Descriptive statistics for <em>{{ corpus.title }}</em>
+</h2>
+
+<h3>
+    Totals per language
+</h3>
+
+<div class="row">
+    {% for l, c in counters.items %}
+    <div class="col-md-4">
+        <h4>{{ l.title }}</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Tense</th>
+                    <th>Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t, count in c %}
+                <tr>
+                    <td>{{ t }} </td>
+                    <td>{{ count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if forloop.counter == 3 %}</div><div class="row">{% endif %}
+    {% endfor %}
+</div>
+
+<h3>
+    Tuple frequency
+</h3>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Tuple</th>
+            <th>Count</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for t, c in tuples %}
+        <tr>
+            <td>{{ t|join:", " }} </td>
+            <td>{{ c }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

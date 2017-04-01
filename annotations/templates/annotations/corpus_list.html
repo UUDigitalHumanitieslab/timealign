@@ -8,7 +8,15 @@
 <ul>
     {% for corpus in corpora %}
     <li>
-        <a href="{% url 'annotations:plot' corpus.pk %}">{{ corpus.title }}</a>
+        {{ corpus.title }}
+        <ul>
+            <li>
+                <a href="{% url 'annotations:plot' corpus.pk %}">Multidimensional scaling</a>
+            </li>
+            <li>
+                <a href="{% url 'annotations:stats' corpus.pk %}">Descriptive statistics</a>
+            </li>
+        </ul>
     </li>
     {% endfor %}
 </ul>

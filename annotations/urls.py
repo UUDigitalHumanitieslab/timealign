@@ -2,7 +2,7 @@ from django.conf.urls import url
 
 from .views import InstructionsView, IntroductionView, StatusView, \
     AnnotationCreate, AnnotationUpdate, AnnotationDelete, AnnotationChoose, FragmentDetail, \
-    CorporaList, AnnotationList, FragmentList, PlotMatrixView
+    CorporaList, AnnotationList, FragmentList, PlotMatrixView, StatsView
 
 urlpatterns = [
     # Static views
@@ -29,4 +29,7 @@ urlpatterns = [
     url(r'^plot/(?P<pk>\d+)/$', PlotMatrixView.as_view(), name='plot'),
     url(r'^plot/(?P<pk>\d+)/(?P<language>\w+)/$', PlotMatrixView.as_view(), name='plot'),
     url(r'^plot/(?P<pk>\d+)/(?P<language>\w+)/(?P<d1>\d+)/(?P<d2>\d+)/$', PlotMatrixView.as_view(), name='plot'),
+
+    # Stats
+    url(r'^stats/(?P<pk>\d+)/$', StatsView.as_view(), name='stats'),
 ]

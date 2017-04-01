@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, Counter
 from itertools import permutations
 import json
 import pickle
@@ -112,6 +112,36 @@ class PlotMatrixView(LoginRequiredMixin, generic.DetailView):
         context['d1'] = d1
         context['d2'] = d2
         context['max_dimensions'] = range(1, len(model[0]) + 1)  # We choose dimensions to be 1-based
+
+        return context
+
+
+class StatsView(LoginRequiredMixin, generic.DetailView):
+    model = Corpus
+    template_name = 'annotations/stats.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(StatsView, self).get_context_data(**kwargs)
+
+        pk = self.object.pk
+        pre = 'plots/{}_'.format(pk)
+        tenses = pickle.load(open(pre + 'tenses.p', 'rb'))
+
+        counters = dict()
+        tuples = defaultdict(tuple)
+
+        for l in self.object.languages.all():
+            c = Counter()
+            n = 0
+            for t in tenses[l.iso]:
+                c.update([t])
+                tuples[n] += (t,)
+                n += 1
+
+            counters[l] = c.most_common()
+
+        context['counters'] = counters
+        context['tuples'] = Counter(tuples.values()).most_common()
 
         return context
 
