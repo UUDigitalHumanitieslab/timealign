@@ -60,8 +60,10 @@ def get_color(tense):
         return '#7f7f7f'
     elif tense in [u'pretérito imperfecto', u'imparfait']:
         return '#bcbd22'
-    elif tense in [u'participio']:
+    elif tense in [u'present participle', u'participio']:
         return '#17becf'
+    elif tense in [u'infinitief']:
+        return '#aec7e8'
     else:
         return ''
 
