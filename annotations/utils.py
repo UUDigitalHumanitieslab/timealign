@@ -39,6 +39,7 @@ def get_color(tense):
     """
     This function maps a tense on a color from the d3 color scale.
     See https://github.com/d3/d3-3.x-api-reference/blob/master/Ordinal-Scales.md#categorical-colors for details.
+    TODO: create a Tense model and save this stuff there.
     :param tense: The given tense
     :return: A color from the d3 color scale
     """
@@ -69,9 +70,40 @@ def get_color(tense):
 
 
 def get_distinct_tenses(language):
+    """
+    Returns distinct tenses for a language, sorting them by most frequent.
+    :param language: The given Language
+    :return: A list of tenses
+    """
     return Annotation.objects \
         .filter(alignment__translated_fragment__language=language) \
         .exclude(tense__exact='') \
         .values('tense') \
         .annotate(Count('tense')) \
         .order_by('-tense__count')
+
+
+def get_tenses(language):
+    """
+    Returns tenses for a language.
+    TODO: create a Tense model and save this stuff there.
+    :param language: The given Language
+    :return: A list of tenses
+    """
+    if language.iso == 'fr':
+        return [u'conditionnel',
+                u'conditionnel passé',
+                u'futur',
+                u'futur antérieur',
+                u'futur proche',
+                u'futur proche du passé',
+                u'imparfait',
+                u'passé composé',
+                u'passé récent',
+                u'passé récent du passé',
+                u'passé simple',
+                u'plus-que-parfait',
+                u'présent',
+                u'other']
+    else:
+        return [t.get('tense') for t in get_distinct_tenses(language)]

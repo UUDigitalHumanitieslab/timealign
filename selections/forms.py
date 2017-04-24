@@ -1,6 +1,6 @@
 from django import forms
 
-from annotations.utils import get_distinct_tenses
+from annotations.utils import get_tenses
 
 from .models import Selection, Word
 
@@ -23,7 +23,7 @@ class SelectionForm(forms.ModelForm):
         self.fragment = kwargs.pop('fragment', None)
         self.user = kwargs.pop('user', None)
         sentences = self.fragment.sentence_set.all()
-        tenses = [t.get('tense') for t in get_distinct_tenses(self.fragment.language)]
+        tenses = get_tenses(self.fragment.language)
 
         super(SelectionForm, self).__init__(*args, **kwargs)
         self.fields['words'].queryset = Word.objects.filter(sentence__in=sentences)
