@@ -24,6 +24,7 @@ class Selection(models.Model):
     is_final = models.BooleanField(default=True)
 
     words = models.ManyToManyField(Word, blank=True)
+    comments = models.TextField(blank=True)
     fragment = models.ForeignKey(PreProcessFragment)
 
     selected_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='selected_by')

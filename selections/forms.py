@@ -9,10 +9,11 @@ class SelectionForm(forms.ModelForm):
     class Meta:
         model = Selection
         fields = [
-            'is_no_target', 'tense', 'words',
+            'is_no_target', 'tense', 'comments', 'words',
         ]
         widgets = {
-            'tense': forms.Select()
+            'tense': forms.Select(),
+            'comments': forms.Textarea(attrs={'rows': 2}),
         }
 
     def __init__(self, *args, **kwargs):
