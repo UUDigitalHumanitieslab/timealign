@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^$', views.flatpage, {'url': '/home/'}, name='home'),
     url(r'^project/$', views.flatpage, {'url': '/project/'}, name='project'),
     url(r'^project/nl-summary/$', views.flatpage, {'url': '/nl-summary/'}, name='nl-summary'),
+    url(r'^publications/$', views.flatpage, {'url': '/publications/'}, name='publications'),
     url(r'^student-research/$', views.flatpage, {'url': '/student-research/'}, name='student-research'),
     url(r'^perfectextractor/$', views.flatpage, {'url': '/perfectextractor/'}, name='perfectextractor'),
     url(r'^translation-mining/$', views.flatpage, {'url': '/translation-mining/'}, name='translation-mining'),
