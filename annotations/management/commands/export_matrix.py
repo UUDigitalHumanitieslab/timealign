@@ -11,7 +11,7 @@ from sklearn import manifold
 
 from django.core.management.base import BaseCommand, CommandError
 
-from annotations.models import Corpus, Fragment, Annotation
+from annotations.models import Language, Corpus, Fragment, Annotation
 
 
 class Command(BaseCommand):
@@ -19,12 +19,18 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('corpus', type=str)
+        parser.add_argument('languages', type=str, nargs='+')
 
     def handle(self, *args, **options):
         try:
             corpus = Corpus.objects.get(title=options['corpus'])
         except Corpus.DoesNotExist:
             raise CommandError('Corpus with title {} does not exist'.format(options['corpus']))
+
+        if len(options['languages']) == 0:
+            languages = corpus.languages
+        else:
+            languages = Language.objects.filter(iso__in=options['languages'])
 
         # For each Fragment, get the tenses
         fragment_ids = []
@@ -34,9 +40,10 @@ class Command(BaseCommand):
             annotations = Annotation.objects \
                 .exclude(tense='other') \
                 .filter(is_no_target=False, is_translation=True,
-                        alignment__original_fragment=fragment)
+                        alignment__original_fragment=fragment,
+                        alignment__translated_fragment__language__in=languages)
             # ... but only allow Fragments that have Alignments in all languages
-            if annotations.count() == corpus.languages.count() - 1:
+            if annotations.count() == languages.count() - 1:
                 fragment_ids.append(fragment.id)
                 tenses[fragment.language.iso].append(pp_name(fragment.language.iso))
                 for annotation in annotations:
