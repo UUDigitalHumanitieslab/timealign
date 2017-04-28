@@ -30,7 +30,7 @@
 <div class="row">
     Language:
     <div id="language" class="btn-group" data-toggle="buttons">
-        {% for l in corpus.languages.all %}
+        {% for l in languages %}
         <label class="btn btn-primary active">
             <input type="radio" name="options" value="{{ l.iso }}" autocomplete="off">{{ l.title }}
         </label>

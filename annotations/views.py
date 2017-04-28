@@ -109,6 +109,7 @@ class PlotMatrixView(LoginRequiredMixin, generic.DetailView):
         # Add all variables to the context
         context['matrix'] = json.dumps(matrix)
         context['language'] = language
+        context['languages'] = Language.objects.filter(iso__in=tenses.keys())
         context['d1'] = d1
         context['d2'] = d2
         context['max_dimensions'] = range(1, len(model[0]) + 1)  # We choose dimensions to be 1-based
