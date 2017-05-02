@@ -43,28 +43,32 @@ def get_color(tense):
     :param tense: The given tense
     :return: A color from the d3 color scale
     """
-    if tense in [u'Perfekt', u'present perfect', u'pretérito perfecto compuesto', u'passé composé', u'vtt', u'passato prossimo']:
+    if tense in [u'Perfekt', u'present perfect', u'pretérito perfecto compuesto', u'passé composé', u'vtt', u'passato prossimo', u'PresPerf']:
         return '#1f77b4'
-    elif tense in [u'Präsens', u'simple present', u'presente', u'présent', u'ott']:
+    elif tense in [u'Präsens', u'simple present', u'presente', u'présent', u'ott', u'Present']:
         return '#ff7f0e'
-    elif tense in [u'Präteritum', u'simple past', u'pretérito perfecto simple', u'ovt']:
+    elif tense in [u'Präteritum', u'simple past', u'pretérito perfecto simple', u'ovt', u'Past']:
         return '#2ca02c'
-    elif tense in [u'Plusquamperfekt', u'past perfect', u'pretérito pluscuamperfecto', u'plus-que-parfait', u'vvt', u'trapassato prossimo']:
+    elif tense in [u'Plusquamperfekt', u'past perfect', u'pretérito pluscuamperfecto', u'plus-que-parfait', u'vvt', u'trapassato prossimo', u'PastPerf']:
         return '#d62728'
     elif tense in [u'Futur I', u'futur antérieur']:
         return '#9467bd'
     elif tense in [u'Futur II']:
         return '#8c564b'
-    elif tense in [u'present perfect continuous']:
+    elif tense in [u'present perfect continuous', u'Cont']:
         return '#e377c2'
-    elif tense in [u'pasado reciente', u'passé récent']:
+    elif tense in [u'pasado reciente', u'passé récent', u'RecentPast']:
         return '#7f7f7f'
-    elif tense in [u'pretérito imperfecto', u'imparfait', u'imperfetto']:
+    elif tense in [u'pretérito imperfecto', u'imparfait', u'Imperfecto']:
         return '#bcbd22'
-    elif tense in [u'present participle', u'participio']:
+    elif tense in [u'present participle', u'participio', u'Gerund']:
         return '#17becf'
     elif tense in [u'infinitief', u'infinitif']:
         return '#aec7e8'
+    elif tense in [u'PresGer']:
+        return '#ffbb78'
+    elif tense in [u'Rep']:
+        return '#98df8a'
     else:
         return ''
 
