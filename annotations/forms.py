@@ -22,6 +22,7 @@ class AnnotationForm(forms.ModelForm):
 
         super(AnnotationForm, self).__init__(*args, **kwargs)
         self.fields['words'].queryset = Word.objects.filter(sentence__in=translated_sentences)
+        self.fields['is_no_target'].label = u'The selected words in the original fragment do not form a <em>{}</em>'.format(self.alignment.original_fragment.tense or u'present perfect')
 
     def clean(self):
         """

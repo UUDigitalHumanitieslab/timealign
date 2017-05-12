@@ -51,6 +51,7 @@ class Document(models.Model):
 class Fragment(models.Model):
     language = models.ForeignKey(Language)
     document = models.ForeignKey(Document)
+    tense = models.CharField('Tense of original', max_length=200, blank=True)
 
     def to_html(self):
         result = '<ul>'
