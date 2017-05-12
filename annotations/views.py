@@ -127,11 +127,12 @@ class StatsView(LoginRequiredMixin, generic.DetailView):
         pk = self.object.pk
         pre = 'plots/{}_'.format(pk)
         tenses = pickle.load(open(pre + 'tenses.p', 'rb'))
+        languages = Language.objects.filter(iso__in=tenses.keys())
 
         counters = dict()
         tuples = defaultdict(tuple)
 
-        for l in self.object.languages.all():
+        for l in languages:
             c = Counter()
             n = 0
             for t in tenses[l.iso]:
