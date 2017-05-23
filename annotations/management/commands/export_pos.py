@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
                 header = ['id', 'tense', 'source/target',
                           'w1', 'w2', 'w3', 'w4', 'w5',
-                          'pos1', 'pos2', 'pos3', 'pos4', 'pos5',
+                          'pos1', 'pos2', 'pos3', 'pos4', 'pos5', 'comments',
                           'full fragment', 'source words', 'source fragment']
                 csv_writer.writerow(header)
 
@@ -45,7 +45,7 @@ class Command(BaseCommand):
                     pos = [word.pos for word in words]
                     tf = annotation.alignment.translated_fragment
                     of = annotation.alignment.original_fragment
-                    csv_writer.writerow([str(annotation.pk), annotation.tense, 'target'] + pad_list(w, 5) + pad_list(pos, 5) + [tf.full(), of.target_words(), of.full()])
+                    csv_writer.writerow([str(annotation.pk), annotation.tense, 'target'] + pad_list(w, 5) + pad_list(pos, 5) + [annotation.comments, tf.full(), of.target_words(), of.full()])
 
                 if options['add_sources']:
                     fragments = Fragment.objects.filter(language__iso=language, document__corpus=corpus)
@@ -55,4 +55,4 @@ class Command(BaseCommand):
                             w = [word.word for word in words]
                             pos = [word.pos for word in words]
                             f = fragment.full()
-                            csv_writer.writerow([str(fragment.pk), 'pp', 'source'] + pad_list(w, 5) + pad_list(pos, 5) + [f, '', ''])
+                            csv_writer.writerow([str(fragment.pk), 'pp', 'source'] + pad_list(w, 5) + pad_list(pos, 5) + ['', f, '', ''])
