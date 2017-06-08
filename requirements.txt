@@ -4,8 +4,8 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
-django-bootstrap3==8.2.2
+django-bootstrap3==8.2.3
 django-braces==1.11.0
-django-filter==1.0.2
+django-filter==1.0.4
 Django==1.8.18            # rq.filter: >=1.8,<1.9
-lxml==3.7.3
+lxml==3.8.0

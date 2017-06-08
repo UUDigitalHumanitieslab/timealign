@@ -4,8 +4,8 @@
 #
 #    pip-compile --output-file requirements_matrix.txt requirements_matrix.in
 #
-numpy==1.12.1
-rpy2==2.8.5
+numpy==1.13.0
+rpy2==2.8.6
 scikit-learn==0.18.1
 scipy==0.19.0
 singledispatch==3.4.0.3   # via rpy2
