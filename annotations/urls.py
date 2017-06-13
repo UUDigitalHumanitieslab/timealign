@@ -2,7 +2,7 @@ from django.conf.urls import url
 
 from .views import InstructionsView, IntroductionView, StatusView, \
     AnnotationCreate, AnnotationUpdate, AnnotationDelete, AnnotationChoose, FragmentDetail, \
-    CorporaList, AnnotationList, FragmentList, PlotMatrixView, StatsView
+    AnnotationList, FragmentList
 
 urlpatterns = [
     # Static views
@@ -20,16 +20,7 @@ urlpatterns = [
     url(r'^show/(?P<pk>\d+)/$', FragmentDetail.as_view(), name='show'),
 
     # List views
-    url(r'^corpora/$', CorporaList.as_view(), name='corpora'),
     url(r'^list/(?P<l1>\w+)/(?P<l2>\w+)/$', AnnotationList.as_view(), name='list'),
     url(r'^matrix/(?P<language>\w+)/$', FragmentList.as_view(), name='matrix'),
     url(r'^matrix/(?P<language>\w+)/(?P<showtenses>\w+)/$', FragmentList.as_view(), name='tense_matrix'),
-
-    # Graphs
-    url(r'^plot/(?P<pk>\d+)/$', PlotMatrixView.as_view(), name='plot'),
-    url(r'^plot/(?P<pk>\d+)/(?P<language>\w+)/$', PlotMatrixView.as_view(), name='plot'),
-    url(r'^plot/(?P<pk>\d+)/(?P<language>\w+)/(?P<d1>\d+)/(?P<d2>\d+)/$', PlotMatrixView.as_view(), name='plot'),
-
-    # Stats
-    url(r'^stats/(?P<pk>\d+)/$', StatsView.as_view(), name='stats'),
 ]

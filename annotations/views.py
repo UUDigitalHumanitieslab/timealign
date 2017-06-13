@@ -1,8 +1,4 @@
-from collections import defaultdict, Counter
 from itertools import permutations
-import json
-import pickle
-import random
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
@@ -15,8 +11,8 @@ from django_filters.views import FilterView
 
 from .filters import AnnotationFilter
 from .forms import AnnotationForm
-from .models import Language, Corpus, Fragment, Alignment, Annotation
-from .utils import get_random_alignment, get_color, get_available_corpora
+from .models import Language, Fragment, Alignment, Annotation
+from .utils import get_random_alignment, get_available_corpora
 
 
 ##############
@@ -60,90 +56,6 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
             language_totals.append((l1, l2, annotated, total))
         context['languages'] = language_totals
         context['current_corpora'] = corpora
-
-        return context
-
-
-class PlotMatrixView(LoginRequiredMixin, generic.DetailView):
-    """Loads the matrix plot view"""
-    model = Corpus
-    template_name = 'annotations/plot_matrix.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(PlotMatrixView, self).get_context_data(**kwargs)
-
-        # Retrieve kwargs
-        pk = self.object.pk
-        language = self.kwargs.get('language', self.object.languages.first().iso)
-        d1 = int(self.kwargs.get('d1', 1))  # We choose dimensions to be 1-based
-        d2 = int(self.kwargs.get('d2', 2))
-
-        # Retrieve lists generated with command python manage.py export_matrix
-        pre = 'plots/{}_'.format(pk)
-        model = pickle.load(open(pre + 'model.p', 'rb'))
-        tenses = pickle.load(open(pre + 'tenses.p', 'rb'))
-        fragments = pickle.load(open(pre + 'fragments.p', 'rb'))
-
-        # Turn the pickled model into a scatterplot dictionary
-        j = defaultdict(list)
-        for n, l in enumerate(model):
-            # Retrieve x/y dimensions, add some jitter
-            x = l[d1 - 1] + random.uniform(-.5, .5) / 100
-            y = l[d2 - 1] + random.uniform(-.5, .5) / 100
-
-            f = fragments[n]
-            t = [tenses[l][n] for l in tenses.keys()]
-            # Add all values to the dictionary
-            j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'tenses': t})
-
-        # Transpose the dictionary to the correct format for nvd3.
-        # TODO: can this be done in the loop above?
-        matrix = []
-        for k, v in j.items():
-            d = dict()
-            d['key'] = k
-            d['color'] = get_color(k)
-            d['values'] = v
-            matrix.append(d)
-
-        # Add all variables to the context
-        context['matrix'] = json.dumps(matrix)
-        context['language'] = language
-        context['languages'] = Language.objects.filter(iso__in=tenses.keys())
-        context['d1'] = d1
-        context['d2'] = d2
-        context['max_dimensions'] = range(1, len(model[0]) + 1)  # We choose dimensions to be 1-based
-
-        return context
-
-
-class StatsView(LoginRequiredMixin, generic.DetailView):
-    model = Corpus
-    template_name = 'annotations/stats.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(StatsView, self).get_context_data(**kwargs)
-
-        pk = self.object.pk
-        pre = 'plots/{}_'.format(pk)
-        tenses = pickle.load(open(pre + 'tenses.p', 'rb'))
-        languages = Language.objects.filter(iso__in=tenses.keys())
-
-        counters = dict()
-        tuples = defaultdict(tuple)
-
-        for l in languages:
-            c = Counter()
-            n = 0
-            for t in tenses[l.iso]:
-                c.update([t])
-                tuples[n] += (t,)
-                n += 1
-
-            counters[l] = c.most_common()
-
-        context['counters'] = counters
-        context['tuples'] = Counter(tuples.values()).most_common()
 
         return context
 
@@ -253,12 +165,6 @@ class FragmentDetail(LoginRequiredMixin, generic.DetailView):
 ############
 # List views
 ############
-class CorporaList(PermissionRequiredMixin, generic.ListView):
-    model = Corpus
-    context_object_name = 'corpora'
-    permission_required = 'annotations.change_annotation'
-
-
 class AnnotationList(PermissionRequiredMixin, FilterView):
     context_object_name = 'annotations'
     filterset_class = AnnotationFilter

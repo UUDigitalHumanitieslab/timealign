@@ -6,15 +6,15 @@
 
 <h2>Show results for:</h2>
 <ul>
-    {% for corpus in corpora %}
+    {% for scenario in scenarios %}
     <li>
-        {{ corpus.title }}
+        {{ scenario.corpus.title }}
         <ul>
             <li>
-                <a href="{% url 'annotations:plot' corpus.pk %}">Multidimensional scaling</a>
+                <a href="{% url 'stats:mds' scenario.pk %}">Multidimensional scaling</a>
             </li>
             <li>
-                <a href="{% url 'annotations:stats' corpus.pk %}">Descriptive statistics</a>
+                <a href="{% url 'stats:descriptive' scenario.pk %}">Descriptive statistics</a>
             </li>
         </ul>
     </li>

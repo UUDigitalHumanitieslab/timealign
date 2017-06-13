@@ -41,8 +41,9 @@ INSTALLED_APPS = (
     'django_filters',
 
     'core',
-    'annotations',
     'selections',
+    'annotations',
+    'stats',
 
     'django.contrib.admin',
 

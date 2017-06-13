@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-<h2>Results ({{ corpus.title }})</h2>
+<h2>Results ({{ scenario.corpus.title }}, scenario {{ scenario.title }})</h2>
 
 <div class="alert alert-info" role="alert">
     This scatter plot shows the results Multidimensional Scaling of the dissimilarity matrix of tense tuples.
@@ -104,7 +104,7 @@ $(function() {
         var l = $("#language > .btn.active > input").val();
         var d1 = $("#d1 > .btn.active > input").val();
         var d2 = $("#d2 > .btn.active > input").val();
-        var url = "{% url 'annotations:plot' corpus.pk 'language' 1111 2222 %}";
+        var url = "{% url 'stats:mds' scenario.pk 'language' 1111 2222 %}";
         window.location = url.replace("language", l).replace('1111', d1).replace('2222', d2);
     });
 });
