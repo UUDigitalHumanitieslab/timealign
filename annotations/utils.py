@@ -43,17 +43,19 @@ def get_color(tense):
     :param tense: The given tense
     :return: A color from the d3 color scale
     """
-    if tense in [u'Perfekt', u'present perfect', u'pretérito perfecto compuesto', u'passé composé', u'vtt', u'passato prossimo', u'PresPerf']:
+    if tense in [u'Perfekt', u'present perfect', u'pretérito perfecto compuesto', u'passé composé', u'vtt',
+                 u'passato prossimo', u'PresPerf']:
         return '#1f77b4'
     elif tense in [u'Präsens', u'simple present', u'presente', u'présent', u'ott', u'Present']:
         return '#ff7f0e'
-    elif tense in [u'Präteritum', u'simple past', u'pretérito perfecto simple', u'ovt', u'Past']:
+    elif tense in [u'Präteritum', u'simple past', u'pretérito perfecto simple', u'indefinido', u'passé simple', u'ovt', u'Past']:
         return '#2ca02c'
-    elif tense in [u'Plusquamperfekt', u'past perfect', u'pretérito pluscuamperfecto', u'plus-que-parfait', u'vvt', u'trapassato prossimo', u'PastPerf']:
+    elif tense in [u'Plusquamperfekt', u'past perfect', u'pretérito pluscuamperfecto', u'plus-que-parfait', u'vvt',
+                   u'trapassato prossimo', u'PastPerf']:
         return '#d62728'
-    elif tense in [u'Futur I', u'futur antérieur']:
+    elif tense in [u'Futur I', u'simple future', u'futur', u'futuro', u'ottt']:
         return '#9467bd'
-    elif tense in [u'Futur II']:
+    elif tense in [u'Futur II', u'future perfect', u'futur antérieur', u'futuro perfecto', u'ovtt']:
         return '#8c564b'
     elif tense in [u'present perfect continuous', u'Cont']:
         return '#e377c2'
@@ -63,15 +65,32 @@ def get_color(tense):
         return '#bcbd22'
     elif tense in [u'present participle', u'participio', u'Gerund']:
         return '#17becf'
-    elif tense in [u'infinitief', u'infinitif']:
+    elif tense in [u'Infinitiv', u'infinitief', u'infinitif', u'infinitivo']:
         return '#aec7e8'
-    elif tense in [u'PresGer']:
+    elif tense in [u'present continuous', u'PresGer']:
         return '#ffbb78'
-    elif tense in [u'Rep']:
+    elif tense in [u'condicional', u'conditionnel', u'Rep']:
         return '#98df8a'
+    elif tense in [u'past continuous']:
+        return '#ff9896'
+    elif tense in [u'past perfect continuous']:
+        return '#c5b0d5'
+    elif tense in [u'future continuous']:
+        return '#c49c94'
+    elif tense in [u'future in the past', u'futuro perfecto']:
+        return '#f7b6d2'
+    elif tense in [u'future in the past continuous']:
+        return '#c7c7c7'
+    elif tense in [u'infinitivo perfecto']:
+        return '#dbdb8d'
+    elif tense in [u'futur proche', u'futuro próximo']:
+        return '#9edae5'
+    elif tense in [u'futur proche du passé', u'futuro próximo en imperfecto']:
+        return '#393b79'
+    elif tense in [u'conditionnel passé']:
+        return '#5254a3'
     else:
         return ''
-
 
 def get_distinct_tenses(language):
     """
