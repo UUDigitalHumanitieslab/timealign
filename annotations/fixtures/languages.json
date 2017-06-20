@@ -1,57 +1,98 @@
-[{
-  "fields": {
-    "iso": "de",
-    "title": "German"
-  },
-  "model": "annotations.language",
-  "pk": 1
-},
-  {
+[
+{
     "fields": {
-      "iso": "en",
-      "title": "English"
+        "iso": "de",
+        "title": "German"
+    },
+    "model": "annotations.language",
+    "pk": 1
+},
+{
+    "fields": {
+        "iso": "en",
+        "title": "English"
     },
     "model": "annotations.language",
     "pk": 2
-  },
-  {
+},
+{
     "fields": {
-      "iso": "es",
-      "title": "Spanish"
+        "iso": "es",
+        "title": "Spanish"
     },
     "model": "annotations.language",
     "pk": 3
-  },
-  {
+},
+{
     "fields": {
-      "iso": "fr",
-      "title": "French"
+        "iso": "fr",
+        "title": "French"
     },
     "model": "annotations.language",
     "pk": 4
-  },
-  {
+},
+{
     "fields": {
-      "iso": "it",
-      "title": "Italian"
+        "iso": "it",
+        "title": "Italian"
     },
     "model": "annotations.language",
     "pk": 5
-  },
-  {
+},
+{
     "fields": {
-      "iso": "nl",
-      "title": "Dutch"
+        "iso": "nl",
+        "title": "Dutch"
     },
     "model": "annotations.language",
     "pk": 6
-  },
-  {
+},
+{
     "fields": {
-      "iso": "pt",
-      "title": "Portuguese"
+        "iso": "pt",
+        "title": "Portuguese"
     },
     "model": "annotations.language",
     "pk": 7
-  }
+},
+{
+    "fields": {
+        "iso": "pl",
+        "title": "Polish"
+    },
+    "model": "annotations.language",
+    "pk": 8
+},
+{
+    "fields": {
+        "iso": "ru",
+        "title": "Russian"
+    },
+    "model": "annotations.language",
+    "pk": 9
+},
+{
+    "fields": {
+        "iso": "uk",
+        "title": "Ukrainian"
+    },
+    "model": "annotations.language",
+    "pk": 10
+},
+{
+    "fields": {
+        "iso": "zh",
+        "title": "Chinese"
+    },
+    "model": "annotations.language",
+    "pk": 11
+},
+{
+    "fields": {
+        "iso": "he",
+        "title": "Hebrew"
+    },
+    "model": "annotations.language",
+    "pk": 12
+}
 ]

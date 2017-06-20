@@ -1,0 +1,650 @@
+[
+{
+    "fields": {
+        "category": 1,
+        "language": 1,
+        "title": "Perfekt"
+    },
+    "model": "annotations.tense",
+    "pk": 1
+},
+{
+    "fields": {
+        "category": 2,
+        "language": 1,
+        "title": "Pr\u00e4sens"
+    },
+    "model": "annotations.tense",
+    "pk": 2
+},
+{
+    "fields": {
+        "category": 3,
+        "language": 1,
+        "title": "Pr\u00e4teritum"
+    },
+    "model": "annotations.tense",
+    "pk": 3
+},
+{
+    "fields": {
+        "category": 4,
+        "language": 1,
+        "title": "Plusquamperfekt"
+    },
+    "model": "annotations.tense",
+    "pk": 4
+},
+{
+    "fields": {
+        "category": 5,
+        "language": 1,
+        "title": "Futur I"
+    },
+    "model": "annotations.tense",
+    "pk": 5
+},
+{
+    "fields": {
+        "category": 6,
+        "language": 1,
+        "title": "Futur II"
+    },
+    "model": "annotations.tense",
+    "pk": 6
+},
+{
+    "fields": {
+        "category": 1,
+        "language": 2,
+        "title": "present perfect"
+    },
+    "model": "annotations.tense",
+    "pk": 7
+},
+{
+    "fields": {
+        "category": 2,
+        "language": 2,
+        "title": "simple present"
+    },
+    "model": "annotations.tense",
+    "pk": 8
+},
+{
+    "fields": {
+        "category": 3,
+        "language": 2,
+        "title": "simple past"
+    },
+    "model": "annotations.tense",
+    "pk": 9
+},
+{
+    "fields": {
+        "category": 4,
+        "language": 2,
+        "title": "past perfect"
+    },
+    "model": "annotations.tense",
+    "pk": 10
+},
+{
+    "fields": {
+        "category": 7,
+        "language": 2,
+        "title": "present perfect continuous"
+    },
+    "model": "annotations.tense",
+    "pk": 11
+},
+{
+    "fields": {
+        "category": 1,
+        "language": 3,
+        "title": "pret\u00e9rito perfecto compuesto"
+    },
+    "model": "annotations.tense",
+    "pk": 12
+},
+{
+    "fields": {
+        "category": 2,
+        "language": 3,
+        "title": "presente"
+    },
+    "model": "annotations.tense",
+    "pk": 13
+},
+{
+    "fields": {
+        "category": 3,
+        "language": 3,
+        "title": "pret\u00e9rito indefinido"
+    },
+    "model": "annotations.tense",
+    "pk": 14
+},
+{
+    "fields": {
+        "category": 4,
+        "language": 3,
+        "title": "pret\u00e9rito pluscuamperfecto"
+    },
+    "model": "annotations.tense",
+    "pk": 15
+},
+{
+    "fields": {
+        "category": 8,
+        "language": 3,
+        "title": "pasado reciente"
+    },
+    "model": "annotations.tense",
+    "pk": 16
+},
+{
+    "fields": {
+        "category": 9,
+        "language": 3,
+        "title": "pret\u00e9rito imperfecto"
+    },
+    "model": "annotations.tense",
+    "pk": 17
+},
+{
+    "fields": {
+        "category": 10,
+        "language": 3,
+        "title": "participio"
+    },
+    "model": "annotations.tense",
+    "pk": 18
+},
+{
+    "fields": {
+        "category": 1,
+        "language": 4,
+        "title": "pass\u00e9 compos\u00e9"
+    },
+    "model": "annotations.tense",
+    "pk": 19
+},
+{
+    "fields": {
+        "category": 2,
+        "language": 4,
+        "title": "pr\u00e9sent"
+    },
+    "model": "annotations.tense",
+    "pk": 20
+},
+{
+    "fields": {
+        "category": 4,
+        "language": 4,
+        "title": "plus-que-parfait"
+    },
+    "model": "annotations.tense",
+    "pk": 21
+},
+{
+    "fields": {
+        "category": 6,
+        "language": 4,
+        "title": "futur ant\u00e9rieur"
+    },
+    "model": "annotations.tense",
+    "pk": 22
+},
+{
+    "fields": {
+        "category": 8,
+        "language": 4,
+        "title": "pass\u00e9 r\u00e9cent"
+    },
+    "model": "annotations.tense",
+    "pk": 23
+},
+{
+    "fields": {
+        "category": 9,
+        "language": 4,
+        "title": "imparfait"
+    },
+    "model": "annotations.tense",
+    "pk": 24
+},
+{
+    "fields": {
+        "category": 1,
+        "language": 6,
+        "title": "vtt"
+    },
+    "model": "annotations.tense",
+    "pk": 25
+},
+{
+    "fields": {
+        "category": 2,
+        "language": 6,
+        "title": "ott"
+    },
+    "model": "annotations.tense",
+    "pk": 26
+},
+{
+    "fields": {
+        "category": 3,
+        "language": 6,
+        "title": "ovt"
+    },
+    "model": "annotations.tense",
+    "pk": 27
+},
+{
+    "fields": {
+        "category": 4,
+        "language": 6,
+        "title": "vvt"
+    },
+    "model": "annotations.tense",
+    "pk": 28
+},
+{
+    "fields": {
+        "category": 11,
+        "language": 6,
+        "title": "infinitief"
+    },
+    "model": "annotations.tense",
+    "pk": 29
+},
+{
+    "fields": {
+        "category": 1,
+        "language": 5,
+        "title": "passato prossimo"
+    },
+    "model": "annotations.tense",
+    "pk": 30
+},
+{
+    "fields": {
+        "category": 4,
+        "language": 5,
+        "title": "trapassato prossimo"
+    },
+    "model": "annotations.tense",
+    "pk": 31
+},
+{
+    "fields": {
+        "category": 12,
+        "language": 2,
+        "title": "past perfect continuous"
+    },
+    "model": "annotations.tense",
+    "pk": 32
+},
+{
+    "fields": {
+        "category": 5,
+        "language": 2,
+        "title": "simple future"
+    },
+    "model": "annotations.tense",
+    "pk": 33
+},
+{
+    "fields": {
+        "category": 6,
+        "language": 2,
+        "title": "future perfect"
+    },
+    "model": "annotations.tense",
+    "pk": 34
+},
+{
+    "fields": {
+        "category": 17,
+        "language": 2,
+        "title": "future in the past"
+    },
+    "model": "annotations.tense",
+    "pk": 35
+},
+{
+    "fields": {
+        "category": 18,
+        "language": 2,
+        "title": "future in the past continuous"
+    },
+    "model": "annotations.tense",
+    "pk": 36
+},
+{
+    "fields": {
+        "category": 14,
+        "language": 2,
+        "title": "past continuous"
+    },
+    "model": "annotations.tense",
+    "pk": 37
+},
+{
+    "fields": {
+        "category": 10,
+        "language": 2,
+        "title": "present participle"
+    },
+    "model": "annotations.tense",
+    "pk": 38
+},
+{
+    "fields": {
+        "category": 15,
+        "language": 2,
+        "title": "future continuous"
+    },
+    "model": "annotations.tense",
+    "pk": 39
+},
+{
+    "fields": {
+        "category": 5,
+        "language": 3,
+        "title": "futuro imperfecto"
+    },
+    "model": "annotations.tense",
+    "pk": 40
+},
+{
+    "fields": {
+        "category": 6,
+        "language": 3,
+        "title": "futuro perfecto"
+    },
+    "model": "annotations.tense",
+    "pk": 41
+},
+{
+    "fields": {
+        "category": 19,
+        "language": 3,
+        "title": "condicional simple"
+    },
+    "model": "annotations.tense",
+    "pk": 42
+},
+{
+    "fields": {
+        "category": 20,
+        "language": 3,
+        "title": "futuro pr\u00f3ximo"
+    },
+    "model": "annotations.tense",
+    "pk": 43
+},
+{
+    "fields": {
+        "category": 11,
+        "language": 3,
+        "title": "infinitivo"
+    },
+    "model": "annotations.tense",
+    "pk": 44
+},
+{
+    "fields": {
+        "category": 5,
+        "language": 6,
+        "title": "ottt"
+    },
+    "model": "annotations.tense",
+    "pk": 45
+},
+{
+    "fields": {
+        "category": 17,
+        "language": 6,
+        "title": "ovtt"
+    },
+    "model": "annotations.tense",
+    "pk": 46
+},
+{
+    "fields": {
+        "category": 5,
+        "language": 4,
+        "title": "futur simple"
+    },
+    "model": "annotations.tense",
+    "pk": 47
+},
+{
+    "fields": {
+        "category": 20,
+        "language": 4,
+        "title": "futur proche"
+    },
+    "model": "annotations.tense",
+    "pk": 48
+},
+{
+    "fields": {
+        "category": 21,
+        "language": 4,
+        "title": "conditionnel pass\u00e9"
+    },
+    "model": "annotations.tense",
+    "pk": 49
+},
+{
+    "fields": {
+        "category": 19,
+        "language": 4,
+        "title": "conditionnel pr\u00e9sent"
+    },
+    "model": "annotations.tense",
+    "pk": 50
+},
+{
+    "fields": {
+        "category": 3,
+        "language": 4,
+        "title": "pass\u00e9 simple"
+    },
+    "model": "annotations.tense",
+    "pk": 51
+},
+{
+    "fields": {
+        "category": 22,
+        "language": 4,
+        "title": "futur proche du pass\u00e9"
+    },
+    "model": "annotations.tense",
+    "pk": 52
+},
+{
+    "fields": {
+        "category": 11,
+        "language": 1,
+        "title": "Infinitiv"
+    },
+    "model": "annotations.tense",
+    "pk": 53
+},
+{
+    "fields": {
+        "category": 9,
+        "language": 5,
+        "title": "imperfetto"
+    },
+    "model": "annotations.tense",
+    "pk": 54
+},
+{
+    "fields": {
+        "category": 11,
+        "language": 5,
+        "title": "infinitif"
+    },
+    "model": "annotations.tense",
+    "pk": 55
+},
+{
+    "fields": {
+        "category": 13,
+        "language": 2,
+        "title": "present continuous"
+    },
+    "model": "annotations.tense",
+    "pk": 56
+},
+{
+    "fields": {
+        "category": 11,
+        "language": 3,
+        "title": "infinitivo compuesto"
+    },
+    "model": "annotations.tense",
+    "pk": 57
+},
+{
+    "fields": {
+        "category": 21,
+        "language": 3,
+        "title": "condicional compuesto"
+    },
+    "model": "annotations.tense",
+    "pk": 58
+},
+{
+    "fields": {
+        "category": 24,
+        "language": 3,
+        "title": "pret\u00e9rito imperfecto del subjuntivo"
+    },
+    "model": "annotations.tense",
+    "pk": 60
+},
+{
+    "fields": {
+        "category": 23,
+        "language": 3,
+        "title": "subjuntivo presente"
+    },
+    "model": "annotations.tense",
+    "pk": 61
+},
+{
+    "fields": {
+        "category": 1,
+        "language": 7,
+        "title": "pret\u00e9rito perfeito"
+    },
+    "model": "annotations.tense",
+    "pk": 62
+},
+{
+    "fields": {
+        "category": 9,
+        "language": 7,
+        "title": "pret\u00e9rito imperfeito"
+    },
+    "model": "annotations.tense",
+    "pk": 63
+},
+{
+    "fields": {
+        "category": 4,
+        "language": 7,
+        "title": "pret\u00e9rito mais-que-perfeito"
+    },
+    "model": "annotations.tense",
+    "pk": 64
+},
+{
+    "fields": {
+        "category": 2,
+        "language": 7,
+        "title": "pret\u00e9rito"
+    },
+    "model": "annotations.tense",
+    "pk": 65
+},
+{
+    "fields": {
+        "category": 10,
+        "language": 4,
+        "title": "participe pr\u00e9sent"
+    },
+    "model": "annotations.tense",
+    "pk": 66
+},
+{
+    "fields": {
+        "category": 27,
+        "language": 2,
+        "title": "gerund"
+    },
+    "model": "annotations.tense",
+    "pk": 67
+},
+{
+    "fields": {
+        "category": 27,
+        "language": 4,
+        "title": "g\u00e9rondif"
+    },
+    "model": "annotations.tense",
+    "pk": 68
+},
+{
+    "fields": {
+        "category": 27,
+        "language": 3,
+        "title": "gerundio"
+    },
+    "model": "annotations.tense",
+    "pk": 69
+},
+{
+    "fields": {
+        "category": 27,
+        "language": 7,
+        "title": "gerundio"
+    },
+    "model": "annotations.tense",
+    "pk": 70
+},
+{
+    "fields": {
+        "category": 10,
+        "language": 3,
+        "title": "participio presente"
+    },
+    "model": "annotations.tense",
+    "pk": 71
+},
+{
+    "fields": {
+        "category": 7,
+        "language": 3,
+        "title": "estar + gerundio"
+    },
+    "model": "annotations.tense",
+    "pk": 72
+},
+{
+    "fields": {
+        "category": 7,
+        "language": 7,
+        "title": "vir + gerundio"
+    },
+    "model": "annotations.tense",
+    "pk": 73
+}
+]

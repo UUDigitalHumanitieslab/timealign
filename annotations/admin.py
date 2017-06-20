@@ -1,11 +1,22 @@
 from django.contrib import admin
 
-from .models import Language, Corpus, Document, Fragment, Sentence, Alignment
+from .models import Language, TenseCategory, Tense, Corpus, Document, Fragment, Sentence, Alignment
 
 
 @admin.register(Language)
 class Language(admin.ModelAdmin):
     list_display = ('iso', 'title', )
+
+
+@admin.register(TenseCategory)
+class TenseCategoryAdmin(admin.ModelAdmin):
+    list_display = ('title', 'color', )
+
+
+@admin.register(Tense)
+class TenseAdmin(admin.ModelAdmin):
+    list_display = ('title', 'category', 'language', )
+    list_filter = ('language', 'category', )
 
 
 @admin.register(Corpus)

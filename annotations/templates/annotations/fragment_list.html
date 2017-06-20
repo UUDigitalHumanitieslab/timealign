@@ -39,7 +39,7 @@
                     {% if annotation and annotation.is_translation and not annotation.is_no_target %}
                     <a href="{% url 'annotations:edit' annotation.id %}">
                         {% if show_tenses %}
-                        {{ annotation.tense }}
+                        {{ annotation.tense.title }}
                         {% else %}
                         {{ annotation.selected_words }}
                         {% endif %}

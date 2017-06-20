@@ -54,6 +54,6 @@ class Command(BaseCommand):
                     w = [word.word for word in annotation.words.all()]
                     pos = [word.pos for word in annotation.words.all()]
                     f = fragment.full()
-                    row += [fragment.language.iso, annotation.tense] + pad_list(w, 5) + pad_list(pos, 5) + [f]
+                    row += [fragment.language.iso, annotation.tense.title] + pad_list(w, 5) + pad_list(pos, 5) + [f]
 
                 csv_writer.writerow(row)

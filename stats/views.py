@@ -9,8 +9,7 @@ from braces.views import LoginRequiredMixin
 
 from .models import Scenario
 from .utils import languages_by_scenario
-from annotations.models import Language
-from annotations.utils import get_color
+from annotations.models import Language, Tense
 
 
 class ScenarioList(LoginRequiredMixin, generic.ListView):
@@ -46,7 +45,8 @@ class MDSView(LoginRequiredMixin, generic.DetailView):
             y = l[d2 - 1] + random.uniform(-.5, .5) / 100
 
             f = fragments[n]
-            t = [tenses[l][n] for l in tenses.keys()]
+            ts = [tenses[l][n] for l in tenses.keys()]
+            t = [Tense.objects.get(pk=t) for t in ts]
             # Add all values to the dictionary
             j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'tenses': t})
 
@@ -54,9 +54,11 @@ class MDSView(LoginRequiredMixin, generic.DetailView):
         # TODO: can this be done in the loop above?
         matrix = []
         for k, v in j.items():
+            t = Tense.objects.get(pk=k)
+
             d = dict()
-            d['key'] = k
-            d['color'] = get_color(k)
+            d['key'] = t.title
+            d['color'] = t.category.color
             d['values'] = v
             matrix.append(d)
 

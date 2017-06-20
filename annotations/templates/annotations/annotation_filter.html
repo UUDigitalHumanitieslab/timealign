@@ -45,7 +45,7 @@
                 <td>
                     <a title="Translated fragment" data-toggle="popover"
                        data-content='{% include "annotations/_sentences.html" with sentences=translation.sentence_set.all annotated_words=annotation.words.all %}'>
-                        {{ annotation.selected_words }} ({{ annotation.tense }})
+                        {{ annotation.selected_words }} ({{ annotation.tense.title }})
                     </a>
                 </td>
                 <td>

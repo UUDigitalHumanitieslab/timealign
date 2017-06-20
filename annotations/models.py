@@ -10,6 +10,30 @@ class Language(models.Model):
         return self.title
 
 
+class TenseCategory(models.Model):
+    title = models.CharField(max_length=200, unique=True)
+    color = models.CharField(max_length=10)
+
+    class Meta:
+        verbose_name_plural = 'Tense categories'
+
+    def __unicode__(self):
+        return self.title
+
+
+class Tense(models.Model):
+    title = models.CharField(max_length=200)
+
+    language = models.ForeignKey(Language)
+    category = models.ForeignKey(TenseCategory)
+
+    class Meta:
+        unique_together = ('language', 'title', )
+
+    def __unicode__(self):
+        return self.title
+
+
 class Corpus(models.Model):
     title = models.CharField(max_length=200, unique=True)
     languages = models.ManyToManyField(Language)
@@ -51,7 +75,7 @@ class Document(models.Model):
 class Fragment(models.Model):
     language = models.ForeignKey(Language)
     document = models.ForeignKey(Document)
-    tense = models.CharField('Tense of original', max_length=200, blank=True)
+    tense = models.ForeignKey(Tense, null=True)
 
     def to_html(self):
         result = '<ul>'
@@ -158,7 +182,7 @@ class Annotation(models.Model):
     last_modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='last_modified_by')
     last_modified_at = models.DateTimeField(auto_now=True)
 
-    tense = models.CharField('Tense of translation', max_length=200, blank=True)
+    tense = models.ForeignKey(Tense, null=True)
     # person = models.CharField(max_length=2, blank=True)  # single vs. plural
     # mood = models.CharField(max_length=2, blank=True)  # indicative (hard?)
     # voice = models.CharField(max_length=2, blank=True)  # active vs. passive (hard?)

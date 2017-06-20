@@ -1,7 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from annotations.models import Language, Corpus
+from annotations.models import Language, Tense, Corpus
 
 
 class Scenario(models.Model):
@@ -14,6 +14,8 @@ class Scenario(models.Model):
 
 class ScenarioLanguage(models.Model):
     scenario = models.ForeignKey(Scenario)
+
     language = models.ForeignKey(Language)
     as_from = models.BooleanField()
     as_to = models.BooleanField()
+    tenses = models.ManyToManyField(Tense, blank=True)

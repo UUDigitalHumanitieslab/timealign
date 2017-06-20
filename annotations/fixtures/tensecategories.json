@@ -1,0 +1,218 @@
+[
+{
+    "fields": {
+        "color": "#1f77b4",
+        "title": "Present Perfect"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 1
+},
+{
+    "fields": {
+        "color": "#ff7f0e",
+        "title": "Present"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 2
+},
+{
+    "fields": {
+        "color": "#2ca02c",
+        "title": "Past"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 3
+},
+{
+    "fields": {
+        "color": "#d62728",
+        "title": "Past Perfect"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 4
+},
+{
+    "fields": {
+        "color": "#9467bd",
+        "title": "Future"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 5
+},
+{
+    "fields": {
+        "color": "#8c564b",
+        "title": "Future Perfect"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 6
+},
+{
+    "fields": {
+        "color": "#aec7e8",
+        "title": "Present Perfect Continuous"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 7
+},
+{
+    "fields": {
+        "color": "#7f7f7f",
+        "title": "Recent Past"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 8
+},
+{
+    "fields": {
+        "color": "#bcbd22",
+        "title": "Imperfect"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 9
+},
+{
+    "fields": {
+        "color": "#17becf",
+        "title": "Present Participle"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 10
+},
+{
+    "fields": {
+        "color": "#dbdb8d",
+        "title": "Infinitive"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 11
+},
+{
+    "fields": {
+        "color": "#ff9896",
+        "title": "Past Perfect Continuous"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 12
+},
+{
+    "fields": {
+        "color": "#ffbb78",
+        "title": "Present Continuous"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 13
+},
+{
+    "fields": {
+        "color": "#98df8a",
+        "title": "Past Continuous"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 14
+},
+{
+    "fields": {
+        "color": "#c5b0d5",
+        "title": "Future Continuous"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 15
+},
+{
+    "fields": {
+        "color": "#c49c94",
+        "title": "Future Perfect Continuous"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 16
+},
+{
+    "fields": {
+        "color": "#e377c2",
+        "title": "Future in the Past"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 17
+},
+{
+    "fields": {
+        "color": "#f7b6d2",
+        "title": "Future in the Past Continuous"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 18
+},
+{
+    "fields": {
+        "color": "#9edae5",
+        "title": "Conditional Present"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 19
+},
+{
+    "fields": {
+        "color": "#c7c7c7",
+        "title": "Recent Future"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 20
+},
+{
+    "fields": {
+        "color": "#",
+        "title": "Conditional Past"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 21
+},
+{
+    "fields": {
+        "color": "#",
+        "title": "Recent Future in the Past"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 22
+},
+{
+    "fields": {
+        "color": "#",
+        "title": "Subjunctive Present"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 23
+},
+{
+    "fields": {
+        "color": "#",
+        "title": "Subjunctive Imperfect"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 24
+},
+{
+    "fields": {
+        "color": "#",
+        "title": "Subjunctive Perfect"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 25
+},
+{
+    "fields": {
+        "color": "#",
+        "title": "Subjunctive Past Perfect"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 26
+},
+{
+    "fields": {
+        "color": "#",
+        "title": "Gerund"
+    },
+    "model": "annotations.tensecategory",
+    "pk": 27
+}
+]

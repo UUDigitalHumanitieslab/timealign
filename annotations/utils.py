@@ -2,7 +2,7 @@
 
 from django.db.models import Count
 
-from .models import Corpus, Alignment, Annotation
+from .models import Corpus, Tense, Alignment, Annotation
 
 
 def get_random_alignment(user, language_from, language_to):
@@ -79,12 +79,13 @@ def get_distinct_tenses(language):
     :param language: The given Language
     :return: A list of tenses
     """
-    return Annotation.objects \
+    most_frequent_by_language = Annotation.objects \
         .filter(alignment__translated_fragment__language=language) \
         .exclude(tense__exact='') \
         .values('tense') \
         .annotate(Count('tense')) \
         .order_by('-tense__count')
+    return Tense.objects.filter(pk__in=[t.get('tense') for t in most_frequent_by_language])
 
 
 def get_tenses(language):

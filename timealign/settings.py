@@ -114,7 +114,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-LOGIN_REDIRECT_URL = '/timealign/corpora'
+LOGIN_REDIRECT_URL = '/stats/scenarios'
 
 
 # Flatpages
