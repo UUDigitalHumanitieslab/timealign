@@ -21,12 +21,15 @@ class Command(BaseCommand):
                 next(csv_reader)  # skip header
 
                 for row in csv_reader:
-                    try:
-                        annotation = Annotation.objects.get(pk=row[0])
-                        annotation.tense = row[1]
-                        annotation.save()
-                    except Annotation.DoesNotExist:
-                        raise CommandError('Annotation with pk {} not found'.format(row[0]))
+                    if row:
+                        try:
+                            annotation = Annotation.objects.get(pk=row[0])
+                            annotation.tense = row[1]
+                            if len(row) == 3:
+                                annotation.is_no_target = row[2] != 'yes'
+                            annotation.save()
+                        except Annotation.DoesNotExist:
+                            raise CommandError('Annotation with pk {} not found'.format(row[0]))
 
 
 def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
