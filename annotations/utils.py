@@ -89,6 +89,10 @@ def get_color(tense):
         return '#393b79'
     elif tense in [u'conditionnel passé']:
         return '#5254a3'
+    elif tense in [u'subjuntivo presente']:
+        return '#e7cb94'
+    elif tense in [u'subjuntivo pretérito imperfecto']:
+        return '#cedb9c'
     else:
         return ''
 
