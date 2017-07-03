@@ -16,6 +16,7 @@
     <h3>
         {{ fragment.language.title }}
         <span class="label label-default pull-right">{{ fragment.document.title }} - {{ fragment.id }}</span>
+        <span class="label label-primary pull-right">{{ fragment.tense|default:"Perfect" }}</span>
     </h3>
     {% include "annotations/_sentences.html" with sentences=fragment.sentence_set.all tooltips=1 %}
 

@@ -27,14 +27,17 @@ class Command(BaseCommand):
                 next(csv_reader)  # skip header
 
                 for row in csv_reader:
-                    try:
-                        annotation = Annotation.objects.get(pk=row[0])
-                        annotation.tense = Tense.objects.get(title__iexact=row[1], language=language)
-                        annotation.save()
-                    except Annotation.DoesNotExist:
-                        raise CommandError(u'Annotation with pk {} not found'.format(row[0]))
-                    except Tense.DoesNotExist:
-                        raise CommandError(u'Tense for title {} not found'.format(row[1]))
+                    if row:
+                        try:
+                            annotation = Annotation.objects.get(pk=row[0])
+                            annotation.tense = Tense.objects.get(title__iexact=row[1], language=language)
+                            if len(row) == 3:
+                                annotation.is_no_target = row[2] != 'yes'
+                            annotation.save()
+                        except Annotation.DoesNotExist:
+                            raise CommandError(u'Annotation with pk {} not found'.format(row[0]))
+                        except Tense.DoesNotExist:
+                            raise CommandError(u'Tense for title {} not found'.format(row[1]))
 
 
 def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
