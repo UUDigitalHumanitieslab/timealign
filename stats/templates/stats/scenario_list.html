@@ -8,7 +8,7 @@
 <ul>
     {% for scenario in scenarios %}
     <li>
-        {{ scenario.corpus.title }}
+        {{ scenario.title }} <a href="{% url 'stats:show' scenario.pk %}" class="btn btn-primary btn-sm">{% bootstrap_icon "info-sign" %}</span> Info</a>
         <ul>
             <li>
                 <a href="{% url 'stats:mds' scenario.pk %}">Multidimensional scaling</a>

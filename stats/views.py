@@ -17,6 +17,10 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
     context_object_name = 'scenarios'
 
 
+class ScenarioDetail(LoginRequiredMixin, generic.DetailView):
+    model = Scenario
+
+
 class MDSView(LoginRequiredMixin, generic.DetailView):
     """Loads the matrix plot view"""
     model = Scenario
@@ -46,7 +50,7 @@ class MDSView(LoginRequiredMixin, generic.DetailView):
 
             f = fragments[n]
             ts = [tenses[l][n] for l in tenses.keys()]
-            t = [Tense.objects.get(pk=t) for t in ts]
+            t = [Tense.objects.get(pk=t).title for t in ts]
             # Add all values to the dictionary
             j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'tenses': t})
 
@@ -92,8 +96,9 @@ class DescriptiveStatsView(LoginRequiredMixin, generic.DetailView):
             c = Counter()
             n = 0
             for t in tenses[l.iso]:
-                c.update([t])
-                tuples[n] += (t,)
+                tense = Tense.objects.get(pk=t).title
+                c.update([tense])
+                tuples[n] += (tense,)
                 n += 1
 
             counters[l] = c.most_common()

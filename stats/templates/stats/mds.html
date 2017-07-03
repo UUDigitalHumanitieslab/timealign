@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-<h2>Results ({{ scenario.corpus.title }}, scenario {{ scenario.title }})</h2>
+<h2>Results (scenario <em><a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a></em>)</h2>
 
 <div class="alert alert-info" role="alert">
     This scatter plot shows the results Multidimensional Scaling of the dissimilarity matrix of tense tuples.

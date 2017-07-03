@@ -94,12 +94,14 @@ class Migration(migrations.Migration):
                 try:
                     language = fragment.language
                     fragment.tense_new = Tense.objects.get(language=language, title=tense)
+                    fragment.save()
                 except Tense.DoesNotExist:
                     t = get_alternative(language, tense)
                     if t:
                         fragment.tense_new = t
                     else:
                         fragment.tense_new = None
+                    fragment.save()
 
         for annotation in Annotation.objects.all():
             tense = annotation.tense
@@ -107,12 +109,14 @@ class Migration(migrations.Migration):
                 try:
                     language = annotation.alignment.translated_fragment.language
                     annotation.tense_new = Tense.objects.get(language=language, title=tense)
+                    annotation.save()
                 except Tense.DoesNotExist:
                     t = get_alternative(language, tense)
                     if t:
                         annotation.tense_new = t
                     else:
-                        fragment.tense_new = None
+                        annotation.tense_new = None
+                    annotation.save()
 
 
     dependencies = [

@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import division
+
 from collections import defaultdict
 import os
 import pickle
@@ -6,7 +10,7 @@ import numpy as np
 from sklearn import manifold
 
 from .models import ScenarioLanguage
-from annotations.models import Fragment, Annotation
+from annotations.models import Tense, Fragment, Annotation
 
 
 def languages_by_scenario(scenario, **kwargs):
@@ -46,9 +50,11 @@ def run_mds(scenario):
             # ... but only allow Fragments that have Alignments in all languages
             if annotations.count() == len(languages_to):
                 fragment_ids.append(fragment.id)
-                tenses[fragment.language.iso].append(fragment.tense.title)
+                tenses[fragment.language.iso].append(get_tense(fragment))
                 for annotation in annotations:
-                    tenses[annotation.alignment.translated_fragment.language.iso].append(annotation.tense.title)
+                    tenses[annotation.alignment.translated_fragment.language.iso].append(annotation.tense.pk)
+
+    print tenses.values()
 
     # Create a list of lists with tenses for all languages
     tenses_matrix = defaultdict(list)
@@ -79,6 +85,17 @@ def run_mds(scenario):
     pickle.dump(pos.tolist(), open(pre + 'model.p', 'wb'))
     pickle.dump(fragment_ids, open(pre + 'fragments.p', 'wb'))
     pickle.dump(tenses, open(pre + 'tenses.p', 'wb'))
+
+
+def get_tense(fragment):
+    if fragment.tense:
+        return fragment.tense.pk
+    elif fragment.language.iso == 'en':
+        return Tense.objects.get(title=u'present perfect').pk
+    elif fragment.language.iso == 'fr':
+        return Tense.objects.get(title=u'passé composé').pk
+    else:
+        return None
 
 
 def get_distance(array1, array2):
