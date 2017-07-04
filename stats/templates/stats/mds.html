@@ -74,7 +74,7 @@
 
         // Show the tenses in the tooltip
         chart.tooltip.contentGenerator(function(e) {
-            return '<h4>' + e.point.tenses + '</h4>';
+            return '<strong>' + e.point.fragment_id + '</strong>: <em>' + e.point.fragment + '</em><br>' + e.point.tenses;
         });
 
         // Create a click-through to the data

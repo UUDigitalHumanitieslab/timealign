@@ -9,7 +9,7 @@ from braces.views import LoginRequiredMixin
 
 from .models import Scenario
 from .utils import languages_by_scenario
-from annotations.models import Language, Tense
+from annotations.models import Language, Tense, Fragment
 
 
 class ScenarioList(LoginRequiredMixin, generic.ListView):
@@ -49,10 +49,11 @@ class MDSView(LoginRequiredMixin, generic.DetailView):
             y = l[d2 - 1] + random.uniform(-.5, .5) / 100
 
             f = fragments[n]
+            fragment = Fragment.objects.get(pk=f)
             ts = [tenses[l][n] for l in tenses.keys()]
             t = [Tense.objects.get(pk=t).title for t in ts]
             # Add all values to the dictionary
-            j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'tenses': t})
+            j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(True), 'tenses': t})
 
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
