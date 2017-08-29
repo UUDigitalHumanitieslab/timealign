@@ -25,4 +25,4 @@ class ScenarioLanguage(models.Model):
     tenses = models.ManyToManyField(Tense, blank=True)
 
     def __unicode__(self):
-        return u'Details for language {} in scenario {}'.format(self.language.iso, self.scenario.title)
+        return u'Details for language {} in scenario {}'.format(self.language.title, self.scenario.title)
