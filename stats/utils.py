@@ -54,8 +54,6 @@ def run_mds(scenario):
                 for annotation in annotations:
                     tenses[annotation.alignment.translated_fragment.language.iso].append(annotation.tense.pk)
 
-    print tenses.values()
-
     # Create a list of lists with tenses for all languages
     tenses_matrix = defaultdict(list)
     for t in tenses.values():
