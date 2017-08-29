@@ -12,15 +12,16 @@ def forwards(apps, schema_editor):
     Language = apps.get_model('annotations', 'Language')
 
     for fragment in Fragment.objects.all():
-        fragment.language_tmp = Language.objects.get(iso=fragment.language)
+        fragment.language_tmp = Language.objects.get(iso=fragment.language).pk
         fragment.save()
 
 
 def backwards(apps, schema_editor):
     Fragment = apps.get_model('annotations', 'Fragment')
+    Language = apps.get_model('annotations', 'Language')
 
     for fragment in Fragment.objects.all():
-        fragment.language = fragment.language_tmp.iso
+        fragment.language = Language.objects.get(pk=fragment.language_tmp).iso
         fragment.save()
 
 
@@ -42,7 +43,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='fragment',
             name='language_tmp',
-            field=models.ForeignKey(to='annotations.Language', null=True),
+            field=models.IntegerField(db_column='language_tmp'),
         ),
         migrations.RunPython(forwards, backwards),
         migrations.RemoveField(
