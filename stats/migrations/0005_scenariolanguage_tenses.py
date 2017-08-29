@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='scenariolanguage',
             name='tenses',
-            field=models.ManyToManyField(to='annotations.Tense'),
+            field=models.ManyToManyField(to='annotations.Tense', blank=True),
         ),
     ]

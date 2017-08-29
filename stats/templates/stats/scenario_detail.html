@@ -23,7 +23,7 @@
             <td>{{ sl.language }}</td>
             <td>{% if sl.as_from %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
             <td>{% if sl.as_to %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
-            <td>{{ sl.tenses.all }}</td>
+            <td>{{ sl.tenses.all|default:"all" }}</td>
         </tr>
         {% endfor %}
     </tbody>
