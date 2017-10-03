@@ -101,6 +101,7 @@ class Migration(migrations.Migration):
                         fragment.tense_new = t
                     else:
                         fragment.tense_new = None
+                        fragment.other_label = tense
                     fragment.save()
 
         for annotation in Annotation.objects.all():
@@ -116,8 +117,8 @@ class Migration(migrations.Migration):
                         annotation.tense_new = t
                     else:
                         annotation.tense_new = None
+                        annotation.other_label = tense
                     annotation.save()
-
 
     dependencies = [
         ('annotations', '0016_fragment_tense'),
@@ -159,8 +160,18 @@ class Migration(migrations.Migration):
 
         migrations.AddField(
             model_name='annotation',
+            name='other_label',
+            field=models.CharField(max_length=200, blank=True),
+        ),
+        migrations.AddField(
+            model_name='annotation',
             name='tense_new',
             field=models.ForeignKey(to='annotations.Tense', null=True),
+        ),
+        migrations.AddField(
+            model_name='fragment',
+            name='other_label',
+            field=models.CharField(max_length=200, blank=True),
         ),
         migrations.AddField(
             model_name='fragment',
