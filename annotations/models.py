@@ -91,8 +91,8 @@ class Fragment(models.Model):
                 result.append(None)  # This happens if there's no Alignment for this Fragment in the given language
         return result
 
-    def full(self):
-        return '\n'.join([sentence.full() for sentence in self.sentence_set.all()])
+    def full(self, marked=False):
+        return '\n'.join([sentence.full(marked) for sentence in self.sentence_set.all()])
 
     def __unicode__(self):
         return self.full()[:100]
@@ -110,8 +110,17 @@ class Sentence(models.Model):
         result += '</li>'
         return result
 
-    def full(self):
-        return ' '.join([word.word for word in self.word_set.all()])
+
+    def full(self, marked=False):
+        words = []
+        for word in self.word_set.all():
+            if marked and word.is_target:
+                words.append('<strong>' + word.word + '</strong>')
+            else:
+                words.append(word.word)
+            if marked and len(words) % 20 == 0:
+                words.append('<br>')
+        return ' '.join(words)
 
     def __unicode__(self):
         return self.full()[:100] + '...'

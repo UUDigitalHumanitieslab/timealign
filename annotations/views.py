@@ -7,6 +7,7 @@ import random
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django.views import generic
 
@@ -68,12 +69,23 @@ class PlotMatrixView(LoginRequiredMixin, generic.DetailView):
     """Loads the matrix plot view"""
     model = Corpus
     template_name = 'annotations/plot_matrix.html'
+    
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.username == 'guest10' and kwargs.get('pk') != '3':
+            raise PermissionDenied # HTTP 403
+        return super(PlotMatrixView, self).dispatch(request, *args, **kwargs)
 
+    def get_object(self, queryset=None):
+        if self.kwargs.get('pk') in ['6', '7', '8']:
+            return Corpus.objects.get(pk=3)
+        else:
+            return super(PlotMatrixView, self).get_object()
+    
     def get_context_data(self, **kwargs):
         context = super(PlotMatrixView, self).get_context_data(**kwargs)
 
         # Retrieve kwargs
-        pk = self.object.pk
+        pk = self.kwargs.get('pk')
         language = self.kwargs.get('language', self.object.languages.first().iso)
         d1 = int(self.kwargs.get('d1', 1))  # We choose dimensions to be 1-based
         d2 = int(self.kwargs.get('d2', 2))
@@ -92,9 +104,10 @@ class PlotMatrixView(LoginRequiredMixin, generic.DetailView):
             y = l[d2 - 1] + random.uniform(-.5, .5) / 100
 
             f = fragments[n]
+            fragment = Fragment.objects.get(pk=f)
             t = [tenses[l][n] for l in tenses.keys()]
             # Add all values to the dictionary
-            j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'tenses': t})
+            j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(True), 'tenses': t})
 
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
@@ -113,6 +126,7 @@ class PlotMatrixView(LoginRequiredMixin, generic.DetailView):
         context['d1'] = d1
         context['d2'] = d2
         context['max_dimensions'] = range(1, len(model[0]) + 1)  # We choose dimensions to be 1-based
+        context['pk'] = pk
 
         return context
 
@@ -121,10 +135,21 @@ class StatsView(LoginRequiredMixin, generic.DetailView):
     model = Corpus
     template_name = 'annotations/stats.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.username == 'guest10' and kwargs.get('pk') != '3':
+            raise PermissionDenied # HTTP 403
+        return super(StatsView, self).dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        if self.kwargs.get('pk') in ['6', '7', '8']:
+            return Corpus.objects.get(pk=3)
+        else:
+            return super(StatsView, self).get_object()
+
     def get_context_data(self, **kwargs):
         context = super(StatsView, self).get_context_data(**kwargs)
 
-        pk = self.object.pk
+        pk = self.kwargs.get('pk')
         pre = 'plots/{}_'.format(pk)
         tenses = pickle.load(open(pre + 'tenses.p', 'rb'))
         languages = Language.objects.filter(iso__in=tenses.keys())
@@ -253,10 +278,15 @@ class FragmentDetail(LoginRequiredMixin, generic.DetailView):
 ############
 # List views
 ############
-class CorporaList(PermissionRequiredMixin, generic.ListView):
+class CorporaList(LoginRequiredMixin, generic.ListView):
     model = Corpus
     context_object_name = 'corpora'
-    permission_required = 'annotations.change_annotation'
+
+    def get_queryset(self):
+        if self.request.user.username == 'guest10':
+            return Corpus.objects.filter(pk=3)
+        else:
+            return Corpus.objects.all()
 
 
 class AnnotationList(PermissionRequiredMixin, FilterView):
