@@ -12,6 +12,8 @@ class Scenario(models.Model):
         'Number of dimensions to use in Multidimensional Scaling',
         validators=[MinValueValidator(2), MaxValueValidator(5)])
 
+    last_run = models.DateTimeField(blank=True, null=True)
+
     def __unicode__(self):
         return self.title
 

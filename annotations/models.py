@@ -75,7 +75,9 @@ class Document(models.Model):
 class Fragment(models.Model):
     language = models.ForeignKey(Language)
     document = models.ForeignKey(Document)
+
     tense = models.ForeignKey(Tense, null=True)
+    other_label = models.CharField(max_length=200, blank=True)
 
     def to_html(self):
         result = '<ul>'
@@ -191,9 +193,7 @@ class Annotation(models.Model):
     last_modified_at = models.DateTimeField(auto_now=True)
 
     tense = models.ForeignKey(Tense, null=True)
-    # person = models.CharField(max_length=2, blank=True)  # single vs. plural
-    # mood = models.CharField(max_length=2, blank=True)  # indicative (hard?)
-    # voice = models.CharField(max_length=2, blank=True)  # active vs. passive (hard?)
+    other_label = models.CharField(max_length=200, blank=True)
 
     class Meta:
         unique_together = ('alignment', 'annotated_by', )
