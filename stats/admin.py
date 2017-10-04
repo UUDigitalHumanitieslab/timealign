@@ -1,12 +1,14 @@
 from django.contrib import admin, messages
 from django.utils import timezone
 
+from .forms import ScenarioLanguageForm
 from .models import Scenario, ScenarioLanguage
 from .utils import run_mds
 
 
 class ScenarioLanguageInline(admin.TabularInline):
     model = ScenarioLanguage
+    form = ScenarioLanguageForm
 
 
 @admin.register(Scenario)
