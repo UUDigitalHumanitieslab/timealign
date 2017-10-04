@@ -18,6 +18,9 @@ class Command(BaseCommand):
         parser.add_argument('corpus', type=str)
         parser.add_argument('filenames', type=str, nargs='+')
 
+        parser.add_argument('--create', action='store_true', dest='create', default=False,
+                            help='Create Fragments from PreProcessFragments (instead of looking them up)')
+
     def handle(self, *args, **options):
         # Retrieve the Corpus from the database
         try:
@@ -32,36 +35,45 @@ class Command(BaseCommand):
         selections = Selection.objects \
             .filter(is_no_target=False, fragment__document__corpus=corpus) \
             .exclude(tense=u'passé composé')
-        for selection in selections:
-            selected_words = []
-            for selected_word in selection.words.all():
-                selected_words.append(selected_word.xml_id)
 
-            with transaction.atomic():
-                f = selection.fragment
-                sentences = f.sentence_set.all()
+        if options['create']:
+            for selection in selections:
+                selected_words = []
+                for selected_word in selection.words.all():
+                    selected_words.append(selected_word.xml_id)
 
-                f.__class__ = Fragment
-                f.pk = None
-                f.tense = selection.tense
-                f.save()
+                with transaction.atomic():
+                    f = selection.fragment
+                    sentences = f.sentence_set.all()
 
-                for sentence in sentences:
-                    s = sentence
-                    words = s.word_set.all()
+                    f.__class__ = Fragment
+                    f.pk = None
+                    f.tense = selection.tense
+                    f.save()
 
-                    s.pk = None
-                    s.fragment = f
-                    s.save()
+                    for sentence in sentences:
+                        s = sentence
+                        words = s.word_set.all()
 
-                    sentence_cache[(f.document.pk, s.xml_id)] = s
+                        s.pk = None
+                        s.fragment = f
+                        s.save()
 
-                    for word in words:
-                        w = word
-                        w.pk = None
-                        w.sentence = s
-                        w.is_target = w.xml_id in selected_words
-                        w.save()
+                        sentence_cache[(f.document.pk, s.xml_id)] = s
+
+                        for word in words:
+                            w = word
+                            w.pk = None
+                            w.sentence = s
+                            w.is_target = w.xml_id in selected_words
+                            w.save()
+        else:
+            for fragment in Fragment.objects \
+                    .filter(document__corpus=corpus) \
+                    .exclude(tense=u'') \
+                    .exclude(tense=u'passé composé'):
+                for sentence in fragment.sentence_set.all():
+                    sentence_cache[(fragment.document.pk, sentence.xml_id)] = sentence
 
         for filename in options['filenames']:
             with open(filename, 'rb') as f:
@@ -91,6 +103,7 @@ class Command(BaseCommand):
                                         Alignment.objects.create(original_fragment=sentence.fragment,
                                                                  translated_fragment=to_fragment,
                                                                  type=row[m])
+
 
 def add_sentences(fragment, xml, target_ids=[]):
     for s in etree.fromstring(xml).xpath('.//s'):

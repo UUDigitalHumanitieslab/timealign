@@ -30,14 +30,12 @@ class Command(BaseCommand):
             with open(filename, 'rb') as f:
                 csv_reader = csv.reader(f, delimiter=';')
                 for n, row in enumerate(csv_reader):
+                    # Retrieve the languages from the first row of the output
                     if n == 0:
-                        language_from = Language.objects.get(iso=row[5])
+                        language_from = Language.objects.get(iso=row[1])
                         languages_to = dict()
-                        for i in xrange(10, 15, 5):
-                            if not row[i]:
-                                break
-                            else:
-                                languages_to[i] = Language.objects.get(iso=row[i])
+                        for i in range(6, len(row), 2):
+                            languages_to[i] = Language.objects.get(iso=row[i])
                         continue
 
                     with transaction.atomic():
@@ -71,11 +69,11 @@ class Command(BaseCommand):
                             if row[m]:
                                 to_fragment = Fragment.objects.create(language=language_to,
                                                                       document=doc)
-                                add_sentences(to_fragment, row[m - 1])
+                                add_sentences(to_fragment, row[m])
 
                                 Alignment.objects.create(original_fragment=sentence.fragment,
                                                          translated_fragment=to_fragment,
-                                                         type=row[m - 2])
+                                                         type=row[m - 1])
 
                     print 'Line {} processed'.format(n)
 
