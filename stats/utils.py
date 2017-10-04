@@ -9,6 +9,8 @@ import pickle
 import numpy as np
 from sklearn import manifold
 
+from django.db.models import Q
+
 from .models import ScenarioLanguage
 from annotations.models import Tense, Fragment, Annotation
 
@@ -37,7 +39,7 @@ def run_mds(scenario):
             # Retrieve the Annotations for this Fragment...
             for language_to in languages_to:
                 a = Annotation.objects \
-                    .exclude(tense=None) \
+                    .exclude(Q(tense=None) & Q(other_label='')) \
                     .filter(is_no_target=False, is_translation=True,
                             alignment__original_fragment=fragment,
                             alignment__translated_fragment__language=language_to.language)
@@ -50,9 +52,9 @@ def run_mds(scenario):
             # ... but only allow Fragments that have Alignments in all languages
             if annotations.count() == len(languages_to):
                 fragment_ids.append(fragment.id)
-                tenses[fragment.language.iso].append(get_tense(fragment))
+                tenses[fragment.language.iso].append(get_tense(fragment, language_from))
                 for annotation in annotations:
-                    tenses[annotation.alignment.translated_fragment.language.iso].append(annotation.tense.pk)
+                    tenses[annotation.alignment.translated_fragment.language.iso].append(get_tense(annotation, language_to))
 
     # Create a list of lists with tenses for all languages
     tenses_matrix = defaultdict(list)
@@ -85,15 +87,13 @@ def run_mds(scenario):
     pickle.dump(tenses, open(pre + 'tenses.p', 'wb'))
 
 
-def get_tense(fragment):
-    if fragment.tense:
-        return fragment.tense.pk
-    elif fragment.language.iso == 'en':
-        return Tense.objects.get(title=u'present perfect').pk
-    elif fragment.language.iso == 'fr':
-        return Tense.objects.get(title=u'passé composé').pk
+def get_tense(model, scenario_language):
+    if scenario_language.use_other_label:
+        return model.other_label
+    elif model.tense:
+        return model.tense.pk
     else:
-        return None
+        return u'passé composé'
 
 
 def get_distance(array1, array2):

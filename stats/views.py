@@ -10,6 +10,7 @@ from braces.views import LoginRequiredMixin
 from .models import Scenario
 from .utils import languages_by_scenario
 from annotations.models import Language, Tense, Fragment
+from annotations.utils import get_color
 
 
 class ScenarioList(LoginRequiredMixin, generic.ListView):
@@ -51,7 +52,7 @@ class MDSView(LoginRequiredMixin, generic.DetailView):
             f = fragments[n]
             fragment = Fragment.objects.get(pk=f)
             ts = [tenses[l][n] for l in tenses.keys()]
-            t = [Tense.objects.get(pk=t).title for t in ts]
+            t = [Tense.objects.get(pk=t).title if type(t) == int else t for t in ts]
             # Add all values to the dictionary
             j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(True), 'tenses': t})
 
@@ -59,12 +60,17 @@ class MDSView(LoginRequiredMixin, generic.DetailView):
         # TODO: can this be done in the loop above?
         matrix = []
         for k, v in j.items():
-            t = Tense.objects.get(pk=k)
-
             d = dict()
-            d['key'] = t.title
-            d['color'] = t.category.color
             d['values'] = v
+
+            if type(k) == int:
+                t = Tense.objects.get(pk=k)
+                d['key'] = t.title
+                d['color'] = t.category.color
+            else:
+                d['key'] = k
+                d['color'] = get_color(k)
+
             matrix.append(d)
 
         # Add all variables to the context
@@ -97,7 +103,7 @@ class DescriptiveStatsView(LoginRequiredMixin, generic.DetailView):
             c = Counter()
             n = 0
             for t in tenses[l.iso]:
-                tense = Tense.objects.get(pk=t).title
+                tense = Tense.objects.get(pk=t).title if type(t) == int else t
                 c.update([tense])
                 tuples[n] += (tense,)
                 n += 1

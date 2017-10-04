@@ -26,5 +26,7 @@ class ScenarioLanguage(models.Model):
     as_to = models.BooleanField()
     tenses = models.ManyToManyField(Tense, blank=True)
 
+    use_other_label = models.BooleanField(default=False)  # if the Tense of a Fragment/Annotation is not used for the language
+
     def __unicode__(self):
         return u'Details for language {} in scenario {}'.format(self.language.title, self.scenario.title)
