@@ -96,6 +96,14 @@ class Fragment(models.Model):
             result.extend([word.word for word in sentence.word_set.filter(is_target=True)])
         return ' '.join(result)
 
+    def get_alignments(self, as_original=False, as_translation=False):
+        alignments = Alignment.objects.none()
+        if as_original:
+            alignments |= Alignment.objects.filter(original_fragment=self)
+        if as_translation:
+            alignments |= Alignment.objects.filter(translated_fragment=self)
+        return alignments
+
     def get_annotations(self):
         """
         Returns all Annotations for this Fragment, in all selected languages

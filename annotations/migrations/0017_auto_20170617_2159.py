@@ -12,8 +12,36 @@ class Migration(migrations.Migration):
 
     def update_tenses(apps, schema_editor):
         Fragment = apps.get_model('annotations', 'Fragment')
+        Alignment = apps.get_model('annotations', 'Alignment')
         Annotation = apps.get_model('annotations', 'Annotation')
         Tense = apps.get_model('annotations', 'Tense')
+
+        def get_alignments(fragment, as_original=False, as_translation=False):
+            alignments = Alignment.objects.none()
+            if as_original:
+                alignments |= Alignment.objects.filter(original_fragment=fragment)
+            if as_translation:
+                alignments |= Alignment.objects.filter(translated_fragment=fragment)
+            return alignments
+
+        def get_default_tense(corpus, language):
+            result = ''
+            if corpus == 'EuroParl-ppc':
+                result = 'present perfect continuous'
+            else:
+                if language == 'de':
+                    result = 'Perfekt'
+                elif language == 'es':
+                    result = 'pretérito perfecto compuesto'
+                elif language == 'en':
+                    result = 'present perfect'
+                elif language == 'fr':
+                    result = 'passé composé'
+                elif language == 'nl':
+                    result = 'vtt'
+                else:
+                    print language
+            return result
 
         def get_alternative(language, tense):
             if language.iso == 'fr' and tense == 'futur':
@@ -89,6 +117,13 @@ class Migration(migrations.Migration):
             return None
 
         for fragment in Fragment.objects.all():
+            if not fragment.tense and get_alignments(fragment, as_original=True).count() > 0:
+                if get_alignments(fragment, as_translation=True).count() == 0:
+                    fragment.tense = get_default_tense(fragment.document.corpus.title, fragment.language.iso)
+                    fragment.save()
+                else:
+                    print fragment
+
             tense = fragment.tense
             if tense:
                 try:
