@@ -30,4 +30,4 @@ class ScenarioAdmin(admin.ModelAdmin):
                                   level=messages.ERROR)
         self.message_user(request, 'Selected scenarios have been run')
 
-    run_mds.short_description = 'Run Multidimensional Scaling'
+    run_mds.short_description = '(Re)run Multidimensional Scaling'

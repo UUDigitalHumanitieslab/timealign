@@ -93,6 +93,22 @@ def get_color(tense):
         return '#e7cb94'
     elif tense in [u'subjuntivo pretérito imperfecto']:
         return '#cedb9c'
+
+    elif tense in [u'unmarked']:
+        return '#1f77b4'
+    elif tense in [u'rvc']:
+        return '#ff7f0e'
+    elif tense in [u'le1']:
+        return '#2ca02c'
+    elif tense in [u'le12']:
+        return '#d62728'
+    elif tense in [u'guo']:
+        return '#9467bd'
+    elif tense in [u'zhe']:
+        return '#8c564b'
+    elif tense in [u'zai']:
+        return '#e377c2'
+
     else:
         return ''
 

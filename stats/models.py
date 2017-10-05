@@ -9,8 +9,10 @@ class Scenario(models.Model):
     corpus = models.ForeignKey(Corpus)
     #documents = models.ManyToManyField(Document)
     mds_dimensions = models.PositiveIntegerField(
-        'Number of dimensions to use in Multidimensional Scaling',
-        validators=[MinValueValidator(2), MaxValueValidator(5)])
+        'Number of dimensions',
+        validators=[MinValueValidator(2), MaxValueValidator(5)],
+        help_text='Number of dimensions to use in Multidimensional Scaling. Should be between 2 and 5.'
+    )
 
     last_run = models.DateTimeField(blank=True, null=True)
 

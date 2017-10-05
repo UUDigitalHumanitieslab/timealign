@@ -34,27 +34,32 @@ def run_mds(scenario):
             fragments = fragments.filter(tense__in=language_from.tenses.all())
 
         for fragment in fragments:
-            annotations = Annotation.objects.none()
+            annotated_tenses = dict()
 
             # Retrieve the Annotations for this Fragment...
             for language_to in languages_to:
-                a = Annotation.objects \
+                annotations = Annotation.objects \
                     .exclude(Q(tense=None) & Q(other_label='')) \
                     .filter(is_no_target=False, is_translation=True,
                             alignment__original_fragment=fragment,
                             alignment__translated_fragment__language=language_to.language)
 
                 if language_to.tenses.exists():
-                    a = a.filter(tense__in=language_to.tenses.all())
+                    annotations = annotations.filter(tense__in=language_to.tenses.all())
 
-                annotations |= a
+                if annotations:
+                    a = annotations[0]  # TODO: For now, we only have one Annotation per Fragment. This might change.
+                    a_language = a.alignment.translated_fragment.language.iso
+                    a_tense = get_tense(a, language_to)
+                    if a_tense:
+                        annotated_tenses[a_language] = a_tense
 
-            # ... but only allow Fragments that have Alignments in all languages
-            if annotations.count() == len(languages_to):
+            # ... but only allow Fragments that have Annotations in all languages
+            if len(annotated_tenses) == len(languages_to):
                 fragment_ids.append(fragment.id)
                 tenses[fragment.language.iso].append(get_tense(fragment, language_from))
-                for annotation in annotations:
-                    tenses[annotation.alignment.translated_fragment.language.iso].append(get_tense(annotation, language_to))
+                for l, t in annotated_tenses.items():
+                    tenses[l].append(t)
 
     # Create a list of lists with tenses for all languages
     tenses_matrix = defaultdict(list)
@@ -88,12 +93,12 @@ def run_mds(scenario):
 
 
 def get_tense(model, scenario_language):
+    result = ''
     if scenario_language.use_other_label:
-        return model.other_label
+        result = model.other_label
     elif model.tense:
-        return model.tense.pk
-    else:
-        return u'passé composé'
+        result = model.tense.pk
+    return result
 
 
 def get_distance(array1, array2):
