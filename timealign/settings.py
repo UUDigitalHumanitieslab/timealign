@@ -39,6 +39,7 @@ INSTALLED_APPS = (
 
     'bootstrap3',
     'django_filters',
+    'django_object_actions',
 
     'core',
     'selections',
