@@ -1,5 +1,4 @@
 from django.contrib import admin, messages
-from django.contrib.admin.models import LogEntry, ADDITION
 from django.utils import timezone
 
 from django_object_actions import DjangoObjectActions
