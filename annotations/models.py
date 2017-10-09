@@ -209,3 +209,6 @@ class Annotation(models.Model):
     def selected_words(self):
         # TODO: is there a way to order on part of the id?! Or add an extra field...
         return ' '.join([word.word for word in self.words.all().order_by('xml_id')])
+
+    def label(self):
+        return self.tense.title if self.tense else self.other_label

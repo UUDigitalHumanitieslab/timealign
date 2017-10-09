@@ -122,3 +122,7 @@ LOGIN_REDIRECT_URL = '/stats/scenarios'
 # https://docs.djangoproject.com/en/1.8/ref/contrib/flatpages/
 
 SITE_ID = 1
+
+# File handling
+MEDIA_ROOT = 'media'
+MEDIA_URL = '/media/'

@@ -1,5 +1,8 @@
 from django.contrib import admin, messages
+from django.core.urlresolvers import reverse
+from django.shortcuts import redirect
 from django.utils import timezone
+from django.utils.safestring import mark_safe
 
 from django_object_actions import DjangoObjectActions
 
@@ -11,12 +14,26 @@ from .utils import run_mds
 class ScenarioLanguageInline(admin.TabularInline):
     model = ScenarioLanguage
     form = ScenarioLanguageForm
+    extra = 1
+    verbose_name = 'Language in Scenario'
+    verbose_name_plural = 'Languages in Scenario'
 
 
 @admin.register(Scenario)
 class ScenarioAdmin(DjangoObjectActions, admin.ModelAdmin):
-    list_display = ('title', 'corpus', 'mds_dimensions', 'last_run', )
+    list_display = ('title', 'corpus', 'from_languages', 'to_languages', 'last_run', )
     list_filter = ('corpus', )
+
+    fieldsets = (
+        (None, {
+            'fields': ('title', 'corpus', )
+        }),
+        ('Multidimensional Scaling', {
+            'classes': ('collapse',),
+            'fields': ('mds_dimensions', )
+        })
+    )
+
     inlines = [ScenarioLanguageInline]
 
     def run_mds(self, request, obj):
@@ -28,7 +45,7 @@ class ScenarioAdmin(DjangoObjectActions, admin.ModelAdmin):
             self.message_user(request,
                               'Something went wrong while running scenario {}'.format(obj.title),
                               level=messages.ERROR)
-        self.message_user(request, 'Multidimensional Scaling has been run')
+        self.message_user(request, mark_safe('Multidimensional Scaling has been run.'))
     run_mds.label = '(Re)run Multidimensional Scaling'
     run_mds.short_description = '(Re)run Multidimensional Scaling'
 

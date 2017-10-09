@@ -66,7 +66,7 @@ class Command(BaseCommand):
 
                     for annotation in annotations:
                         w = [word.word for word in annotation.words.all()]
-                        row.append(annotation.tense)
+                        row.append(annotation.label())
                         row.extend(pad_list(w, 5))
 
                     rows.append(row)

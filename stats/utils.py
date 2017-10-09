@@ -3,26 +3,19 @@
 from __future__ import division
 
 from collections import defaultdict
-import os
-import pickle
 
 import numpy as np
 from sklearn import manifold
 
 from django.db.models import Q
 
-from .models import ScenarioLanguage
-from annotations.models import Tense, Fragment, Annotation
-
-
-def languages_by_scenario(scenario, **kwargs):
-    return ScenarioLanguage.objects.filter(scenario=scenario, **kwargs)
+from annotations.models import Fragment, Annotation
 
 
 def run_mds(scenario):
     corpus = scenario.corpus
-    languages_from = languages_by_scenario(scenario, as_from=True)
-    languages_to = languages_by_scenario(scenario, as_to=True)
+    languages_from = scenario.languages(as_from=True)
+    languages_to = scenario.languages(as_to=True)
 
     # For each Fragment, get the tenses
     fragment_ids = []
@@ -81,15 +74,11 @@ def run_mds(scenario):
     pos = mds.fit_transform(matrix)
 
     # Pickle the created objects
-    plots_dir = 'plots'
-    if not os.path.exists(plots_dir):
-        os.makedirs(plots_dir)
-
-    pre = '{}/{}_'.format(plots_dir, scenario.pk)
-    pickle.dump(matrix, open(pre + 'matrix.p', 'wb'))
-    pickle.dump(pos.tolist(), open(pre + 'model.p', 'wb'))
-    pickle.dump(fragment_ids, open(pre + 'fragments.p', 'wb'))
-    pickle.dump(tenses, open(pre + 'tenses.p', 'wb'))
+    scenario.mds_matrix = matrix
+    scenario.mds_model = pos.tolist()
+    scenario.mds_fragments = fragment_ids
+    scenario.mds_labels = tenses
+    scenario.save()
 
 
 def get_tense(model, scenario_language):

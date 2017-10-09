@@ -1,11 +1,14 @@
-# Compiled Python
+### Django
+*.log
+*.pot
 *.pyc
+__pycache__/
 
-# Output of python manage.py export_matrix
-plots/
-
+### Project-specific
+# Uploaded files
+media/
 # Databases
 *.sqlite3
 
-# IDE settings
+### IDE settings
 .idea/

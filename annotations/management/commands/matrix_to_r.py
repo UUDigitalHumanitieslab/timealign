@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
-import pickle
-
 import rpy2.robjects as robjects
 from rpy2.robjects.packages import importr
 from rpy2.robjects import numpy2ri
 
 from django.core.management.base import BaseCommand, CommandError
 
-from annotations.models import Corpus, Fragment
+from stats.models import Scenario
 
 numpy2ri.activate()
 
@@ -16,29 +14,28 @@ class Command(BaseCommand):
     help = 'Exports the distance matrix in R format'
 
     def add_arguments(self, parser):
-        parser.add_argument('corpus', type=str)
+        parser.add_argument('scenario', type=str)
 
     def handle(self, *args, **options):
-        # Retrieve the Corpus from the database
+        # Retrieve the Scenario from the database
         try:
-            corpus = Corpus.objects.get(title=options['corpus'])
-        except Corpus.DoesNotExist:
-            raise CommandError('Corpus with title {} does not exist'.format(options['corpus']))
+            scenario = Scenario.objects.get(title=options['scenario'])
+        except Scenario.DoesNotExist:
+            raise CommandError('Scenario with title {} does not exist'.format(options['scenario']))
 
         # Retrieve the pickled data
-        pre = 'plots/{}_'.format(corpus.pk)
-        matrix = pickle.load(open(pre + 'matrix.p', 'rb'))
-        fragment_ids = pickle.load(open(pre + 'fragments.p', 'rb'))
-        tenses = pickle.load(open(pre + 'tenses.p', 'rb'))
+        matrix = scenario.mds_matrix
+        fragment_ids = scenario.mds_fragments
+        tenses = scenario.mds_labels
 
         # Assign the pickled data to R variables
         robjects.r.assign('matrix', matrix)
         robjects.r.assign('fragment_ids', robjects.StrVector(fragment_ids))
 
-        for language in corpus.languages.all():
+        for language in scenario.languages().all():
             robjects.r.assign('tenses_{}'.format(language.iso), robjects.StrVector(tenses[language]))
 
         # Save the workspace
-        filename = '{}.RData'.format(corpus.title)
+        filename = '{}.RData'.format(scenario.title)
         base = importr('base')
         base.save_image(file=filename)

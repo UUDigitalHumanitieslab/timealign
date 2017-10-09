@@ -3,4 +3,5 @@ django-bootstrap3
 django-braces
 django-filter
 django-object-actions
+django-picklefield
 lxml

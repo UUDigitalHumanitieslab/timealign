@@ -1,6 +1,5 @@
 from collections import defaultdict, Counter
 import json
-import pickle
 import random
 
 from django.views import generic
@@ -8,7 +7,6 @@ from django.views import generic
 from braces.views import LoginRequiredMixin
 
 from .models import Scenario
-from .utils import languages_by_scenario
 from annotations.models import Language, Tense, Fragment
 from annotations.utils import get_color
 
@@ -31,16 +29,15 @@ class MDSView(LoginRequiredMixin, generic.DetailView):
         context = super(MDSView, self).get_context_data(**kwargs)
 
         # Retrieve kwargs
-        pk = self.object.pk
-        language = self.kwargs.get('language', languages_by_scenario(self.object).order_by('language__iso').first().language.iso)
+        scenario = self.object
+        language = self.kwargs.get('language', scenario.languages().order_by('language__iso').first().language.iso)
         d1 = int(self.kwargs.get('d1', 1))  # We choose dimensions to be 1-based
         d2 = int(self.kwargs.get('d2', 2))
 
-        # Retrieve lists generated with command python manage.py export_matrix
-        pre = 'plots/{}_'.format(pk)
-        model = pickle.load(open(pre + 'model.p', 'rb'))
-        tenses = pickle.load(open(pre + 'tenses.p', 'rb'))
-        fragments = pickle.load(open(pre + 'fragments.p', 'rb'))
+        # Retrieve pickled data
+        model = scenario.mds_model
+        tenses = scenario.mds_labels
+        fragments = scenario.mds_fragments
 
         # Turn the pickled model into a scatterplot dictionary
         j = defaultdict(list)
@@ -91,9 +88,7 @@ class DescriptiveStatsView(LoginRequiredMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(DescriptiveStatsView, self).get_context_data(**kwargs)
 
-        pk = self.object.pk
-        pre = 'plots/{}_'.format(pk)
-        tenses = pickle.load(open(pre + 'tenses.p', 'rb'))
+        tenses = self.object.mds_labels
         languages = Language.objects.filter(iso__in=tenses.keys())
 
         counters = dict()
