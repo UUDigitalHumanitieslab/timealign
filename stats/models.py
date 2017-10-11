@@ -9,7 +9,7 @@ from annotations.models import Language, Tense, Corpus, Document
 class Scenario(models.Model):
     title = models.CharField(max_length=200)
     corpus = models.ForeignKey(Corpus)
-    #documents = models.ManyToManyField(Document)
+    documents = models.ManyToManyField(Document, blank=True)
 
     mds_dimensions = models.PositiveIntegerField(
         'Number of dimensions',
@@ -17,10 +17,10 @@ class Scenario(models.Model):
         validators=[MinValueValidator(2), MaxValueValidator(5)],
         help_text='Number of dimensions to use in Multidimensional Scaling. Should be between 2 and 5.'
     )
-    mds_model = PickledObjectField('MDS model', blank='True')
-    mds_matrix = PickledObjectField('MDS matrix', blank='True')
-    mds_fragments = PickledObjectField('MDS fragments', blank='True')
-    mds_labels = PickledObjectField('MDS labels', blank='True')
+    mds_model = PickledObjectField('MDS model', blank=True)
+    mds_matrix = PickledObjectField('MDS matrix', blank=True)
+    mds_fragments = PickledObjectField('MDS fragments', blank=True)
+    mds_labels = PickledObjectField('MDS labels', blank=True)
 
     last_run = models.DateTimeField(blank=True, null=True)
 
@@ -46,6 +46,7 @@ class ScenarioLanguage(models.Model):
     tenses = models.ManyToManyField(Tense, blank=True)
 
     use_other_label = models.BooleanField(default=False)  # if the Tense of a Fragment/Annotation is not used for the language
+    other_labels = models.CharField('Allowed labels, comma-separated', max_length=200, blank=True)
 
     def __unicode__(self):
         return u'Details for language {} in scenario {}'.format(self.language.title, self.scenario.title)

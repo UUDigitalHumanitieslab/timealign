@@ -21,15 +21,21 @@ def run_mds(scenario):
     fragment_ids = []
     tenses = defaultdict(list)
     for language_from in languages_from:
-
+        # Filter on Corpus and Language
         fragments = Fragment.objects.filter(document__corpus=corpus, language=language_from.language)
+
+        # Filter on Documents (if selected)
+        if scenario.documents.exists():
+            fragments = fragments.filter(document__in=scenario.documents.all())
+
+        # Filter on Tenses (if selected)
         if language_from.tenses.exists():
             fragments = fragments.filter(tense__in=language_from.tenses.all())
 
+        # For every Fragment, retrieve the Annotations
         for fragment in fragments:
             annotated_tenses = dict()
 
-            # Retrieve the Annotations for this Fragment...
             for language_to in languages_to:
                 annotations = Annotation.objects \
                     .exclude(Q(tense=None) & Q(other_label='')) \
@@ -37,11 +43,18 @@ def run_mds(scenario):
                             alignment__original_fragment=fragment,
                             alignment__translated_fragment__language=language_to.language)
 
+                # Filter on Tenses
                 if language_to.tenses.exists():
                     annotations = annotations.filter(tense__in=language_to.tenses.all())
 
+                # Filter on other_labels
+                if language_to.use_other_label and language_to.other_labels:
+                    other_labels = language_to.other_labels.split(',')
+                    annotations = annotations.filter(other_label__in=other_labels)
+
+                # Compile a list of Annotations...
                 if annotations:
-                    a = annotations[0]  # TODO: For now, we only have one Annotation per Fragment. This might change.
+                    a = annotations[0]  # TODO: For now, we only have one Annotation per Fragment. This might change in the future.
                     a_language = a.alignment.translated_fragment.language.iso
                     a_tense = get_tense(a, language_to)
                     if a_tense:

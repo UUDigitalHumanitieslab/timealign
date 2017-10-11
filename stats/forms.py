@@ -1,6 +1,15 @@
 from django import forms
 
 
+class ScenarioForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(ScenarioForm, self).__init__(*args, **kwargs)
+
+        # If the Corpus has been set, filter the Documents based on the Corpus
+        if self.instance.corpus_id:
+            self.fields['documents'].queryset = self.fields['documents'].queryset.filter(corpus=self.instance.corpus)
+
+
 class ScenarioLanguageForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ScenarioLanguageForm, self).__init__(*args, **kwargs)

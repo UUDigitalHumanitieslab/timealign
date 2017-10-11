@@ -6,7 +6,7 @@ from django.utils.safestring import mark_safe
 
 from django_object_actions import DjangoObjectActions
 
-from .forms import ScenarioLanguageForm
+from .forms import ScenarioForm, ScenarioLanguageForm
 from .models import Scenario, ScenarioLanguage
 from .utils import run_mds
 
@@ -21,12 +21,13 @@ class ScenarioLanguageInline(admin.TabularInline):
 
 @admin.register(Scenario)
 class ScenarioAdmin(DjangoObjectActions, admin.ModelAdmin):
+    form = ScenarioForm
     list_display = ('title', 'corpus', 'from_languages', 'to_languages', 'last_run', )
     list_filter = ('corpus', )
 
     fieldsets = (
         (None, {
-            'fields': ('title', 'corpus', )
+            'fields': ('title', 'corpus', 'documents', )
         }),
         ('Multidimensional Scaling', {
             'classes': ('collapse',),
