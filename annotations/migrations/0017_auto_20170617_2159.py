@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
             return alignments
 
         def get_default_tense(corpus, language):
-            result = ''
+            result = None
             if corpus == 'EuroParl-ppc':
                 result = 'present perfect continuous'
             else:
@@ -128,12 +128,12 @@ class Migration(migrations.Migration):
             if tense:
                 try:
                     language = fragment.language
-                    fragment.tense_new = Tense.objects.get(language=language, title=tense)
+                    fragment.tense_new = Tense.objects.get(language=language, title=tense).pk
                     fragment.save()
                 except Tense.DoesNotExist:
                     t = get_alternative(language, tense)
                     if t:
-                        fragment.tense_new = t
+                        fragment.tense_new = t.pk
                     else:
                         fragment.tense_new = None
                         fragment.other_label = tense
@@ -144,12 +144,12 @@ class Migration(migrations.Migration):
             if tense:
                 try:
                     language = annotation.alignment.translated_fragment.language
-                    annotation.tense_new = Tense.objects.get(language=language, title=tense)
+                    annotation.tense_new = Tense.objects.get(language=language, title=tense).pk
                     annotation.save()
                 except Tense.DoesNotExist:
                     t = get_alternative(language, tense)
                     if t:
-                        annotation.tense_new = t
+                        annotation.tense_new = t.pk
                     else:
                         annotation.tense_new = None
                         annotation.other_label = tense
@@ -201,7 +201,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='annotation',
             name='tense_new',
-            field=models.ForeignKey(to='annotations.Tense', null=True),
+            field=models.IntegerField(db_column='tense_new', null=True),
         ),
         migrations.AddField(
             model_name='fragment',
@@ -211,7 +211,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='fragment',
             name='tense_new',
-            field=models.ForeignKey(to='annotations.Tense', null=True),
+            field=models.IntegerField(db_column='tense_new', null=True),
         ),
 
         migrations.RunPython(update_tenses),
@@ -225,6 +225,11 @@ class Migration(migrations.Migration):
             old_name='tense_new',
             new_name='tense',
         ),
+        migrations.AlterField(
+            model_name='annotation',
+            name='tense',
+            field=models.ForeignKey(to='annotations.Tense', null=True),
+        ),
 
         migrations.RemoveField(
             model_name='fragment',
@@ -234,5 +239,10 @@ class Migration(migrations.Migration):
             model_name='fragment',
             old_name='tense_new',
             new_name='tense',
+        ),
+        migrations.AlterField(
+            model_name='fragment',
+            name='tense',
+            field=models.ForeignKey(to='annotations.Tense', null=True),
         ),
     ]
