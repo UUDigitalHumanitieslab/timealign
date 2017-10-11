@@ -5,3 +5,7 @@ django-filter
 django-object-actions
 django-picklefield
 lxml
+mysql-python
+numpy
+scipy
+scikit-learn
