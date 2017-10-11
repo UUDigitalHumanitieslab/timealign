@@ -5,8 +5,13 @@
 {% block content %}
 
 <h1>Details for scenario <em>{{ scenario.title }}</em></h1>
+<p>
+    {{ scenario.description }}
+</p>
 <h2>Corpus</h2>
-{{ scenario.corpus.title }}
+<p>
+    {{ scenario.corpus.title }}, documents: {{ scenario.documents.all|join:", "|default:"all" }}
+</p>
 <h2>Languages</h2>
 <table class="table table-striped">
     <thead>
@@ -18,7 +23,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for sl in scenario.scenariolanguage_set.all %}
+        {% for sl in scenario.languages.all %}
         <tr>
             <td>{{ sl.language }}</td>
             <td>{% if sl.as_from %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>

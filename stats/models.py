@@ -8,6 +8,8 @@ from annotations.models import Language, Tense, Corpus, Document
 
 class Scenario(models.Model):
     title = models.CharField(max_length=200)
+    description = models.TextField()
+
     corpus = models.ForeignKey(Corpus)
     documents = models.ManyToManyField(Document, blank=True)
 
