@@ -1,7 +1,9 @@
 from collections import defaultdict, Counter
 import json
+import numbers
 import random
 
+from django.http import Http404
 from django.views import generic
 
 from braces.views import LoginRequiredMixin
@@ -15,12 +17,27 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
     model = Scenario
     context_object_name = 'scenarios'
 
+    def get_queryset(self):
+        """
+        Only show Scenarios that have been run
+        """
+        return Scenario.objects.exclude(last_run__isnull=True)
+
 
 class ScenarioDetail(LoginRequiredMixin, generic.DetailView):
     model = Scenario
 
+    def get_object(self, queryset=None):
+        """
+        Only show Scenarios that have been run
+        """
+        scenario = super(ScenarioDetail, self).get_object(queryset)
+        if not scenario.last_run:
+            raise Http404('Scenario has not been run')
+        return scenario
 
-class MDSView(LoginRequiredMixin, generic.DetailView):
+
+class MDSView(ScenarioDetail):
     """Loads the matrix plot view"""
     model = Scenario
     template_name = 'stats/mds.html'
@@ -49,7 +66,7 @@ class MDSView(LoginRequiredMixin, generic.DetailView):
             f = fragments[n]
             fragment = Fragment.objects.get(pk=f)
             ts = [tenses[l][n] for l in tenses.keys()]
-            t = [Tense.objects.get(pk=t).title if type(t) == int else t for t in ts]
+            t = [Tense.objects.get(pk=t).title if isinstance(t, numbers.Number) else t for t in ts]
             # Add all values to the dictionary
             j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(True), 'tenses': t})
 
@@ -60,7 +77,7 @@ class MDSView(LoginRequiredMixin, generic.DetailView):
             d = dict()
             d['values'] = v
 
-            if type(k) == int:
+            if isinstance(k, numbers.Number):
                 t = Tense.objects.get(pk=k)
                 d['key'] = t.title
                 d['color'] = t.category.color
@@ -81,7 +98,7 @@ class MDSView(LoginRequiredMixin, generic.DetailView):
         return context
 
 
-class DescriptiveStatsView(LoginRequiredMixin, generic.DetailView):
+class DescriptiveStatsView(ScenarioDetail):
     model = Scenario
     template_name = 'stats/descriptive.html'
 
@@ -98,7 +115,7 @@ class DescriptiveStatsView(LoginRequiredMixin, generic.DetailView):
             c = Counter()
             n = 0
             for t in tenses[l.iso]:
-                tense = Tense.objects.get(pk=t).title if type(t) == int else t
+                tense = Tense.objects.get(pk=t).title if isinstance(t, numbers.Number) else t
                 c.update([tense])
                 tuples[n] += (tense,)
                 n += 1
