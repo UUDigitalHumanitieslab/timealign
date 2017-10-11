@@ -19,10 +19,18 @@
                     <ul class="dropdown-menu">
                         <li><a href="{% url 'project' %}">Project Description</a></li>
                         <li><a href="{% url 'nl-summary' %}">Summary in Dutch</a></li>
+                        <li><a href="{% url 'videos' %}">Videos</a></li>
                     </ul>
                 </li>
                 <li><a href="{% url 'publications' %}">Publications</a></li>
                 <li><a href="{% url 'student-research' %}">Student Research</a></li>
+                <li>
+                    <a href="#">Meetings <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{% url 'workshops' %}">Workshops</a></li>
+                        <li><a href="{% url 'expert-meetings' %}">Expert meetings</a></li>
+                    </ul>
+                </li>
                 <li>
                     <a href="#">Translation Mining <span class="caret"></span></a>
                     <ul class="dropdown-menu">

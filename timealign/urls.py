@@ -28,9 +28,12 @@ urlpatterns = [
 
     url(r'^$', views.flatpage, {'url': '/home/'}, name='home'),
     url(r'^project/$', views.flatpage, {'url': '/project/'}, name='project'),
-    url(r'^project/nl-summary/$', views.flatpage, {'url': '/nl-summary/'}, name='nl-summary'),
+    url(r'^project/nl-summary/$', views.flatpage, {'url': '/project/nl-summary/'}, name='nl-summary'),
+    url(r'^project/videos/$', views.flatpage, {'url': '/project/videos/'}, name='videos'),
     url(r'^publications/$', views.flatpage, {'url': '/publications/'}, name='publications'),
     url(r'^student-research/$', views.flatpage, {'url': '/student-research/'}, name='student-research'),
+    url(r'^workshops/$', views.flatpage, {'url': '/workshops/'}, name='workshops'),
+    url(r'^expert-meetings/$', views.flatpage, {'url': '/expert-meetings/'}, name='expert-meetings'),
     url(r'^perfectextractor/$', views.flatpage, {'url': '/perfectextractor/'}, name='perfectextractor'),
     url(r'^translation-mining/$', views.flatpage, {'url': '/translation-mining/'}, name='translation-mining'),
     url(r'^contact/$', views.flatpage, {'url': '/contact/'}, name='contact'),
