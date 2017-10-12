@@ -108,6 +108,18 @@ def get_color(tense):
         return '#8c564b'
     elif tense in [u'zai']:
         return '#e377c2'
+    elif tense in [u'unmarked duplication']:
+        return '#7f7f7f'
+    elif tense in [u'adv']:
+        return '#bcbd22'
+    elif tense in [u'adj']:
+        return '#17becf'
+    elif tense in [u'conj']:
+        return '#aec7e8'
+    elif tense in [u'mood']:
+        return '#ffbb78'
+    elif tense in [u'noun']:
+        return '#98df8a'
 
     else:
         return ''
