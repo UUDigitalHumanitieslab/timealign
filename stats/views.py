@@ -21,7 +21,7 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
         """
         Only show Scenarios that have been run
         """
-        return Scenario.objects.exclude(last_run__isnull=True)
+        return Scenario.objects.exclude(last_run__isnull=True).order_by('corpus__title')
 
 
 class ScenarioDetail(LoginRequiredMixin, generic.DetailView):

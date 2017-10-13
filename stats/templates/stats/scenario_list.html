@@ -7,27 +7,23 @@
 {% regroup scenarios by corpus as corpus_list %}
 
 <h2>Show results for:</h2>
-<ul>
-    {% for corpus in corpus_list %}
-    <li>
-        {{ corpus.grouper }}
-        <ul>
-            {% for scenario in corpus.list %}
-            <li>
-                {{ scenario.title }} <a href="{% url 'stats:show' scenario.pk %}" class="btn btn-primary btn-sm">{% bootstrap_icon "info-sign" %}</span> Info</a>
-                <ul>
-                    <li>
-                        <a href="{% url 'stats:mds' scenario.pk %}">Multidimensional scaling</a>
-                    </li>
-                    <li>
-                        <a href="{% url 'stats:descriptive' scenario.pk %}">Descriptive statistics</a>
-                    </li>
-                </ul>
-            </li>
-            {% endfor %}
-        </ul>
-    </li>
-    {% endfor %}
-</ul>
+{% for corpus in corpus_list %}
+<h3>{{ corpus.grouper }}</h3>
+    <ul>
+        {% for scenario in corpus.list %}
+        <li>
+            {{ scenario.title }} <a href="{% url 'stats:show' scenario.pk %}" class="btn btn-primary btn-sm">{% bootstrap_icon "info-sign" %}</span> Info</a>
+            <ul>
+                <li>
+                    <a href="{% url 'stats:mds' scenario.pk %}">Multidimensional scaling</a>
+                </li>
+                <li>
+                    <a href="{% url 'stats:descriptive' scenario.pk %}">Descriptive statistics</a>
+                </li>
+            </ul>
+        </li>
+        {% endfor %}
+    </ul>
+{% endfor %}
 
 {% endblock %}
