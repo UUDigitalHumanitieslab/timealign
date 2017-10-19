@@ -90,8 +90,11 @@ WSGI_APPLICATION = 'timealign.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db_prod.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'tint_20171013',
+        'USER': 'root',
+        'PASSWORD': 'root++',
+        'HOST': 'localhost',
     }
 }
 
