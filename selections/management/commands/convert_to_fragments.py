@@ -7,7 +7,7 @@ from lxml import etree
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from annotations.models import Language, Corpus, Document, Fragment, Sentence, Word, Alignment
+from annotations.models import Language, Corpus, Document, Fragment, Sentence, Word, Alignment, Tense
 from selections.models import Selection
 
 
@@ -70,8 +70,8 @@ class Command(BaseCommand):
         else:
             for fragment in Fragment.objects \
                     .filter(document__corpus=corpus) \
-                    .exclude(tense=u'') \
-                    .exclude(tense=u'passé composé'):
+                    .exclude(tense=None) \
+                    .exclude(tense=Tense.objects.get(title=u'passé composé')):
                 for sentence in fragment.sentence_set.all():
                     sentence_cache[(fragment.document.pk, sentence.xml_id)] = sentence
 
