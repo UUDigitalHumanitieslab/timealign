@@ -57,6 +57,7 @@ class MDSView(ScenarioDetail):
         fragments = scenario.mds_fragments
 
         # Turn the pickled model into a scatterplot dictionary
+        random.seed(scenario.pk)  # Fixed seed for random jitter
         j = defaultdict(list)
         for n, l in enumerate(model):
             # Retrieve x/y dimensions, add some jitter
