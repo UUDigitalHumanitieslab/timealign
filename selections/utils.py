@@ -1,5 +1,3 @@
-from django.db.models import Max
-
 from annotations.utils import get_available_corpora
 
 from .models import PreProcessFragment, Selection

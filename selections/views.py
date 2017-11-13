@@ -1,7 +1,6 @@
 from django.contrib import messages
-from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django.views import generic
 
 from braces.views import PermissionRequiredMixin
