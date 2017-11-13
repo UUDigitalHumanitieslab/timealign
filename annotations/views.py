@@ -38,6 +38,7 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
         """Creates a list of tuples with information on the annotation progress"""
         context = super(StatusView, self).get_context_data(**kwargs)
 
+        user = self.request.user
         corpora = get_available_corpora(self.request.user)
 
         languages = set()
@@ -52,8 +53,11 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
                                                   original_fragment__document__corpus__in=corpora)
 
             total = alignments.count()
-            annotated = alignments.exclude(annotation=None).count()
-            language_totals.append((l1, l2, annotated, total))
+            completed = alignments.filter(annotation__annotated_by=user).count()
+
+            if total:
+                language_totals.append((l1, l2, completed, total))
+
         context['languages'] = language_totals
         context['current_corpora'] = corpora
 

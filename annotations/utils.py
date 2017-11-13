@@ -13,11 +13,11 @@ def get_random_alignment(user, language_from, language_to):
     :param language_to: The target language
     :return: A random Alignment object
     """
-    alignments = Alignment.objects.filter(original_fragment__language=language_from,
-                                          translated_fragment__language=language_to,
-                                          annotation=None)
-
-    alignments = alignments.filter(original_fragment__document__corpus__in=get_available_corpora(user))
+    alignments = Alignment.objects \
+        .filter(original_fragment__language=language_from) \
+        .filter(translated_fragment__language=language_to) \
+        .filter(original_fragment__document__corpus__in=get_available_corpora(user)) \
+        .exclude(annotation__annotated_by=user)
 
     return alignments.order_by('?').first()
 
