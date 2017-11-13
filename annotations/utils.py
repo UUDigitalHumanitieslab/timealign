@@ -46,28 +46,28 @@ def get_color(tense):
     if tense in [u'Perfekt', u'present perfect', u'pretérito perfecto compuesto', u'passé composé', u'vtt',
                  u'passato prossimo', u'PresPerf']:
         return '#1f77b4'
-    elif tense in [u'Präsens', u'simple present', u'presente', u'présent', u'ott', u'Present']:
+    elif tense in [u'Präsens', u'simple present', u'presente', u'présent', u'ott', u'Present', u'present imperfective', u'present']:
         return '#ff7f0e'
-    elif tense in [u'Präteritum', u'simple past', u'pretérito perfecto simple', u'indefinido', u'passé simple', u'ovt', u'Past']:
+    elif tense in [u'Präteritum', u'simple past', u'pretérito perfecto simple', u'indefinido', u'passé simple', u'ovt', u'Past', u'past perfective', u'past']:
         return '#2ca02c'
     elif tense in [u'Plusquamperfekt', u'past perfect', u'pretérito pluscuamperfecto', u'plus-que-parfait', u'vvt',
-                   u'trapassato prossimo', u'PastPerf']:
+                   u'trapassato prossimo', u'PastPerf', u'past+infinitive']:
         return '#d62728'
-    elif tense in [u'Futur I', u'simple future', u'futur', u'futuro', u'ottt']:
+    elif tense in [u'Futur I', u'simple future', u'futur', u'futuro', u'ottt', u'future']:
         return '#9467bd'
-    elif tense in [u'Futur II', u'future perfect', u'futur antérieur', u'futuro perfecto', u'ovtt']:
+    elif tense in [u'Futur II', u'future perfect', u'futur antérieur', u'futuro perfecto', u'ovtt', u'future past']:
         return '#8c564b'
-    elif tense in [u'present perfect continuous', u'Cont']:
+    elif tense in [u'present perfect continuous', u'Cont', u'present/adjective']:
         return '#e377c2'
-    elif tense in [u'pasado reciente', u'passé récent', u'RecentPast']:
+    elif tense in [u'pasado reciente', u'passé récent', u'RecentPast', u'copular']:
         return '#7f7f7f'
-    elif tense in [u'pretérito imperfecto', u'imparfait', u'Imperfecto']:
+    elif tense in [u'pretérito imperfecto', u'imparfait', u'Imperfecto', u'past imperfective', u'past+present']:
         return '#bcbd22'
-    elif tense in [u'present participle', u'participio', u'Gerund']:
+    elif tense in [u'present participle', u'participio', u'Gerund', u'gerund']:
         return '#17becf'
-    elif tense in [u'Infinitiv', u'infinitief', u'infinitif', u'infinitivo']:
+    elif tense in [u'Infinitiv', u'infinitief', u'infinitif', u'infinitivo', u'infinitive']:
         return '#aec7e8'
-    elif tense in [u'present continuous', u'PresGer']:
+    elif tense in [u'present continuous', u'PresGer', u'existential']:
         return '#ffbb78'
     elif tense in [u'condicional', u'conditionnel', u'Rep']:
         return '#98df8a'
@@ -120,9 +120,12 @@ def get_color(tense):
         return '#ffbb78'
     elif tense in [u'noun']:
         return '#98df8a'
+    elif tense in [u'non-verb', u'other']:
+        return '#ff9896'
 
     else:
         return ''
+
 
 def get_distinct_tenses(language):
     """
