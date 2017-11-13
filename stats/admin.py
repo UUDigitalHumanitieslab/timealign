@@ -23,7 +23,7 @@ class ScenarioLanguageInline(admin.TabularInline):
 class ScenarioAdmin(DjangoObjectActions, admin.ModelAdmin):
     form = ScenarioForm
     list_display = ('title', 'corpus', 'from_languages', 'to_languages', 'last_run', )
-    list_filter = ('corpus', )
+    list_filter = ('corpus', 'scenariolanguage__language', )
 
     fieldsets = (
         (None, {
