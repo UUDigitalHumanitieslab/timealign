@@ -22,12 +22,12 @@ class ScenarioLanguageInline(admin.TabularInline):
 @admin.register(Scenario)
 class ScenarioAdmin(DjangoObjectActions, admin.ModelAdmin):
     form = ScenarioForm
-    list_display = ('title', 'corpus', 'from_languages', 'to_languages', 'last_run', )
+    list_display = ('title', 'corpus', 'is_test', 'from_languages', 'to_languages', 'last_run', )
     list_filter = ('corpus', 'scenariolanguage__language', )
 
     fieldsets = (
         (None, {
-            'fields': ('title', 'description', 'corpus', 'documents', )
+            'fields': ('title', 'description', 'is_test', 'corpus', 'documents', )
         }),
         ('Multidimensional Scaling', {
             'classes': ('collapse',),

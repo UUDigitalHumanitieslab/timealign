@@ -12,7 +12,8 @@
     <ul>
         {% for scenario in corpus.list %}
         <li>
-            {{ scenario.title }} <a href="{% url 'stats:show' scenario.pk %}" class="btn btn-primary btn-sm">{% bootstrap_icon "info-sign" %}</span> Info</a>
+            {{ scenario.title }}
+            {% if scenario.is_test %}<span class="label label-warning">Test</span>{% endif %}
             <ul>
                 <li>
                     <a href="{% url 'stats:mds' scenario.pk %}">Multidimensional scaling</a>
@@ -20,10 +21,24 @@
                 <li>
                     <a href="{% url 'stats:descriptive' scenario.pk %}">Descriptive statistics</a>
                 </li>
+                <li>
+                    <a href="{% url 'stats:show' scenario.pk %}">Details</a>
+                </li>
             </ul>
         </li>
         {% endfor %}
     </ul>
 {% endfor %}
+
+<div class="alert alert-info" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <p>
+        {% if view.kwargs.show_tests %}
+        This overview includes test scenarios. <a href="{% url 'stats:scenarios' %}" class="alert-link">Don't include test scenarios</a>.
+        {% else %}
+        This overview does not include test scenarios. <a href="{% url 'stats:scenarios' 1 %}" class="alert-link">Include test scenarios</a>.
+        {% endif %}
+    </p>
+</div>
 
 {% endblock %}

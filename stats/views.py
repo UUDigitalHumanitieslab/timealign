@@ -20,9 +20,17 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         """
-        Only show Scenarios that have been run
+        Only show Scenarios that have been run,
+        and if show_tests is False, don't show test Scenarios either.
+        Order the Scenarios by Corpus title.
         """
-        return Scenario.objects.exclude(last_run__isnull=True).order_by('corpus__title')
+        show_tests = self.kwargs.get('show_tests', False)
+
+        scenarios = Scenario.objects.exclude(last_run__isnull=True)
+        if not show_tests:
+            scenarios = scenarios.exclude(is_test=True)
+
+        return scenarios.order_by('corpus__title')
 
 
 class ScenarioDetail(LoginRequiredMixin, generic.DetailView):

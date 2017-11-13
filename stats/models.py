@@ -9,6 +9,10 @@ from annotations.models import Language, Tense, Corpus, Document
 class Scenario(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
+    is_test = models.BooleanField(
+        'Test scenario',
+        default=False,
+        help_text='Checking this box signals that the scenario should not be displayed in the standard overview.')
 
     corpus = models.ForeignKey(Corpus)
     documents = models.ManyToManyField(Document, blank=True)

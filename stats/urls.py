@@ -5,6 +5,7 @@ from .views import ScenarioList, ScenarioDetail, MDSView, DescriptiveStatsView
 urlpatterns = [
     # List views
     url(r'^scenarios/$', ScenarioList.as_view(), name='scenarios'),
+    url(r'^scenarios/(?P<show_tests>\d+)/$', ScenarioList.as_view(), name='scenarios'),
 
     # List views
     url(r'^show/(?P<pk>\d+)/$', ScenarioDetail.as_view(), name='show'),
