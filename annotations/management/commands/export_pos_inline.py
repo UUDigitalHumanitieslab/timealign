@@ -36,10 +36,10 @@ class Command(BaseCommand):
             csvfile.write(u'\uFEFF'.encode('utf-8'))  # the UTF-8 BOM to hint Excel we are using that...
             csv_writer = UnicodeWriter(csvfile, delimiter=';')
 
-            top = [''] * 3
-            header = ['id', 'source words', 'tense']
+            top = [''] * 4
+            header = ['id', 'source words', 'sentence', 'tense']
             for language in languages:
-                header.extend(['tense', 'w1', 'w2', 'w3', 'w4', 'w5'])
+                header.extend(['sentence', 'tense', 'w1', 'w2', 'w3', 'w4', 'w5'])
                 top.extend([language.title] * 6)
 
             csv_writer.writerow(top)
@@ -51,7 +51,6 @@ class Command(BaseCommand):
 
                 # Retrieve the Annotations for this Fragment...
                 annotations = Annotation.objects \
-                    .exclude(tense='other') \
                     .filter(is_no_target=False, is_translation=True,
                             alignment__original_fragment=fragment,
                             alignment__translated_fragment__language__in=languages) \
@@ -62,10 +61,12 @@ class Command(BaseCommand):
                     words = Word.objects.filter(sentence__fragment=fragment, is_target=True)
                     row.append(str(fragment.pk))
                     row.append(' '.join([word.word for word in words]))
-                    row.append(fragment.tense)
+                    row.append(fragment.full())
+                    row.append(fragment.tense.title)
 
                     for annotation in annotations:
                         w = [word.word for word in annotation.words.all()]
+                        row.append(annotation.alignment.translated_fragment.full())
                         row.append(annotation.label())
                         row.extend(pad_list(w, 5))
 
