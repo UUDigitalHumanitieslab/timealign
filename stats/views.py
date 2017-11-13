@@ -4,6 +4,7 @@ import numbers
 import random
 
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.views import generic
 
 from braces.views import LoginRequiredMixin
@@ -51,6 +52,10 @@ class MDSView(ScenarioDetail):
         d1 = int(self.kwargs.get('d1', 1))  # We choose dimensions to be 1-based
         d2 = int(self.kwargs.get('d2', 2))
 
+        language_object = get_object_or_404(Language, iso=language)
+        if language_object not in [sl.language for sl in scenario.languages()]:
+            raise Http404('Language {} does not exist in Scenario {}'.format(language_object, scenario.pk))
+
         # Retrieve pickled data
         model = scenario.mds_model
         tenses = scenario.mds_labels
@@ -95,6 +100,7 @@ class MDSView(ScenarioDetail):
         context['d1'] = d1
         context['d2'] = d2
         context['max_dimensions'] = range(1, len(model[0]) + 1)  # We choose dimensions to be 1-based
+        context['stress'] = scenario.mds_stress
 
         return context
 

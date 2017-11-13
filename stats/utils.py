@@ -91,6 +91,7 @@ def run_mds(scenario):
     scenario.mds_model = pos.tolist()
     scenario.mds_fragments = fragment_ids
     scenario.mds_labels = tenses
+    scenario.mds_stress = mds.stress_
     scenario.save()
 
 

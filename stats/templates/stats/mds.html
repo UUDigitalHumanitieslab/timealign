@@ -9,9 +9,11 @@
 {% endblock %}
 
 {% block content %}
-<h2>Results (scenario <em><a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a></em>)</h2>
+<h2>MDS visualization (scenario <em><a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a></em>)</h2>
+<p><em>Stress: {{ stress|floatformat:"-3" }}</em></p>
 
-<div class="alert alert-info" role="alert">
+<div class="alert alert-info alert-dismissable" role="alert">
+    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
     This scatter plot shows the results Multidimensional Scaling of the dissimilarity matrix of tense tuples.
     Please see the <a href="{% url 'project' %}" class="alert-link">project summary</a> for more details.
 </div>
@@ -22,7 +24,8 @@
 
 <h2>Filters</h2>
 
-<div class="alert alert-info" role="alert">
+<div class="alert alert-info alert-dismissable" role="alert">
+    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
     Below, you can change the labels and the dimensions displayed on the x- and y-axis.
     Click the green button to confirm your selection and update the scatter plot.
 </div>

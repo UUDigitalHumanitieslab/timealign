@@ -23,6 +23,7 @@ class Scenario(models.Model):
     mds_matrix = PickledObjectField('MDS matrix', blank=True)
     mds_fragments = PickledObjectField('MDS fragments', blank=True)
     mds_labels = PickledObjectField('MDS labels', blank=True)
+    mds_stress = models.FloatField('MDS stress', null=True)
 
     last_run = models.DateTimeField(blank=True, null=True)
 
