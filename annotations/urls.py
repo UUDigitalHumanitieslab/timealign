@@ -9,6 +9,7 @@ urlpatterns = [
     url(r'^introduction/$', IntroductionView.as_view(), name='introduction'),
     url(r'^instructions/(?P<n>\d+)/$', InstructionsView.as_view(), name='instructions'),
     url(r'^status/$', StatusView.as_view(), name='status'),
+    url(r'^status/(?P<pk>\d+)/$', StatusView.as_view(), name='status'),
 
     # Creating and editing Annotations
     url(r'^create/(?P<pk>\d+)/$', AnnotationCreate.as_view(), name='create'),

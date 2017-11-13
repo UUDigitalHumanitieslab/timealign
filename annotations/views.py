@@ -11,7 +11,7 @@ from django_filters.views import FilterView
 
 from .filters import AnnotationFilter
 from .forms import AnnotationForm
-from .models import Language, Fragment, Alignment, Annotation
+from .models import Corpus, Language, Fragment, Alignment, Annotation
 from .utils import get_random_alignment, get_available_corpora
 
 
@@ -39,7 +39,12 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
         context = super(StatusView, self).get_context_data(**kwargs)
 
         user = self.request.user
-        corpora = get_available_corpora(self.request.user)
+
+        corpus_pk = self.kwargs.get('pk', None)
+        if corpus_pk:
+            corpora = [get_object_or_404(Corpus, pk=corpus_pk)]
+        else:
+            corpora = get_available_corpora(self.request.user)
 
         languages = set()
         for corpus in corpora:
@@ -59,6 +64,7 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
                 language_totals.append((l1, l2, completed, total))
 
         context['languages'] = language_totals
+        context['corpus_pk'] = corpus_pk
         context['current_corpora'] = corpora
 
         return context

@@ -61,12 +61,15 @@
     </table>
 
     {% if current_corpora %}
-    <h3>You are currently working on:</h3>
+    <h3>You are currently working on (click on a corpus to filter your status overview):</h3>
     <ul>
     {% for corpus in current_corpora %}
-        <li>{{ corpus.title }}</li>
+        <li><a href="{% url 'annotations:status' corpus.pk %}">{{ corpus.title }}</a></li>
     {% endfor %}
     </ul>
+    {% if corpus_pk %}
+    <p>Your status overview has been filtered. <a href="{% url 'annotations:status' %}">Show status overview for all corpora</a></p>
+    {% endif %}
     {% endif %}
 </div>
 {% endblock %}
