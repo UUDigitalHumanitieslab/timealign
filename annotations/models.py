@@ -128,6 +128,9 @@ class Fragment(models.Model):
     def full(self, marked=False):
         return '\n'.join([sentence.full(marked) for sentence in self.sentence_set.all()])
 
+    def label(self):
+        return self.tense.title if self.tense else self.other_label
+
     def __unicode__(self):
         return self.full()[:100]
 
