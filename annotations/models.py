@@ -131,6 +131,14 @@ class Fragment(models.Model):
     def label(self):
         return self.tense.title if self.tense else self.other_label
 
+    def style(self):
+        result = 'narration'
+        for sentence in self.sentence_set.all():
+            for word in sentence.word_set.all():
+                if word.is_in_dialogue:
+                    result = 'dialogue'
+        return result
+
     def __unicode__(self):
         return self.full()[:100]
 
@@ -167,7 +175,11 @@ class Word(models.Model):
     word = models.CharField(max_length=200)
     pos = models.CharField(max_length=50)
     lemma = models.CharField(max_length=200, blank=True)
+
     is_target = models.BooleanField(default=False)
+
+    is_in_dialogue = models.BooleanField(default=False)
+    is_in_dialogue_prob = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
 
     sentence = models.ForeignKey(Sentence)
 
@@ -187,11 +199,20 @@ class Alignment(models.Model):
 
 class Annotation(models.Model):
     is_no_target = models.BooleanField(
-        'The selected words in the original fragment do not form a present perfect',
+        'The selected words in the original fragment do not form an instance of (a/an) <em>{}</em>',
         default=False)
     is_translation = models.BooleanField(
         'This is a correct translation of the original fragment',
         default=True)
+
+    is_not_labeled_style = models.BooleanField(
+        'The selected words in the original fragment are incorrectly marked as <em>{}</em>',
+        default=False
+    )
+    is_not_same_style = models.BooleanField(
+        'The translated fragment is not in the same writing style (dialogue/narrative) as the original fragment',
+        default=False
+    )
 
     words = models.ManyToManyField(Word, blank=True)
     comments = models.TextField(blank=True)

@@ -7,7 +7,7 @@ class AnnotationForm(forms.ModelForm):
     class Meta:
         model = Annotation
         fields = [
-            'is_no_target', 'is_translation', 'comments', 'words',
+            'is_no_target', 'is_translation', 'is_not_labeled_style', 'is_not_same_style' 'comments', 'words',
         ]
         widgets = {
             'comments': forms.Textarea(attrs={'rows': 2}),
@@ -21,10 +21,13 @@ class AnnotationForm(forms.ModelForm):
         translated_sentences = self.alignment.translated_fragment.sentence_set.all()
 
         label = self.alignment.original_fragment.label()
+        writing_style = self.alignment.original_fragment.style()
 
         super(AnnotationForm, self).__init__(*args, **kwargs)
         self.fields['words'].queryset = Word.objects.filter(sentence__in=translated_sentences)
-        self.fields['is_no_target'].label = u'The selected words in the original fragment do not form an instance of (a/an) <em>{}</em>'.format(label)
+        self.fields['is_no_target'].label.format(label)
+        self.fields['is_not_labeled_style'].label.format(writing_style)
+
 
     def clean(self):
         """
