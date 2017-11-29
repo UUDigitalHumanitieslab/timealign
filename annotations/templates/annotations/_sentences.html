@@ -13,6 +13,10 @@
 
               {% if word.word == filtered %}
               filtered
+              {% endif %}
+
+              {% if word.is_in_dialogue %}
+              in-dialogue
               {% endif %}">{{ word.word }}</span>
 
         {% if tooltips %}

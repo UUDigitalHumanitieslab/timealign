@@ -81,7 +81,14 @@ def add_sentences(fragment, xml, target_ids=[]):
         for w in s.xpath('.//w'):
             xml_id = w.get('id')
             pos = w.get('tree') or w.get('pos') or w.get('hun') or '?'
+            is_in_dialogue_prob = float(w.get('dialog', 0))
+            is_in_dialogue = is_in_dialogue_prob > 0
             is_target = xml_id in target_ids
-            Word.objects.create(xml_id=xml_id, word=w.text,
-                                pos=pos, lemma=w.get('lem', '?'),
-                                is_target=is_target, sentence=sentence)
+            Word.objects.create(xml_id=xml_id,
+                                word=w.text,
+                                pos=pos,
+                                lemma=w.get('lem', '?'),
+                                is_in_dialogue_prob=is_in_dialogue_prob,
+                                is_in_dialogue=is_in_dialogue,
+                                is_target=is_target,
+                                sentence=sentence)

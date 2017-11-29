@@ -21,7 +21,7 @@ class TenseAdmin(admin.ModelAdmin):
 
 @admin.register(Corpus)
 class CorpusAdmin(admin.ModelAdmin):
-    list_display = ('title', 'get_languages', 'get_annotators', )
+    list_display = ('title', 'get_languages', 'get_annotators', 'check_structure',   )
 
 
 @admin.register(Document)

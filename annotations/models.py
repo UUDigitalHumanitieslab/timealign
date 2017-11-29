@@ -39,6 +39,10 @@ class Corpus(models.Model):
     languages = models.ManyToManyField(Language)
     annotators = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
 
+    check_structure = models.BooleanField(
+        'Check for formal structure in the Annotations',
+        default=False)
+
     class Meta:
         verbose_name_plural = 'Corpora'
 
@@ -131,7 +135,7 @@ class Fragment(models.Model):
     def label(self):
         return self.tense.title if self.tense else self.other_label
 
-    def style(self):
+    def formal_structure(self):
         result = 'narration'
         for sentence in self.sentence_set.all():
             for word in sentence.word_set.all():
@@ -205,12 +209,12 @@ class Annotation(models.Model):
         'This is a correct translation of the original fragment',
         default=True)
 
-    is_not_labeled_style = models.BooleanField(
+    is_not_labeled_structure = models.BooleanField(
         'The selected words in the original fragment are incorrectly marked as <em>{}</em>',
         default=False
     )
-    is_not_same_style = models.BooleanField(
-        'The translated fragment is not in the same writing style (dialogue/narrative) as the original fragment',
+    is_not_same_structure = models.BooleanField(
+        'The translated fragment is not in the same structure (dialogue/narrative) as the original fragment',
         default=False
     )
 

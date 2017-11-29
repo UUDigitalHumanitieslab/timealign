@@ -7,7 +7,7 @@ class AnnotationForm(forms.ModelForm):
     class Meta:
         model = Annotation
         fields = [
-            'is_no_target', 'is_translation', 'is_not_labeled_style', 'is_not_same_style' 'comments', 'words',
+            'is_no_target', 'is_translation', 'is_not_labeled_structure', 'is_not_same_structure', 'comments', 'words',
         ]
         widgets = {
             'comments': forms.Textarea(attrs={'rows': 2}),
@@ -19,15 +19,18 @@ class AnnotationForm(forms.ModelForm):
         """
         self.alignment = kwargs.pop('alignment', None)
         translated_sentences = self.alignment.translated_fragment.sentence_set.all()
-
+        corpus = self.alignment.original_fragment.document.corpus
         label = self.alignment.original_fragment.label()
-        writing_style = self.alignment.original_fragment.style()
+        structure = self.alignment.original_fragment.formal_structure()
 
         super(AnnotationForm, self).__init__(*args, **kwargs)
         self.fields['words'].queryset = Word.objects.filter(sentence__in=translated_sentences)
-        self.fields['is_no_target'].label.format(label)
-        self.fields['is_not_labeled_style'].label.format(writing_style)
+        self.fields['is_no_target'].label = self.fields['is_no_target'].label.format(label)
+        self.fields['is_not_labeled_structure'].label = self.fields['is_not_labeled_structure'].label.format(structure)
 
+        if not corpus.check_structure:
+            del self.fields['is_not_labeled_structure']
+            del self.fields['is_not_same_structure']
 
     def clean(self):
         """
