@@ -98,7 +98,10 @@ def run_mds(scenario):
 def get_tense(model, scenario_language):
     result = ''
     if scenario_language.use_other_label:
-        result = model.other_label
+        if u'le-combine' in scenario_language.scenario.title and model.other_label in [u'le1', u'le12']:
+            result = 'le'
+        else:
+            result = model.other_label
     elif model.tense:
         result = model.tense.pk
     return result

@@ -98,7 +98,7 @@ def get_color(tense):
         return '#1f77b4'
     elif tense in [u'rvc']:
         return '#ff7f0e'
-    elif tense in [u'le1']:
+    elif tense in [u'le1', u'le']:
         return '#2ca02c'
     elif tense in [u'le12']:
         return '#d62728'
