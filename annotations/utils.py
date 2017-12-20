@@ -135,7 +135,6 @@ def get_distinct_tenses(language):
     """
     most_frequent_by_language = Annotation.objects \
         .filter(alignment__translated_fragment__language=language) \
-        .exclude(tense__exact='') \
         .values('tense') \
         .annotate(Count('tense')) \
         .order_by('-tense__count')
@@ -165,4 +164,4 @@ def get_tenses(language):
                 u'présent',
                 u'other']
     else:
-        return [t.get('tense') for t in get_distinct_tenses(language)]
+        return [t.title for t in get_distinct_tenses(language)]
