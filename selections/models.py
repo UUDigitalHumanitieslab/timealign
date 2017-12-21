@@ -38,6 +38,7 @@ class Selection(models.Model):
     class Meta:
         unique_together = ('fragment', 'selected_by', 'order')
         get_latest_by = 'order'
+        ordering = ('-selected_at', )
 
     def selected_words(self):
         """

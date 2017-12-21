@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views import generic
 
@@ -113,6 +114,15 @@ class SelectionCreate(SelectionMixin, generic.CreateView):
 
     def form_valid(self, form):
         """Sets the User and Fragment on the created instance"""
+
+        # Set the previous Selection to is_final when the User signals the annotation has already been completed
+        if 'already_complete' in self.request.POST:
+            last_selection = self.get_fragment().selection_set.filter(selected_by=self.request.user).order_by('-order')[0]
+            last_selection.is_final = True
+            last_selection.save()
+
+            return HttpResponseRedirect(self.get_success_url())
+
         fragment = self.get_fragment()
         user = self.request.user
 
