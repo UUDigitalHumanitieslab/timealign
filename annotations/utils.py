@@ -63,7 +63,7 @@ def get_color(tense):
         return '#7f7f7f'
     elif tense in [u'pretérito imperfecto', u'imparfait', u'Imperfecto', u'past imperfective', u'past+present']:
         return '#bcbd22'
-    elif tense in [u'present participle', u'participio', u'Gerund', u'gerund']:
+    elif tense in [u'present participle', u'participio', u'Gerund', u'gerund', u'gerund perfective']:
         return '#17becf'
     elif tense in [u'Infinitiv', u'infinitief', u'infinitif', u'infinitivo', u'infinitive']:
         return '#aec7e8'
@@ -92,7 +92,11 @@ def get_color(tense):
     elif tense in [u'subjuntivo presente']:
         return '#e7cb94'
     elif tense in [u'subjuntivo pretérito imperfecto']:
-        return '#cedb9c'
+        return '#8c6d31'
+    elif tense in [u'participle past perfective active']:
+        return '#843c39'
+    elif tense in [u'gerund imperfective']:
+        return '#393b79'
 
     elif tense in [u'unmarked']:
         return '#1f77b4'
