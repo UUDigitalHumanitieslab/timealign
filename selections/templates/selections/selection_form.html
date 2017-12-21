@@ -40,7 +40,7 @@ $(function() {
         });
     });
 
-    $(".word").click(function() {
+    $(".word").change(function() {
         var selected = $("select[name=words]").val() || [];
         if ($(this).hasClass("selected")) {
             var index = selected.indexOf($(this).attr("id"));
@@ -53,6 +53,17 @@ $(function() {
         }
 
         $("select[name=words]").val(selected);
+    });
+
+    $(".checkbox").click(function() {
+        if ($("#id_is_no_target").is(':checked') || $("#id_already_complete").is(':checked'))
+        {
+            $("button[name=is_not_final]").hide();
+        }
+        else
+        {
+            $("button[name=is_not_final]").show();
+        }
     });
 
     $("select[name=words]").parent().hide();
