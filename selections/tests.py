@@ -40,7 +40,7 @@ class VPSelectTestCase(TestCase):
         s.save()
 
         self.assertEquals(1, get_open_fragments(self.u1, self.en).count())
-        self.assertEquals(2, get_open_fragments(self.u2, self.en).count())
+        self.assertEquals(1, get_open_fragments(self.u2, self.en).count())
 
         f = get_random_fragment(self.u1, self.en)
         self.assertEquals(self.f2, f)
@@ -53,7 +53,7 @@ class VPSelectTestCase(TestCase):
 
         self.assertEquals(1, o)
         self.assertEquals(1, get_open_fragments(self.u1, self.en).count())
-        self.assertEquals(2, get_open_fragments(self.u2, self.en).count())
+        self.assertEquals(1, get_open_fragments(self.u2, self.en).count())
 
         o = get_selection_order(self.f2, self.u1)
         s = Selection.objects.create(fragment=self.f2, selected_by=self.u1, order=o)
@@ -62,7 +62,7 @@ class VPSelectTestCase(TestCase):
 
         self.assertEquals(2, o)
         self.assertEquals(0, get_open_fragments(self.u1, self.en).count())
-        self.assertEquals(2, get_open_fragments(self.u2, self.en).count())
+        self.assertEquals(0, get_open_fragments(self.u2, self.en).count())
 
         # Adding a new Fragment with a coordinated VP
         self.f3 = PreProcessFragment.objects.create(language=self.en, document=self.d)
@@ -81,7 +81,7 @@ class VPSelectTestCase(TestCase):
 
         self.assertEquals(1, o)
         self.assertEquals(1, get_open_fragments(self.u1, self.en).count())
-        self.assertEquals(3, get_open_fragments(self.u2, self.en).count())
+        self.assertEquals(1, get_open_fragments(self.u2, self.en).count())
 
         o = get_selection_order(self.f3, self.u1)
         s = Selection.objects.create(fragment=self.f3, selected_by=self.u1, order=o, is_final=True)
@@ -91,4 +91,4 @@ class VPSelectTestCase(TestCase):
 
         self.assertEquals(2, o)
         self.assertEquals(0, get_open_fragments(self.u1, self.en).count())
-        self.assertEquals(3, get_open_fragments(self.u2, self.en).count())
+        self.assertEquals(0, get_open_fragments(self.u2, self.en).count())

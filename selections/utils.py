@@ -23,7 +23,7 @@ def get_open_fragments(user, language):
     return PreProcessFragment.objects \
         .filter(language=language) \
         .filter(document__corpus__in=get_available_corpora(user)) \
-        .exclude(selection__selected_by=user, selection__is_final=True)
+        .exclude(selection__is_final=True)
 
 
 def get_selection_order(fragment, user):
