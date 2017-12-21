@@ -12,6 +12,11 @@
 <div class="container">
     <h1>VPSelect</h1>
 
+    <h3>
+        {{ fragment.language.title }}
+        <span class="label label-primary pull-right">{{ fragment.document.title }}</span>
+    </h3>
+
     {% include "annotations/_sentences.html" with sentences=fragment.sentence_set.all selected_words=selected_words tooltips=1 %}
 
     <form action="" method="post" class="form">{% csrf_token %}
