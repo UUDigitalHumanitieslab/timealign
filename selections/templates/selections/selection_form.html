@@ -40,7 +40,7 @@ $(function() {
         });
     });
 
-    $(".word").change(function() {
+    $(".word").click(function() {
         var selected = $("select[name=words]").val() || [];
         if ($(this).hasClass("selected")) {
             var index = selected.indexOf($(this).attr("id"));
