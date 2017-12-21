@@ -152,20 +152,6 @@ def get_tenses(language):
     :param language: The given Language
     :return: A list of tenses
     """
-    if language.iso == 'fr':
-        return [u'conditionnel',
-                u'conditionnel passé',
-                u'futur',
-                u'futur antérieur',
-                u'futur proche',
-                u'futur proche du passé',
-                u'imparfait',
-                u'passé composé',
-                u'passé récent',
-                u'passé récent du passé',
-                u'passé simple',
-                u'plus-que-parfait',
-                u'présent',
-                u'other']
-    else:
-        return [t.title for t in get_distinct_tenses(language)]
+    t = [t.title for t in get_distinct_tenses(language)]
+    t.append(u'future perfect in the past (continuous)')
+    return t
