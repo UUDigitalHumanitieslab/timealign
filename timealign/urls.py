@@ -29,6 +29,7 @@ urlpatterns = [
     url(r'^$', views.flatpage, {'url': '/home/'}, name='home'),
     url(r'^project/$', views.flatpage, {'url': '/project/'}, name='project'),
     url(r'^project/nl-summary/$', views.flatpage, {'url': '/project/nl-summary/'}, name='nl-summary'),
+    url(r'^project/collaborations/$', views.flatpage, {'url': '/project/collaborations/'}, name='collaborations'),
     url(r'^project/videos/$', views.flatpage, {'url': '/project/videos/'}, name='videos'),
     url(r'^publications/$', views.flatpage, {'url': '/publications/'}, name='publications'),
     url(r'^student-research/$', views.flatpage, {'url': '/student-research/'}, name='student-research'),
