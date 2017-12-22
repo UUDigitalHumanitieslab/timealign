@@ -153,5 +153,7 @@ def get_tenses(language):
     :return: A list of tenses
     """
     t = [t.title for t in get_distinct_tenses(language)]
-    t.append(u'future perfect in the past (continuous)')
+    t.append(u'future perfect in the past')
+    t.append(u'future perfect in the past continuous')
+    t.append(u'imperative')
     return t
