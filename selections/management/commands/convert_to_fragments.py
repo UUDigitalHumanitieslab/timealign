@@ -73,7 +73,8 @@ class Command(BaseCommand):
         else:
             for fragment in Fragment.objects \
                     .filter(document__corpus=corpus) \
-                    .filter(language__iso='en'):
+                    .filter(language__iso='en') \
+                    .filter(document__title=u'17.xml'):
                 for sentence in fragment.sentence_set.all():
                     fragment_cache[(fragment.document.pk, sentence.xml_id)].append(fragment)
 
