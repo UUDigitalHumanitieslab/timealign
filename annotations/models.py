@@ -139,7 +139,7 @@ class Fragment(models.Model):
         result = 'narration'
         for sentence in self.sentence_set.all():
             for word in sentence.word_set.all():
-                if word.is_in_dialogue:
+                if word.is_target and word.is_in_dialogue:
                     result = 'dialogue'
         return result
 
