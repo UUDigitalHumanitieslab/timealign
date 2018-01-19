@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import csv
+from collections import defaultdict
 
 from lxml import etree
 
@@ -8,6 +9,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from annotations.models import Language, Corpus, Document, Fragment, Sentence, Word, Alignment, Tense
+from annotations.management.commands.add_fragments import add_sentences
 from selections.models import Selection
 
 
@@ -31,10 +33,11 @@ class Command(BaseCommand):
         if len(options['filenames']) == 0:
             raise CommandError('No documents specified')
 
-        sentence_cache = dict()
+        fragment_cache = defaultdict(list)
         selections = Selection.objects \
             .filter(is_no_target=False, fragment__document__corpus=corpus) \
-            .exclude(tense=u'passé composé')
+            .filter(fragment__document__title=u'17.xml') \
+            .filter(selected_by__username=u'konstantinos')
 
         if options['create']:
             for selection in selections:
@@ -48,7 +51,7 @@ class Command(BaseCommand):
 
                     f.__class__ = Fragment
                     f.pk = None
-                    f.tense = selection.tense
+                    f.tense = Tense.objects.get(language=f.language, title=selection.tense)
                     f.save()
 
                     for sentence in sentences:
@@ -59,7 +62,7 @@ class Command(BaseCommand):
                         s.fragment = f
                         s.save()
 
-                        sentence_cache[(f.document.pk, s.xml_id)] = s
+                        fragment_cache[(f.document.pk, s.xml_id)].append(f)
 
                         for word in words:
                             w = word
@@ -70,10 +73,9 @@ class Command(BaseCommand):
         else:
             for fragment in Fragment.objects \
                     .filter(document__corpus=corpus) \
-                    .exclude(tense=None) \
-                    .exclude(tense=Tense.objects.get(title=u'passé composé')):
+                    .filter(language__iso='en'):
                 for sentence in fragment.sentence_set.all():
-                    sentence_cache[(fragment.document.pk, sentence.xml_id)] = sentence
+                    fragment_cache[(fragment.document.pk, sentence.xml_id)].append(fragment)
 
         for filename in options['filenames']:
             with open(filename, 'rb') as f:
@@ -92,26 +94,15 @@ class Command(BaseCommand):
                         doc, _ = Document.objects.get_or_create(corpus=corpus, title=row[0])
 
                         for s in etree.fromstring(row[2]).xpath('.//s'):
-                            sentence = sentence_cache.get((doc.pk, s.get('id')))
-                            if sentence:
-                                for m, language_to in languages_to.items():
-                                    if row[m]:
-                                        to_fragment = Fragment.objects.create(language=language_to,
-                                                                              document=doc)
-                                        add_sentences(to_fragment, row[m + 1])
+                            fragments = fragment_cache.get((doc.pk, s.get('id')))
+                            if fragments:
+                                for fragment in fragments:
+                                    for m, language_to in languages_to.items():
+                                        if row[m]:
+                                            to_fragment = Fragment.objects.create(language=language_to,
+                                                                                  document=doc)
+                                            add_sentences(to_fragment, row[m + 1])
 
-                                        Alignment.objects.create(original_fragment=sentence.fragment,
-                                                                 translated_fragment=to_fragment,
-                                                                 type=row[m])
-
-
-def add_sentences(fragment, xml, target_ids=[]):
-    for s in etree.fromstring(xml).xpath('.//s'):
-        sentence = Sentence.objects.create(xml_id=s.get('id'), fragment=fragment)
-        for w in s.xpath('.//w'):
-            xml_id = w.get('id')
-            pos = w.get('tree') or w.get('pos') or w.get('hun') or '?'
-            is_target = xml_id in target_ids
-            Word.objects.create(xml_id=xml_id, word=w.text,
-                                pos=pos, lemma=w.get('lem', '?'),
-                                is_target=is_target, sentence=sentence)
+                                            Alignment.objects.create(original_fragment=fragment,
+                                                                     translated_fragment=to_fragment,
+                                                                     type=row[m])
