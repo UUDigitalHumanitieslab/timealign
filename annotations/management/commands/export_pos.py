@@ -30,8 +30,8 @@ class Command(BaseCommand):
                 csv_writer = UnicodeWriter(csvfile, delimiter=';')
 
                 header = ['id', 'tense', 'source/target',
-                          'w1', 'w2', 'w3', 'w4', 'w5',
-                          'pos1', 'pos2', 'pos3', 'pos4', 'pos5', 'comments',
+                          'w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'w7', 'w8',
+                          'pos1', 'pos2', 'pos3', 'pos4', 'pos5', 'pos6', 'pos7', 'pos8', 'comments',
                           'full fragment', 'source words', 'source fragment']
                 csv_writer.writerow(header)
 
@@ -59,6 +59,6 @@ class Command(BaseCommand):
                             pos = [word.pos for word in words]
                             f = fragment.full()
                             csv_writer.writerow([str(fragment.pk), fragment.tense.title, 'source']
-                                                + pad_list(w, 5)
-                                                + pad_list(pos, 5)
+                                                + pad_list(w, 8)
+                                                + pad_list(pos, 8)
                                                 + ['', f, '', ''])
