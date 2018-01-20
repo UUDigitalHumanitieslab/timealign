@@ -17,7 +17,7 @@ def get_random_alignment(user, language_from, language_to):
         .filter(original_fragment__language=language_from) \
         .filter(translated_fragment__language=language_to) \
         .filter(original_fragment__document__corpus__in=get_available_corpora(user)) \
-        .exclude(annotation__annotated_by=user)
+        .filter(annotation=None)
 
     return alignments.order_by('?').first()
 

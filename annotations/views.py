@@ -58,7 +58,7 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
                                                   original_fragment__document__corpus__in=corpora)
 
             total = alignments.count()
-            completed = alignments.filter(annotation__annotated_by=user).count()
+            completed = alignments.exclude(annotation=None).count()
 
             if total:
                 language_totals.append((l1, l2, completed, total))
