@@ -3,7 +3,7 @@ from django.db import models
 
 from picklefield.fields import PickledObjectField
 
-from annotations.models import Language, Tense, Corpus, Document
+from annotations.models import Language, Tense, Corpus, Document, Fragment
 
 
 class Scenario(models.Model):
@@ -16,6 +16,8 @@ class Scenario(models.Model):
 
     corpus = models.ForeignKey(Corpus)
     documents = models.ManyToManyField(Document, blank=True)
+    formal_structure = models.PositiveIntegerField('Formal structure', choices=Fragment.FORMAL_STRUCTURES, default=Fragment.FS_NONE)
+    formal_structure_strict = models.BooleanField('Require translations to be in the same formal structure', default=True)
 
     mds_dimensions = models.PositiveIntegerField(
         'Number of dimensions',

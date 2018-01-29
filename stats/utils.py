@@ -28,6 +28,10 @@ def run_mds(scenario):
         if scenario.documents.exists():
             fragments = fragments.filter(document__in=scenario.documents.all())
 
+        # Filter on formal structure (if selected)
+        if scenario.formal_structure != Fragment.FS_NONE:
+            fragments = fragments.filter()
+
         # Filter on Tenses (if selected)
         if language_from.tenses.exists():
             fragments = fragments.filter(tense__in=language_from.tenses.all())
@@ -51,6 +55,10 @@ def run_mds(scenario):
                 if language_to.use_other_label and language_to.other_labels:
                     other_labels = language_to.other_labels.split(',')
                     annotations = annotations.filter(other_label__in=other_labels)
+
+                # Filter on formal structure
+                if scenario.formal_structure != Fragment.FS_NONE and scenario.formal_structure_strict:
+                    annotations = annotations.filter(is_not_same_structure=False)
 
                 # Compile a list of Annotations...
                 if annotations:

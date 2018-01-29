@@ -77,11 +77,21 @@ class Document(models.Model):
 
 
 class Fragment(models.Model):
+    FS_NONE = 0
+    FS_NARRATION = 1
+    FS_DIALOGUE = 2
+    FORMAL_STRUCTURES = (
+        (FS_NONE, 'none'),
+        (FS_NARRATION, 'narration'),
+        (FS_DIALOGUE, 'dialogue'),
+    )
+
     language = models.ForeignKey(Language)
     document = models.ForeignKey(Document)
 
     tense = models.ForeignKey(Tense, null=True)
     other_label = models.CharField(max_length=200, blank=True)
+    formal_structure = models.PositiveIntegerField('Formal structure', choices=FORMAL_STRUCTURES, default=FS_NONE)
 
     def to_html(self):
         result = '<ul>'
@@ -135,13 +145,22 @@ class Fragment(models.Model):
     def label(self):
         return self.tense.title if self.tense else self.other_label
 
-    def formal_structure(self):
-        result = 'narration'
-        for sentence in self.sentence_set.all():
-            for word in sentence.word_set.all():
-                if word.is_target and word.is_in_dialogue:
-                    result = 'dialogue'
+    def get_formal_structure(self):
+        result = Fragment.FS_BOTH
+
+        if self.document.corpus.check_structure:
+            result = Fragment.FS_NARRATION
+            for sentence in self.sentence_set.all():
+                for word in sentence.word_set.all():
+                    if word.is_target and word.is_in_dialogue:
+                        result = Fragment.FS_DIALOGUE
+
         return result
+
+    def save(self, *args, **kwargs):
+        """Sets the correct formal structure on save of a Fragment"""
+        self.formal_structure = self.get_formal_structure()
+        super(Fragment, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.full()[:100]
