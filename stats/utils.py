@@ -30,7 +30,7 @@ def run_mds(scenario):
 
         # Filter on formal structure (if selected)
         if scenario.formal_structure != Fragment.FS_NONE:
-            fragments = fragments.filter()
+            fragments = fragments.filter(formal_structure=scenario.formal_structure)
 
         # Filter on Tenses (if selected)
         if language_from.tenses.exists():

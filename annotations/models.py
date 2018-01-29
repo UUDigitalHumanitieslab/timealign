@@ -146,7 +146,7 @@ class Fragment(models.Model):
         return self.tense.title if self.tense else self.other_label
 
     def get_formal_structure(self):
-        result = Fragment.FS_BOTH
+        result = Fragment.FS_NONE
 
         if self.document.corpus.check_structure:
             result = Fragment.FS_NARRATION

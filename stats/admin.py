@@ -27,7 +27,10 @@ class ScenarioAdmin(DjangoObjectActions, admin.ModelAdmin):
 
     fieldsets = (
         (None, {
-            'fields': ('title', 'description', 'is_test', 'corpus', 'documents', )
+            'fields': ('title', 'description', 'is_test', )
+        }),
+        ('Filters', {
+            'fields': ('corpus', 'documents', ('formal_structure', 'formal_structure_strict', ), )
         }),
         ('Multidimensional Scaling', {
             'classes': ('collapse',),
