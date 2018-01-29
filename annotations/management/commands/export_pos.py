@@ -46,8 +46,8 @@ class Command(BaseCommand):
                     tf = annotation.alignment.translated_fragment
                     of = annotation.alignment.original_fragment
                     csv_writer.writerow([str(annotation.pk), annotation.label(), 'target']
-                                        + pad_list(w, 5)
-                                        + pad_list(pos, 5)
+                                        + pad_list(w, 8)
+                                        + pad_list(pos, 8)
                                         + [annotation.comments, tf.full(), of.target_words(), of.full()])
 
                 if options['add_sources']:

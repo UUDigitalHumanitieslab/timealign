@@ -50,7 +50,7 @@ def update_annotation(language, row, use_other_label=False):
         # Save Annotation
         annotation.save()
     except Annotation.DoesNotExist:
-        raise CommandError(u'Annotation with pk {} not found'.format(row[0]))
+        print u'Annotation with pk {} not found'.format(row[0])
     except Tense.DoesNotExist:
         raise CommandError(u'Tense for title {} not found'.format(row[1]))
 
