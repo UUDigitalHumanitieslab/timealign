@@ -7,9 +7,18 @@ TimeAlign allows you to easily annotate similar forms in aligned phrases.
 TimeAlign is created with the [Django web framework](https://www.djangoproject.com/) and runs in both Python 2.7 and 3.5.
 You can install the required packages by calling `pip install -r requirements.txt.`
 
-## Adding fragments
+Starting from an empty Ubuntu 16.04 installation, you will need the following to get you started:
 
-### Management command
+    git clone [repository URL]
+    cd timealign/
 
-You can add aligned fragments using the management command `add_sentences`.
-This command reads a .csv-file with a specific format that is exported from the [time-in-translation project](https://github.com/UUDigitalHumanitieslab/time-in-translation).
+    sudo apt-get install mysql-server libmysqlclient-dev
+
+    sudo apt-get install python-dev virtualenv
+    virtualenv .env
+    source .env/bin/activate
+    pip install -r requirements.txt
+
+    python manage.py test
+
+If the test runs OK, you should be ready to roll!
