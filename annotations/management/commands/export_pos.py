@@ -14,6 +14,7 @@ class Command(BaseCommand):
         parser.add_argument('--add_sources', action='store_true', dest='add_sources', default=False)
         parser.add_argument('languages', nargs='+', type=str)
         parser.add_argument('--xlsx', action='store_true', dest='format_xlsx', default=False)
+        parser.add_argument('--doc', dest='document')
 
     def handle(self, *args, **options):
         # Retrieve the Corpus from the database
@@ -27,9 +28,11 @@ class Command(BaseCommand):
             if not corpus.languages.filter(iso=language):
                 raise CommandError('Language {} does not exist'.format(language))
 
-            self.export_language(language, corpus, format_, options['add_sources'])
+            self.export_language(language, corpus, format_,
+                                 add_sources=options['add_sources'],
+                                 document=options['document'])
 
-    def export_language(self, language, corpus, format_, add_sources=False):
+    def export_language(self, language, corpus, format_, add_sources=False, document=None):
         filename = 'pos_{lang}.{ext}'.format(lang=language, ext=format_)
 
         if format_ == 'xlsx':
@@ -48,6 +51,10 @@ class Command(BaseCommand):
                 filter(is_no_target=False, is_translation=True,
                        alignment__translated_fragment__language__iso=language,
                        alignment__translated_fragment__document__corpus=corpus)
+
+            if document is not None:
+                annotations = annotations.filter(alignment__translated_fragment__document__title=document)
+
             for annotation in annotations:
                 words = annotation.words.all()
                 w = [word.word for word in words]
