@@ -1,6 +1,9 @@
 import codecs
+import contextlib
 import csv
 import cStringIO
+
+from xlsxwriter import Workbook
 
 
 class UnicodeWriter:
@@ -32,6 +35,41 @@ class UnicodeWriter:
     def writerows(self, rows):
         for row in rows:
             self.writerow(row)
+
+
+class ExcelWriter:
+    """
+    Writes xlsx files while mimicking the CSV writer interface.
+    """
+    def __init__(self, filename):
+        self._workbook = Workbook(filename)
+        self._worksheet = self._workbook.add_worksheet()  # this assumes an empty file
+        self._row = 0
+
+    def writerow(self, contents):
+        self._worksheet.write_row(self._row, 0, contents)
+        self._row += 1
+
+    def writerows(self, rows):
+        for row in rows:
+            self.writerow(row)
+
+    def close(self):
+        self._workbook.close()
+
+
+@contextlib.contextmanager
+def open_csv(filename):
+    with open(filename, 'wb') as fileobj:
+        fileobj.write(u'\uFEFF'.encode('utf-8'))  # the UTF-8 BOM to hint Excel we are using that...
+        yield UnicodeWriter(fileobj, delimiter=';')
+
+
+@contextlib.contextmanager
+def open_xlsx(filename):
+    writer = ExcelWriter(filename)
+    yield writer
+    writer.close()
 
 
 def pad_list(l, pad_length):

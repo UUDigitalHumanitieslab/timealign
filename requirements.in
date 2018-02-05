@@ -9,3 +9,4 @@ mysql-python
 numpy
 scipy
 scikit-learn
+XlsxWriter
