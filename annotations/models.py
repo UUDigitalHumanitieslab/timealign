@@ -86,12 +86,26 @@ class Fragment(models.Model):
         (FS_DIALOGUE, 'dialogue'),
     )
 
+    SF_NONE = 0
+    SF_DECLARATIVE = 1
+    SF_INTERROGATIVE = 2
+    SF_EXCLAMATORY = 3
+    SF_IMPERATIVE = 4
+    SENTENCE_FUNCTIONS = (
+        (SF_NONE, 'none'),
+        (SF_DECLARATIVE, 'declarative'),
+        (SF_INTERROGATIVE, 'interrogative'),
+        (SF_EXCLAMATORY, 'exclamatory'),
+        (SF_IMPERATIVE, 'imperative'),
+    )
+
     language = models.ForeignKey(Language)
     document = models.ForeignKey(Document)
 
     tense = models.ForeignKey(Tense, null=True)
     other_label = models.CharField(max_length=200, blank=True)
     formal_structure = models.PositiveIntegerField('Formal structure', choices=FORMAL_STRUCTURES, default=FS_NONE)
+    sentence_function = models.PositiveIntegerField('Sentence function', choices=SENTENCE_FUNCTIONS, default=SF_NONE)
 
     def to_html(self):
         result = '<ul>'
@@ -157,9 +171,29 @@ class Fragment(models.Model):
 
         return result
 
+    def get_sentence_function(self):
+        """Very simple way to acquire the sentence function."""
+        result = Fragment.SF_NONE
+
+        if self.document.corpus.check_structure:
+            result = Fragment.SF_DECLARATIVE
+
+            if self.tense and self.tense.title == u'imperative':
+                result = Fragment.SF_IMPERATIVE
+
+            for sentence in self.sentence_set.all():
+                for word in sentence.word_set.all():
+                    if word.word == u'?':
+                        result = Fragment.SF_INTERROGATIVE
+                    if word.word == u'!':
+                        result = Fragment.SF_EXCLAMATORY
+
+        return result
+
     def save(self, *args, **kwargs):
-        """Sets the correct formal structure on save of a Fragment"""
+        """Sets the correct formal structure and sentence function on save of a Fragment"""
         self.formal_structure = self.get_formal_structure()
+        self.sentence_function = self.get_sentence_function()
         super(Fragment, self).save(*args, **kwargs)
 
     def __unicode__(self):

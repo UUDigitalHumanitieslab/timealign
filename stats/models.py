@@ -16,8 +16,11 @@ class Scenario(models.Model):
 
     corpus = models.ForeignKey(Corpus)
     documents = models.ManyToManyField(Document, blank=True)
+
     formal_structure = models.PositiveIntegerField('Formal structure', choices=Fragment.FORMAL_STRUCTURES, default=Fragment.FS_NONE)
     formal_structure_strict = models.BooleanField('Require translations to be in the same formal structure', default=True)
+
+    sentence_function = models.PositiveIntegerField('Sentence function', choices=Fragment.SENTENCE_FUNCTIONS, default=Fragment.SF_NONE)
 
     mds_dimensions = models.PositiveIntegerField(
         'Number of dimensions',

@@ -32,6 +32,10 @@ def run_mds(scenario):
         if scenario.formal_structure != Fragment.FS_NONE:
             fragments = fragments.filter(formal_structure=scenario.formal_structure)
 
+        # Filter on sentence function (if selected)
+        if scenario.sentence_function != Fragment.SF_NONE:
+            fragments = fragments.filter(sentence_function=scenario.sentence_function)
+
         # Filter on Tenses (if selected)
         if language_from.tenses.exists():
             fragments = fragments.filter(tense__in=language_from.tenses.all())
