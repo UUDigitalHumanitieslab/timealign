@@ -25,11 +25,11 @@ def get_random_alignment(user, language_from, language_to):
 def get_available_corpora(user):
     """
     Returns the available Corpora for a User.
-    A staff user can see data from all corpora, other users are limited to corpora where they are an annotator.
+    A superuser can see data from all corpora, other users are limited to corpora where they are an annotator.
     :param user: The current User
     :return: The available Corpora for this User
     """
-    if user.is_staff:
+    if user.is_superuser:
         return Corpus.objects.all()
     else:
         return user.corpus_set.all()
