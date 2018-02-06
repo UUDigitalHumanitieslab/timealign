@@ -21,7 +21,7 @@ class AnnotationForm(forms.ModelForm):
         translated_sentences = self.alignment.translated_fragment.sentence_set.all()
         corpus = self.alignment.original_fragment.document.corpus
         label = self.alignment.original_fragment.label()
-        structure = self.alignment.original_fragment.get_formal_structure()
+        structure = self.alignment.original_fragment.get_formal_structure_display()
 
         super(AnnotationForm, self).__init__(*args, **kwargs)
         self.fields['words'].queryset = Word.objects.filter(sentence__in=translated_sentences)
