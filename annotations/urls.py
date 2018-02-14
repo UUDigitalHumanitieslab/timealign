@@ -2,7 +2,7 @@ from django.conf.urls import url
 
 from .views import InstructionsView, IntroductionView, StatusView, \
     AnnotationCreate, AnnotationUpdate, AnnotationDelete, AnnotationChoose, FragmentDetail, \
-    AnnotationList, FragmentList
+    AnnotationList, FragmentList, ExportPOSDownload, PrepareDownload
 
 urlpatterns = [
     # Static views
@@ -24,4 +24,9 @@ urlpatterns = [
     url(r'^list/(?P<l1>\w+)/(?P<l2>\w+)/$', AnnotationList.as_view(), name='list'),
     url(r'^matrix/(?P<language>\w+)/$', FragmentList.as_view(), name='matrix'),
     url(r'^matrix/(?P<language>\w+)/(?P<showtenses>\w+)/$', FragmentList.as_view(), name='tense_matrix'),
+
+    # Downloads
+    url(r'^download/(?P<language>\w+)/(?P<corpus>\w+)$', PrepareDownload.as_view(), name='prepare_download'),
+    url(r'^download/(?P<language>\w+)$', PrepareDownload.as_view(), name='prepare_download'),
+    url(r'^download/(?P<language>\w+)/(?P<corpus>\d+)/(?P<document>\d+)$', ExportPOSDownload.as_view()),
 ]
