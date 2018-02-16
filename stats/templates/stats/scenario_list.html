@@ -7,6 +7,35 @@
 {% regroup scenarios by corpus as corpus_list %}
 
 <h2>Show results for:</h2>
+<div class="well">
+  <form class="form-inline">
+    <div class="form-group">
+      <label for="corpus_filter">Filter by Corpus</label>
+      <select id="corpus_filter" class="form-control" name="corpus">
+        <option value="">Any</option>
+        {% for corpus in corpora %}
+            <option value="{{ corpus.id }}" {% if corpus.id == selected_corpus %}selected="selected"{% endif %}>
+            {{ corpus.title }}
+            </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="language_filter">Language</label>
+      <select id="language_filter" class="form-control" name="language">
+        <option value="">Any</option>
+        {% for language in languages %}
+            <option value="{{ language.iso }}" {% if language.iso == selected_language %}selected="selected"{% endif %}>
+            {{ language.title }}
+            </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <button class="btn btn-primary">Apply</button>
+    </div>
+  </form>
+</div>
 {% for corpus in corpus_list %}
 <h3>{{ corpus.grouper }}</h3>
     <ul>

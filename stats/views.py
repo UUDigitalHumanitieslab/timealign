@@ -11,7 +11,7 @@ from braces.views import LoginRequiredMixin
 
 from .models import Scenario
 from annotations.models import Language, Tense, Fragment
-from annotations.utils import get_color
+from annotations.utils import get_available_corpora, get_color
 
 
 class ScenarioList(LoginRequiredMixin, generic.ListView):
@@ -30,7 +30,37 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
         if not show_tests:
             scenarios = scenarios.exclude(is_test=True)
 
+        corpus = self.request.GET.get('corpus')
+        if corpus:
+            scenarios = scenarios.filter(corpus__id=corpus)
+
+        language = self.request.GET.get('language')
+        if language:
+            scenarios = scenarios.filter(scenariolanguage__language__iso=language)
+
         return scenarios.order_by('corpus__title')
+
+    def get_context_data(self, **kwargs):
+        context = super(ScenarioList, self).get_context_data(**kwargs)
+        corpora = get_available_corpora(self.request.user)
+
+        # only show languages that are found in the available corpora
+        languages = set(sum([list(c.languages.all()) for c in corpora], []))
+        # sort by language name
+        languages = sorted(languages, key=lambda x: x.title)
+
+        context['corpora'] = corpora
+        context['languages'] = languages
+
+        corpus = self.request.GET.get('corpus')
+        if corpus:
+            context['selected_corpus'] = int(corpus)
+
+        language = self.request.GET.get('language')
+        if language:
+            context['selected_language'] = language
+
+        return context
 
 
 class ScenarioDetail(LoginRequiredMixin, generic.DetailView):
