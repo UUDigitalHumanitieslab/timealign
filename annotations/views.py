@@ -245,7 +245,7 @@ class PrepareDownload(generic.TemplateView):
         if kwargs.get('corpus'):
             selected_corpus = Corpus.objects.get(id=int(kwargs['corpus']))
 
-        context['language'] = language
+        context['language_to'] = Language.objects.get(iso=language)
         context['corpora'] = corpora
         context['selected_corpus'] = selected_corpus
         return context
@@ -255,13 +255,24 @@ class ExportPOSDownload(PermissionRequiredMixin, generic.View):
     permission_required = 'annotations.change_annotation'
 
     def get(self, request, *args, **kwargs):
+        language = self.request.GET['language']
+        corpus_id = self.request.GET['corpus']
+        document_id = self.request.GET['document']
+
         with NamedTemporaryFile() as file_:
-            language = kwargs['language']
-            corpus = Corpus.objects.get(id=int(kwargs['corpus']))
-            document = Document.objects.get(id=int(kwargs['document']))
-            export_pos_file(file_.name, 'xlsx', corpus, language, document=document)
+            corpus = Corpus.objects.get(id=int(corpus_id))
+            if document_id == 'all':
+                export_pos_file(file_.name, 'xlsx', corpus, language)
+                title = 'all'
+            else:
+                document = Document.objects.get(id=int(document_id))
+                export_pos_file(file_.name, 'xlsx', corpus, language, document=document)
+                title = document.title
+
             response = HttpResponse(file_, content_type='application/xlsx')
+            filename = '{}-{}-{}.xlsx'.format(urlquote(corpus.title),
+                                              urlquote(title),
+                                              language)
             response['Content-Disposition'] = \
-                'attachment; filename={}-{}.xlsx'.format(urlquote(corpus.title + document.title),
-                                                         language)
+                'attachment; filename={}'.format(filename)
             return response

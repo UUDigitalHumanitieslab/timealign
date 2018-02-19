@@ -26,7 +26,7 @@ urlpatterns = [
     url(r'^matrix/(?P<language>\w+)/(?P<showtenses>\w+)/$', FragmentList.as_view(), name='tense_matrix'),
 
     # Downloads
-    url(r'^download/(?P<language>\w+)/(?P<corpus>\w+)$', PrepareDownload.as_view(), name='prepare_download'),
-    url(r'^download/(?P<language>\w+)$', PrepareDownload.as_view(), name='prepare_download'),
-    url(r'^download/(?P<language>\w+)/(?P<corpus>\d+)/(?P<document>\d+)$', ExportPOSDownload.as_view()),
+    url(r'^prepare_download/(?P<language>\w+)/(?P<corpus>\w+)$', PrepareDownload.as_view(), name='prepare_download'),
+    url(r'^prepare_download/(?P<language>\w+)$', PrepareDownload.as_view(), name='prepare_download'),
+    url(r'^download$', ExportPOSDownload.as_view(), name='download'),
 ]
