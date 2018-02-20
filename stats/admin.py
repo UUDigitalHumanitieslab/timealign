@@ -54,3 +54,9 @@ class ScenarioAdmin(DjangoObjectActions, admin.ModelAdmin):
     run_mds.short_description = '(Re)run Multidimensional Scaling'
 
     change_actions = ['run_mds']
+
+    def save_model(self, request, obj, form, change):
+        if obj.owner is None:
+            # avoid changing ownership when editing an existing scenario
+            obj.owner = request.user
+        super(ScenarioAdmin, self).save_model(request, obj, form, change)
