@@ -27,6 +27,10 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
         if language:
             scenarios = scenarios.filter(scenariolanguage__language__iso=language)
 
+        # exclude scenarios that belong to corpora that the user is not allowed
+        # to annotate
+        scenarios = scenarios.filter(corpus__in=self.request.user.corpus_set.all())
+
         return scenarios
 
     def get_queryset(self):
