@@ -29,7 +29,8 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
 
         # exclude scenarios that belong to corpora that the user is not allowed
         # to annotate
-        scenarios = scenarios.filter(corpus__in=self.request.user.corpus_set.all())
+        scenarios = scenarios.filter(
+            corpus__in=get_available_corpora(self.request.user))
 
         return scenarios
 
@@ -46,6 +47,7 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
         scenarios = self.filter_scenarios(scenarios, corpus, language, show_tests)
 
         scenarios = scenarios.exclude(owner=self.request.user)
+
         return scenarios.order_by('corpus__title')
 
     def get_context_data(self, **kwargs):
