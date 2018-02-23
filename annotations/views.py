@@ -1,17 +1,21 @@
 from itertools import permutations
+from tempfile import NamedTemporaryFile
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views import generic
+from django.utils.http import urlquote
 
 from braces.views import LoginRequiredMixin, PermissionRequiredMixin
 from django_filters.views import FilterView
 
+from .exports import export_pos_file
 from .filters import AnnotationFilter
 from .forms import AnnotationForm
-from .models import Corpus, Language, Fragment, Alignment, Annotation
+from .models import Corpus, Document, Language, Fragment, Alignment, Annotation
 from .utils import get_random_alignment, get_available_corpora
 
 
@@ -227,3 +231,48 @@ class FragmentList(PermissionRequiredMixin, generic.ListView):
         context['show_tenses'] = self.kwargs.get('showtenses', False)
 
         return context
+
+
+class PrepareDownload(generic.TemplateView):
+    template_name = 'annotations/download.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(PrepareDownload, self).get_context_data(**kwargs)
+
+        language = kwargs['language']
+        corpora = get_available_corpora(self.request.user)
+        selected_corpus = corpora[0]
+        if kwargs.get('corpus'):
+            selected_corpus = Corpus.objects.get(id=int(kwargs['corpus']))
+
+        context['language_to'] = Language.objects.get(iso=language)
+        context['corpora'] = corpora
+        context['selected_corpus'] = selected_corpus
+        return context
+
+
+class ExportPOSDownload(PermissionRequiredMixin, generic.View):
+    permission_required = 'annotations.change_annotation'
+
+    def get(self, request, *args, **kwargs):
+        language = self.request.GET['language']
+        corpus_id = self.request.GET['corpus']
+        document_id = self.request.GET['document']
+
+        with NamedTemporaryFile() as file_:
+            corpus = Corpus.objects.get(id=int(corpus_id))
+            if document_id == 'all':
+                export_pos_file(file_.name, 'xlsx', corpus, language)
+                title = 'all'
+            else:
+                document = Document.objects.get(id=int(document_id))
+                export_pos_file(file_.name, 'xlsx', corpus, language, document=document)
+                title = document.title
+
+            response = HttpResponse(file_, content_type='application/xlsx')
+            filename = '{}-{}-{}.xlsx'.format(urlquote(corpus.title),
+                                              urlquote(title),
+                                              language)
+            response['Content-Disposition'] = \
+                'attachment; filename={}'.format(filename)
+            return response

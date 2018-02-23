@@ -67,7 +67,7 @@ class Document(models.Model):
     title = models.CharField(max_length=200)
     description = models.CharField(max_length=200, blank=True)
 
-    corpus = models.ForeignKey(Corpus)
+    corpus = models.ForeignKey(Corpus, related_name='documents')
 
     class Meta:
         unique_together = ('corpus', 'title', )
