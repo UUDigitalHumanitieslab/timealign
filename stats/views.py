@@ -18,6 +18,22 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
     model = Scenario
     context_object_name = 'scenarios'
 
+    def filter_scenarios(self, scenarios, corpus=None, language=None,
+                         show_tests=False):
+        if not show_tests:
+            scenarios = scenarios.exclude(is_test=True)
+        if corpus:
+            scenarios = scenarios.filter(corpus__id=corpus)
+        if language:
+            scenarios = scenarios.filter(scenariolanguage__language__iso=language)
+
+        # exclude scenarios that belong to corpora that the user is not allowed
+        # to annotate
+        scenarios = scenarios.filter(
+            corpus__in=get_available_corpora(self.request.user))
+
+        return scenarios
+
     def get_queryset(self):
         """
         Only show Scenarios that have been run,
@@ -25,40 +41,44 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
         Order the Scenarios by Corpus title.
         """
         show_tests = self.kwargs.get('show_tests', False)
-
         scenarios = Scenario.objects.exclude(last_run__isnull=True)
-        if not show_tests:
-            scenarios = scenarios.exclude(is_test=True)
-
         corpus = self.request.GET.get('corpus')
-        if corpus:
-            scenarios = scenarios.filter(corpus__id=corpus)
-
         language = self.request.GET.get('language')
-        if language:
-            scenarios = scenarios.filter(scenariolanguage__language__iso=language)
+        scenarios = self.filter_scenarios(scenarios, corpus, language, show_tests)
+
+        scenarios = scenarios.exclude(owner=self.request.user)
 
         return scenarios.order_by('corpus__title')
 
     def get_context_data(self, **kwargs):
         context = super(ScenarioList, self).get_context_data(**kwargs)
-        corpora = get_available_corpora(self.request.user)
 
+        # get filters if set
+        corpus = self.request.GET.get('corpus')
+        language = self.request.GET.get('language')
+
+        corpora = get_available_corpora(self.request.user)
         # only show languages that are found in the available corpora
         languages = set(sum([list(c.languages.all()) for c in corpora], []))
         # sort by language name
         languages = sorted(languages, key=lambda x: x.title)
 
+        # possible filter values
         context['corpora'] = corpora
         context['languages'] = languages
 
-        corpus = self.request.GET.get('corpus')
+        # preserve filter selection
         if corpus:
             context['selected_corpus'] = int(corpus)
-
-        language = self.request.GET.get('language')
         if language:
             context['selected_language'] = language
+
+        # scenarios that belong to the current user are displayed seperately.
+        # they need to be queried separately because we should include test scenarios.
+        user_scenarios = self.filter_scenarios(
+            self.request.user.scenarios,
+            corpus, language, show_tests=True)
+        context['user_scenarios'] = user_scenarios.all()
 
         return context
 

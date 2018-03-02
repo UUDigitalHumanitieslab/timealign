@@ -5,6 +5,7 @@
 {% block content %}
 
 {% regroup scenarios by corpus as corpus_list %}
+{% regroup user_scenarios by corpus as user_corpus_list %}
 
 <h2>Show results for:</h2>
 <div class="well">
@@ -36,6 +37,31 @@
     </div>
   </form>
 </div>
+<h2>My Scenarios</h2>
+{% for corpus in user_corpus_list %}
+<h3>{{ corpus.grouper }}</h3>
+    <ul>
+        {% for scenario in corpus.list %}
+        <li>
+            {{ scenario.title }}
+            {% if scenario.is_test %}<span class="label label-warning">Test</span>{% endif %}
+            <ul>
+                <li>
+                    <a href="{% url 'stats:mds' scenario.pk %}">Multidimensional scaling</a>
+                </li>
+                <li>
+                    <a href="{% url 'stats:descriptive' scenario.pk %}">Descriptive statistics</a>
+                </li>
+                <li>
+                    <a href="{% url 'stats:show' scenario.pk %}">Details</a>
+                </li>
+            </ul>
+        </li>
+        {% endfor %}
+    </ul>
+{% endfor %}
+<hr/>
+<h2>Scenarios by other users</h2>
 {% for corpus in corpus_list %}
 <h3>{{ corpus.grouper }}</h3>
     <ul>
