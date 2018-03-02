@@ -1,0 +1,46 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+<div class="container">
+  <h1>Download Annotation File: {{ language_to.title }}</h1>
+  <p class="lead">
+    Please select the required corpus and documents below:
+  </p>
+
+  <form action="{% url 'annotations:download' %}" target="_blank">
+    <div class="form-group">
+      <label for="corpus">Corpus:</label>
+      <select id="corpus" class="form-control" name="corpus">
+        {% for corpus in corpora %}
+        <option value="{{corpus.id}}" {% if corpus.id == selected_corpus.id %}selected="selected"{% endif %}>{{corpus.title}}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="document">Document:</label>
+      <select id="document" class="form-control" name="document">
+        <option value="all" selected="selected">All</option>
+        {% for document in selected_corpus.documents.all %}
+        <option value="{{document.id}}">{{document.title}}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <button id="download" class="btn btn-primary">Download</button>
+    </div>
+    <input type="hidden" name="language" value="{{ language_to.iso }}"/>
+  </form>
+</div>
+<script>
+  $(function() {
+    $('#corpus').change(function(event) {
+      var corpus_id = $('#corpus').val();
+      window.location.href = "{% url 'annotations:prepare_download' language=language_to.iso %}" + '/' + corpus_id;
+    });
+  });
+</script>
+{% endblock %}
