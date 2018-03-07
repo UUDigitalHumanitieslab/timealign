@@ -46,8 +46,13 @@ class ExcelWriter:
         self._worksheet = self._workbook.add_worksheet()  # this assumes an empty file
         self._row = 0
 
-    def writerow(self, contents):
-        self._worksheet.write_row(self._row, 0, contents)
+    def writerow(self, contents, is_header=False):
+        cell_format = None
+        if is_header:
+            cell_format = self._workbook.add_format({'bold': True})
+            self._worksheet.autofilter(self._row, 0, 0, len(contents) - 1)
+
+        self._worksheet.write_row(self._row, 0, contents, cell_format)
         self._row += 1
 
     def writerows(self, rows):
