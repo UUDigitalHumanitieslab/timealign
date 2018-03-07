@@ -258,7 +258,7 @@ class ExportPOSDownload(PermissionRequiredMixin, generic.View):
         language = self.request.GET['language']
         corpus_id = self.request.GET['corpus']
         document_id = self.request.GET['document']
-        include_non_targets = self.request.GET['include_non_targets']
+        include_non_targets = 'include_non_targets' in self.request.GET
 
         with NamedTemporaryFile() as file_:
             corpus = Corpus.objects.get(id=int(corpus_id))
