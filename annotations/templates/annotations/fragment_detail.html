@@ -17,7 +17,7 @@
     <h1>Fragment overview</h1>
 
     <h2>Source</h2>
-    <h3 data-id="{{ fragment.id }}">
+    <h3 data-pk="{{ fragment.pk }}">
         {{ fragment.language.title }}
         <span class="label label-default pull-right">{{ fragment.document.title }}</span>
         <span class="label label-primary pull-right">{{ fragment.tense|default:"Perfect" }}</span>
@@ -32,7 +32,7 @@
     {% for annotation in fragment.get_annotations %}
     {% if forloop.counter|divisibleby:2 %}<div class="row">{% endif %}
         <div class="col-md-6">
-            <h3 data-id="{{ annotation.id }}">
+            <h3 data-pk="{{ annotation.pk }}">
                 {{ annotation.alignment.translated_fragment.language.title }}
                 <span class="label label-primary pull-right">{{ annotation.label }}</span>
                 {% if fragment.document.corpus.check_structure and annotation.is_not_same_structure%}
