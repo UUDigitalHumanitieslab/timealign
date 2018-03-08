@@ -258,15 +258,17 @@ class ExportPOSDownload(PermissionRequiredMixin, generic.View):
         language = self.request.GET['language']
         corpus_id = self.request.GET['corpus']
         document_id = self.request.GET['document']
+        include_non_targets = 'include_non_targets' in self.request.GET
 
         with NamedTemporaryFile() as file_:
             corpus = Corpus.objects.get(id=int(corpus_id))
             if document_id == 'all':
-                export_pos_file(file_.name, 'xlsx', corpus, language)
+                export_pos_file(file_.name, 'xlsx', corpus, language, include_non_targets=include_non_targets)
                 title = 'all'
             else:
                 document = Document.objects.get(id=int(document_id))
-                export_pos_file(file_.name, 'xlsx', corpus, language, document=document)
+                export_pos_file(file_.name, 'xlsx', corpus, language, include_non_targets=include_non_targets,
+                                document=document)
                 title = document.title
 
             response = HttpResponse(file_, content_type='application/xlsx')

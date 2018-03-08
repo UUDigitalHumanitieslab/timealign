@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
@@ -35,6 +36,9 @@ class Scenario(models.Model):
     mds_stress = models.FloatField('MDS stress', null=True)
 
     last_run = models.DateTimeField(blank=True, null=True)
+
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='scenarios',
+                              null=True)
 
     def from_languages(self):
         return ', '.join([sl.language.title for sl in self.languages(as_from=True)])

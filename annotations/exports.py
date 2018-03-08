@@ -1,28 +1,34 @@
-from annotations.models import Annotation, Fragment, Word
+from django.db.models import Count, Max
 
+from annotations.models import Annotation, Fragment, Word
 from .management.commands.utils import open_csv, open_xlsx, pad_list
 
 
-def export_pos_file(filename, format_, corpus, language, document=None, add_sources=False):
+def export_pos_file(filename, format_, corpus, language, document=None, add_sources=False, include_non_targets=False):
     if format_ == 'xlsx':
         opener = open_xlsx
     else:
         opener = open_csv
 
     with opener(filename) as writer:
-        header = ['id', 'tense', 'source/target',
-                  'w1', 'w2', 'w3', 'w4', 'w5', 'w6', 'w7', 'w8',
-                  'pos1', 'pos2', 'pos3', 'pos4', 'pos5', 'pos6', 'pos7', 'pos8', 'comments',
-                  'full fragment', 'source words', 'source fragment']
-        writer.writerow(header)
-
         annotations = Annotation.objects. \
-            filter(is_no_target=False, is_translation=True,
-                   alignment__translated_fragment__language__iso=language,
+            filter(alignment__translated_fragment__language__iso=language,
                    alignment__translated_fragment__document__corpus=corpus)
+
+        if not include_non_targets:
+            annotations = annotations.filter(is_no_target=False, is_translation=True)
 
         if document is not None:
             annotations = annotations.filter(alignment__translated_fragment__document__title=document)
+
+        annotations = annotations.select_related().annotate(selected_words=Count('words'))
+        max_words = annotations.aggregate(Max('selected_words'))['selected_words__max']
+
+        header = ['id', 'tense', 'source/target', 'is correct target?', 'is correct translation?']
+        header.extend(['w' + str(i + 1) for i in range(max_words)])
+        header.extend(['pos' + str(i + 1) for i in range(max_words)])
+        header.extend(['comments', 'full fragment', 'source words', 'source fragment'])
+        writer.writerow(header, is_header=True)
 
         for annotation in annotations:
             words = annotation.words.all()
@@ -30,9 +36,11 @@ def export_pos_file(filename, format_, corpus, language, document=None, add_sour
             pos = [word.pos for word in words]
             tf = annotation.alignment.translated_fragment
             of = annotation.alignment.original_fragment
-            writer.writerow([str(annotation.pk), annotation.label(), 'target'] +
-                            pad_list(w, 8) +
-                            pad_list(pos, 8) +
+            writer.writerow([annotation.pk, annotation.label(), 'target',
+                             'no' if annotation.is_no_target else 'yes',
+                             'yes' if annotation.is_translation else 'no'] +
+                            pad_list(w, max_words) +
+                            pad_list(pos, max_words) +
                             [annotation.comments, tf.full(), of.target_words(), of.full()])
 
         if add_sources:
@@ -43,7 +51,7 @@ def export_pos_file(filename, format_, corpus, language, document=None, add_sour
                     w = [word.word for word in words]
                     pos = [word.pos for word in words]
                     f = fragment.full()
-                    writer.writerow([str(fragment.pk), fragment.tense.title, 'source'] +
+                    writer.writerow([fragment.pk, fragment.tense.title, 'source', '', ''] +
                                     pad_list(w, 8) +
                                     pad_list(pos, 8) +
                                     ['', f, '', ''])
