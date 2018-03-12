@@ -32,9 +32,12 @@
         {% endfor %}
       </select>
     </div>
-    <div class="form-group">
-      <button class="btn btn-primary">Apply</button>
+    <div class="checkbox">
+      <label>
+        <input type="checkbox" name="test" {% if show_test %} checked="checked"{% endif %}/> Include test scenarios
+      </label>
     </div>
+    <button class="btn btn-primary">Apply</button>
   </form>
 </div>
 <h2>My Scenarios</h2>
@@ -84,16 +87,5 @@
         {% endfor %}
     </ul>
 {% endfor %}
-
-<div class="alert alert-info" role="alert">
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    <p>
-        {% if view.kwargs.show_tests %}
-        This overview includes test scenarios. <a href="{% url 'stats:scenarios' %}" class="alert-link">Don't include test scenarios</a>.
-        {% else %}
-        This overview does not include test scenarios. <a href="{% url 'stats:scenarios' 1 %}" class="alert-link">Include test scenarios</a>.
-        {% endif %}
-    </p>
-</div>
 
 {% endblock %}
