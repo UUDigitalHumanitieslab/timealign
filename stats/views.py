@@ -20,8 +20,8 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
     context_object_name = 'scenarios'
 
     def filter_scenarios(self, scenarios, corpus=None, language=None,
-                         show_tests=False):
-        if not show_tests:
+                         show_test=False):
+        if not show_test:
             scenarios = scenarios.exclude(is_test=True)
         if corpus:
             scenarios = scenarios.filter(corpus__id=corpus)
@@ -38,14 +38,14 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
     def get_queryset(self):
         """
         Only show Scenarios that have been run,
-        and if show_tests is False, don't show test Scenarios either.
+        and if show_test is False, don't show test Scenarios either.
         Order the Scenarios by Corpus title.
         """
-        show_tests = self.kwargs.get('show_tests', False)
+        show_test = self.request.GET.get('test')
         scenarios = Scenario.objects.exclude(last_run__isnull=True)
         corpus = self.request.GET.get('corpus')
         language = self.request.GET.get('language')
-        scenarios = self.filter_scenarios(scenarios, corpus, language, show_tests)
+        scenarios = self.filter_scenarios(scenarios, corpus, language, show_test)
 
         scenarios = scenarios.exclude(owner=self.request.user)
 
@@ -57,6 +57,7 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
         # get filters if set
         corpus = self.request.GET.get('corpus')
         language = self.request.GET.get('language')
+        show_test = self.request.GET.get('test')
 
         corpora = get_available_corpora(self.request.user)
         # only show languages that are found in the available corpora
@@ -67,6 +68,7 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
         # possible filter values
         context['corpora'] = corpora
         context['languages'] = languages
+        context['show_test'] = show_test
 
         # preserve filter selection
         if corpus:
@@ -78,7 +80,7 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
         # they need to be queried separately because we should include test scenarios.
         user_scenarios = self.filter_scenarios(
             self.request.user.scenarios,
-            corpus, language, show_tests=True)
+            corpus, language, show_test=True)
         context['user_scenarios'] = user_scenarios.all()
 
         return context
