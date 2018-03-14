@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.core.management.base import BaseCommand, CommandError
+from django.db.models import Count, Max
 
 from annotations.models import Corpus, Language, Annotation, Fragment, Word
 from .utils import UnicodeWriter, pad_list
@@ -13,6 +14,7 @@ class Command(BaseCommand):
         parser.add_argument('corpus', type=str)
         parser.add_argument('source_language', type=str)
         parser.add_argument('languages', nargs='+', type=str)
+        parser.add_argument('--doc', dest='document')
 
     def handle(self, *args, **options):
         # Retrieve the Corpus from the database
@@ -38,15 +40,25 @@ class Command(BaseCommand):
 
             top = [''] * 4
             header = ['id', 'source words', 'sentence', 'tense']
-            for language in languages:
-                header.extend(['sentence', 'tense', 'w1', 'w2', 'w3', 'w4', 'w5'])
-                top.extend([language.title] * 6)
 
-            csv_writer.writerow(top)
-            csv_writer.writerow(header)
+            annotations = Annotation.objects. \
+                filter(alignment__translated_fragment__language__iso=language,
+                       alignment__translated_fragment__document__corpus=corpus)
+            annotations = annotations.filter(is_no_target=False, is_translation=True)
+
+            if options['document'] is not None:
+                annotations = annotations.filter(alignment__translated_fragment__document__title=options['document'])
+
+            # TODO: would be nice to group by language, so the max_words value can be set per language
+            annotations = annotations.select_related().annotate(selected_words=Count('words'))
+            max_words = annotations.aggregate(Max('selected_words'))['selected_words__max']
+
+            fragments = Fragment.objects.filter(language=source_language, document__corpus=corpus)
+            if options['document'] is not None:
+                fragments = fragments.filter(document__title=options['document'])
 
             rows = []
-            for fragment in Fragment.objects.filter(language=source_language, document__corpus=corpus):
+            for fragment in fragments:
                 row = []
 
                 # Retrieve the Annotations for this Fragment...
@@ -68,8 +80,15 @@ class Command(BaseCommand):
                         w = [word.word for word in annotation.words.all()]
                         row.append(annotation.alignment.translated_fragment.full())
                         row.append(annotation.label())
-                        row.extend(pad_list(w, 5))
+                        row.extend(pad_list(w, max_words))
 
                     rows.append(row)
 
+            for language in languages:
+                top.extend([language.title] * (max_words + 2))
+                header.extend(['sentence', 'tense'])
+                header.extend(['w' + str(i + 1) for i in range(max_words)])
+
+            csv_writer.writerow(top)
+            csv_writer.writerow(header)
             csv_writer.writerows(rows)
