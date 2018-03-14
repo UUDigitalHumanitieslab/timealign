@@ -3,6 +3,7 @@ import json
 import numbers
 import random
 
+from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.views import generic
@@ -91,6 +92,8 @@ class ScenarioDetail(LoginRequiredMixin, generic.DetailView):
         Only show Scenarios that have been run
         """
         scenario = super(ScenarioDetail, self).get_object(queryset)
+        if scenario.corpus not in get_available_corpora(self.request.user):
+            raise PermissionDenied
         if not scenario.last_run:
             raise Http404('Scenario has not been run')
         return scenario
