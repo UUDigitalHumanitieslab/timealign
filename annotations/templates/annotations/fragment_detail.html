@@ -11,6 +11,10 @@
 .in-dialogue {
     font-style: italic;
 }
+
+.comments {
+  margin-right: 5px;
+}
 </style>
 
 <div class="container">
@@ -35,6 +39,11 @@
             <h3 data-pk="{{ annotation.pk }}">
                 {{ language }}
                 <span class="label label-primary pull-right">{{ annotation.label }}</span>
+                {% if annotation.comments %}
+                <span class="comments label label-info pull-right" title="{{ annotation.comments }}">
+                  <span class="glyphicon glyphicon-comment"></span>
+                </span>
+                {% endif %}
                 {% if fragment.document.corpus.check_structure and annotation.is_not_same_structure%}
                 <span class="label label-danger pull-right">{% if fragment.formal_structure == 1 %}dialogue{% else %}narration{% endif %}</span>
                 {% endif %}
