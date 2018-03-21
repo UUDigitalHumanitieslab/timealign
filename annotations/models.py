@@ -146,11 +146,11 @@ class Fragment(models.Model):
                 # TODO: We currently consider only one Annotation per Alignment, YMMV.
                 annotation = alignment.annotation_set.first()
                 if annotation:
-                    result.append(annotation)
+                    result.append((language, annotation))
                 else:
-                    result.append(None)  # This happens if there's no Annotation yet
+                    result.append((language, None))  # This happens if there's no Annotation yet
             else:
-                result.append(None)  # This happens if there's no Alignment for this Fragment in the given language
+                result.append((language, None))  # This happens if there's no Alignment for this Fragment in the given language
         return result
 
     def full(self, marked=False):

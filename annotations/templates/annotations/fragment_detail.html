@@ -11,6 +11,10 @@
 .in-dialogue {
     font-style: italic;
 }
+
+.comments {
+  margin-right: 5px;
+}
 </style>
 
 <div class="container">
@@ -29,17 +33,26 @@
     {% include "annotations/_sentences.html" with sentences=fragment.sentence_set.all tooltips=1 %}
 
     <h2>Translations</h2>
-    {% for annotation in fragment.get_annotations %}
-    {% if forloop.counter|divisibleby:2 %}<div class="row">{% endif %}
-        <div class="col-md-6">
+    {% for language, annotation in fragment.get_annotations %}
+    {% if forloop.counter0|divisibleby:2 %}<div class="row">{% endif %}
+        <div class="col-md-6 {% if not annotation %} text-muted {% endif %}">
             <h3 data-pk="{{ annotation.pk }}">
-                {{ annotation.alignment.translated_fragment.language.title }}
+                {{ language }}
                 <span class="label label-primary pull-right">{{ annotation.label }}</span>
+                {% if annotation.comments %}
+                <span class="comments label label-info pull-right" title="{{ annotation.comments }}">
+                  <span class="glyphicon glyphicon-comment"></span>
+                </span>
+                {% endif %}
                 {% if fragment.document.corpus.check_structure and annotation.is_not_same_structure%}
                 <span class="label label-danger pull-right">{% if fragment.formal_structure == 1 %}dialogue{% else %}narration{% endif %}</span>
                 {% endif %}
             </h3>
-            {% include "annotations/_sentences.html" with sentences=annotation.alignment.translated_fragment.sentence_set.all tooltips=1 annotated_words=annotation.words.all %}
+            {% if annotation %}
+                {% include "annotations/_sentences.html" with sentences=annotation.alignment.translated_fragment.sentence_set.all tooltips=1 annotated_words=annotation.words.all %}
+            {% else %}
+            No annotation available.
+            {% endif %}
         </div>
     {% if forloop.counter|divisibleby:2 %}</div>{% endif %}
     {% endfor %}
