@@ -180,19 +180,26 @@ class DescriptiveStatsView(ScenarioDetail):
 
         counters = dict()
         tuples = defaultdict(tuple)
+        colors = dict()
 
         for l in languages:
             c = Counter()
             n = 0
             for t in tenses[l.iso]:
-                tense = Tense.objects.get(pk=t).title if isinstance(t, numbers.Number) else t
-                c.update([tense])
-                tuples[n] += (tense,)
+                tense = Tense.objects.get(pk=t)
+                tense_label = tense.title if isinstance(t, numbers.Number) else t
+                c.update([tense_label])
+                tuples[n] += (tense_label,)
                 n += 1
+
+                if tense_label not in colors:
+                    colors[tense_label] = tense.category.color
 
             counters[l] = c.most_common()
 
         context['counters'] = counters
+        context['counters_json'] = json.dumps({language.title: values for language, values in counters.iteritems()})
         context['tuples'] = Counter(tuples.values()).most_common()
+        context['colors'] = json.dumps(colors)
 
         return context

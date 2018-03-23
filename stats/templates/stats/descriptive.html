@@ -2,11 +2,38 @@
 
 {% load bootstrap3 %}
 
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.css">
+
+<style>
+  .chart {
+    height: 300px;
+    width: 33%;
+    float: left;
+  }
+
+  .chart h5 {
+    text-align: center;
+  }
+
+  #tables {
+    clear: both;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 <h2>
     Descriptive statistics for <em>{{ scenario.title }}</em>
 </h2>
 
+
+<div id="charts">
+</div>
+
+<div id="tables" class="container">
 <h3>
     Totals per language
 </h3>
@@ -35,6 +62,7 @@
     {% if forloop.counter == 3 %}</div><div class="row">{% endif %}
     {% endfor %}
 </div>
+</div>
 
 <h3>
     Tuple frequency
@@ -56,5 +84,54 @@
         {% endfor %}
     </tbody>
 </table>
+
+<script>
+  // contains occurance counts for tenses by language, in the following format:
+  // {'language': ['tense':100, 'another_tense':200]}
+  var counters = {{ counters_json|safe }};
+
+  // system-assigned color for each of tense
+  var colors = {{ colors|safe }};
+
+  // used for calculating the total amount of tokens per langauge
+  var totals = {};
+
+  for(var language in counters) {
+    totals[language] = 0;
+    for(var i=0; i<counters[language].length; i++) {
+      totals[language] += counters[language][i][1];
+    }
+  }
+
+  function graphLanguage(language) {
+
+    nv.addGraph(function() {
+      var chart = nv.models.discreteBarChart()
+          .x(function(d) { return d[0]; })
+          .y(function(d) { return d[1]/totals[language]; })
+          .color(function(d) { return colors[d[0]]; })
+          .showXAxis(false)
+          .forceY([0, 1]);
+
+      chart.yAxis.tickFormat(d3.format('.0%'));
+
+      // Add the data to the chart and start creating the chart
+      var div = d3.select('#charts')
+        .append('div')
+          .attr('class', 'chart');
+
+      div.append('h5').text(language);
+
+      div.append('svg')
+        .datum([{key: language, values: counters[language]}])
+        .call(chart);
+
+      nv.utils.windowResize(chart.update);
+      return chart;
+    });
+  }
+
+  Object.keys(counters).forEach(graphLanguage);
+</script>
 
 {% endblock %}
