@@ -186,14 +186,20 @@ class DescriptiveStatsView(ScenarioDetail):
             c = Counter()
             n = 0
             for t in tenses[l.iso]:
-                tense = Tense.objects.get(pk=t)
-                tense_label = tense.title if isinstance(t, numbers.Number) else t
+                if isinstance(t, numbers.Number):
+                    tense = Tense.objects.get(pk=t)
+                    tense_label = tense.title
+                    tense_color = tense.category.color
+                else:
+                    tense_label = t
+                    tense_color = get_color(t)
+
                 c.update([tense_label])
                 tuples[n] += (tense_label,)
                 n += 1
 
                 if tense_label not in colors:
-                    colors[tense_label] = tense.category.color
+                    colors[tense_label] = tense_color
 
             counters[l] = c.most_common()
 
