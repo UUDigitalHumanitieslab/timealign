@@ -4,7 +4,8 @@ from annotations.models import Annotation, Fragment, Word
 from .management.commands.utils import open_csv, open_xlsx, pad_list
 
 
-def export_pos_file(filename, format_, corpus, language, document=None, add_sources=False, include_non_targets=False):
+def export_pos_file(filename, format_, corpus, language,
+                    document=None, add_sources=False, include_non_targets=False, add_lemmata=False):
     if format_ == 'xlsx':
         opener = open_xlsx
     else:
@@ -27,6 +28,8 @@ def export_pos_file(filename, format_, corpus, language, document=None, add_sour
         header = ['id', 'tense', 'source/target', 'is correct target?', 'is correct translation?']
         header.extend(['w' + str(i + 1) for i in range(max_words)])
         header.extend(['pos' + str(i + 1) for i in range(max_words)])
+        if add_lemmata:
+            header.extend(['lemma' + str(i + 1) for i in range(max_words)])
         header.extend(['comments', 'full fragment', 'source words', 'source fragment'])
         writer.writerow(header, is_header=True)
 
@@ -34,6 +37,7 @@ def export_pos_file(filename, format_, corpus, language, document=None, add_sour
             words = annotation.words.all()
             w = [word.word for word in words]
             pos = [word.pos for word in words]
+            lemma = [word.lemma for word in words]
             tf = annotation.alignment.translated_fragment
             of = annotation.alignment.original_fragment
             writer.writerow([annotation.pk, annotation.label(), 'target',
@@ -41,6 +45,7 @@ def export_pos_file(filename, format_, corpus, language, document=None, add_sour
                              'yes' if annotation.is_translation else 'no'] +
                             pad_list(w, max_words) +
                             pad_list(pos, max_words) +
+                            (pad_list(lemma, max_words) if add_lemmata else []) +
                             [annotation.comments, tf.full(), of.target_words(), of.full()])
 
         if add_sources:
@@ -50,8 +55,10 @@ def export_pos_file(filename, format_, corpus, language, document=None, add_sour
                 if words:
                     w = [word.word for word in words]
                     pos = [word.pos for word in words]
+                    lemma = [word.lemma for word in words]
                     f = fragment.full()
                     writer.writerow([fragment.pk, fragment.tense.title, 'source', '', ''] +
                                     pad_list(w, 8) +
                                     pad_list(pos, 8) +
+                                    (pad_list(lemma, 8) if add_lemmata else []) +
                                     ['', f, '', ''])
