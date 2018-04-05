@@ -44,7 +44,11 @@
                 </td>
                 <td>
                     {% if annotated < total %}
+                      {% if corpus_pk %}
+                    <a href="{% url 'annotations:choose' corpus_pk l1.iso l2.iso %}" role="button" class="btn btn-default btn-xs" title="Start annotating">
+                      {% else %}
                     <a href="{% url 'annotations:choose' l1.iso l2.iso %}" role="button" class="btn btn-default btn-xs" title="Start annotating">
+                      {% endif %}
                         <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
                     </a>
                     {% endif %}
