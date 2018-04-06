@@ -12,9 +12,10 @@ urlpatterns = [
     url(r'^status/(?P<pk>\d+)/$', StatusView.as_view(), name='status'),
 
     # Creating and editing Annotations
-    url(r'^create/(?P<pk>\d+)/$', AnnotationCreate.as_view(), name='create'),
+    url(r'^create/(?P<corpus>\d+)/(?P<pk>\d+)/$', AnnotationCreate.as_view(), name='create'),
     url(r'^edit/(?P<pk>\d+)/$', AnnotationUpdate.as_view(), name='edit'),
     url(r'^delete/(?P<pk>\d+)/$', AnnotationDelete.as_view(), name='delete'),
+    url(r'^choose/(?P<corpus>\d+)/(?P<l1>\w+)/(?P<l2>\w+)/$', AnnotationChoose.as_view(), name='choose'),
     url(r'^choose/(?P<l1>\w+)/(?P<l2>\w+)/$', AnnotationChoose.as_view(), name='choose'),
 
     # Showing Fragments

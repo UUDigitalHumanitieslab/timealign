@@ -5,7 +5,7 @@ from django.db.models import Count
 from .models import Corpus, Tense, Alignment, Annotation
 
 
-def get_random_alignment(user, language_from, language_to):
+def get_random_alignment(user, language_from, language_to, corpus=None):
     """
     Retrieves a random Alignment from the database.
     :param user: The current User
@@ -16,8 +16,12 @@ def get_random_alignment(user, language_from, language_to):
     alignments = Alignment.objects \
         .filter(original_fragment__language=language_from) \
         .filter(translated_fragment__language=language_to) \
-        .filter(original_fragment__document__corpus__in=get_available_corpora(user)) \
         .filter(annotation=None)
+
+    if corpus:
+        alignments = alignments.filter(original_fragment__document__corpus__id=corpus)
+    else:
+        alignments = alignments.filter(original_fragment__document__corpus__in=get_available_corpora(user))
 
     return alignments.order_by('?').first()
 

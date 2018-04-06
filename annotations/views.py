@@ -159,14 +159,16 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
         """Redirects to a random Alignment"""
         l1 = Language.objects.get(iso=self.kwargs['l1'])
         l2 = Language.objects.get(iso=self.kwargs['l2'])
-        new_alignment = get_random_alignment(self.request.user, l1, l2)
+        corpus = int(self.kwargs['corpus']) if 'corpus' in self.kwargs else None
+        new_alignment = get_random_alignment(self.request.user, l1, l2, corpus)
 
         # If no new alignment has been found, redirect to the status overview
         if not new_alignment:
             messages.success(self.request, 'All work is done for this language pair!')
             return reverse('annotations:status')
 
-        return super(AnnotationChoose, self).get_redirect_url(new_alignment.pk)
+        corpus_pk = new_alignment.original_fragment.document.corpus.pk
+        return super(AnnotationChoose, self).get_redirect_url(corpus_pk, new_alignment.pk)
 
 
 ############
