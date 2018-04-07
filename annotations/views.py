@@ -123,7 +123,8 @@ class AnnotationCreate(AnnotationMixin, generic.CreateView):
     def get_success_url(self):
         """Go to the choose-view to select a new Alignment"""
         alignment = self.object.alignment
-        return reverse('annotations:choose', args=(alignment.original_fragment.language.iso,
+        return reverse('annotations:choose', args=(alignment.original_fragment.document.corpus.pk,
+                                                   alignment.original_fragment.language.iso,
                                                    alignment.translated_fragment.language.iso))
 
     def form_valid(self, form):
