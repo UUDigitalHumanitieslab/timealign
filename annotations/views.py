@@ -1,3 +1,4 @@
+from collections import defaultdict
 from itertools import permutations
 from tempfile import NamedTemporaryFile
 
@@ -15,7 +16,7 @@ from django_filters.views import FilterView
 from .exports import export_pos_file
 from .filters import AnnotationFilter
 from .forms import AnnotationForm
-from .models import Corpus, Document, Language, Fragment, Alignment, Annotation
+from .models import Corpus, Document, Language, Fragment, Alignment, Annotation, TenseCategory, Tense
 from .utils import get_random_alignment, get_available_corpora
 
 
@@ -232,6 +233,38 @@ class FragmentList(PermissionRequiredMixin, generic.ListView):
         context['other_languages'] = corpus.languages.exclude(iso=language)
 
         context['show_tenses'] = self.kwargs.get('showtenses', False)
+
+        return context
+
+
+class TenseCategoryList(PermissionRequiredMixin, generic.ListView):
+    model = TenseCategory
+    context_object_name = 'tensecategories'
+    template_name = 'annotations/tenses.html'
+    permission_required = 'annotations.change_annotation'
+
+    def get_context_data(self, **kwargs):
+        """
+        Sets all current languages on the context
+        :return: The context variables.
+        """
+        context = super(TenseCategoryList, self).get_context_data(**kwargs)
+
+        tenses = defaultdict(list)
+        languages = []
+
+        for language in Language.objects.all().order_by('iso'):
+            if not Tense.objects.filter(language=language):
+                continue
+
+            languages.append(language)
+
+            for tc in TenseCategory.objects.all():
+                ts = Tense.objects.filter(category=tc, language=language).values_list('title', flat=True)
+                tenses[tc.title].append(', '.join(ts))
+
+        context['tenses'] = sorted(tenses.items())
+        context['languages'] = languages
 
         return context
 

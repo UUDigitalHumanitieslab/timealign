@@ -1,0 +1,38 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+<div class="container">
+    <h1>Tenses overview</h1>
+
+    <table class="table table-striped table-condensed">
+        <thead>
+        <tr>
+            <th>
+                Tense category
+            </th>
+            {% for l in languages %}
+            <th>
+                {{ l.title }}
+            </th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+            {% for tc, ts in tenses %}
+            <tr>
+                <th>
+                    {{ tc }}
+                </th>
+                {% for t in ts %}
+                <td>
+                    {{ t }}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
