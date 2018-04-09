@@ -2,7 +2,7 @@
 
 from django.db.models import Count
 
-from .models import Corpus, Tense, Alignment, Annotation
+from .models import Corpus, Tense, Alignment, Annotation, Word
 
 
 def get_random_alignment(user, language_from, language_to, corpus=None):
@@ -161,3 +161,35 @@ def get_tenses(language):
     t.append(u'future perfect in the past continuous')
     t.append(u'imperative')
     return t
+
+
+def update_dialogue(in_dialogue, fragment=None, sentence=None, word_range=None):
+    """
+    Updates the dialogue marking for Words and Fragments.
+    :param in_dialogue: whether the Words should be in_dialogue
+    :param fragment: a Fragment for which to change the dialogue marking
+    :param sentence: a Sentence for which to change the dialogue marking
+    :param word_range: a Word range for which to change the dialogue marking
+    """
+    words = Word.objects.none()
+
+    if not any([fragment, sentence, word_range]):
+        raise ValueError('No words selected')
+
+    if fragment:
+        words |= Word.objects.filter(sentence__fragment=fragment)
+    if sentence:
+        words |= Word.objects.filter(sentence=sentence)
+    if word_range:
+        words |= Word.objects.filter(pk__in=word_range)
+
+    fragments = set()
+    for word in words:
+        word.is_in_dialogue = in_dialogue
+        word.is_in_dialogue_prob = 1.0 if in_dialogue else 0.0
+        word.save()
+
+        fragments.add(word.sentence.fragment)
+
+    for fragment in fragments:
+        fragment.save()
