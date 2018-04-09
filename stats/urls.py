@@ -1,6 +1,6 @@
 from django.conf.urls import url
 
-from .views import ScenarioList, ScenarioDetail, MDSView, DescriptiveStatsView
+from .views import ScenarioList, ScenarioDetail, MDSView, DescriptiveStatsView, VennView
 
 urlpatterns = [
     # List views
@@ -16,4 +16,5 @@ urlpatterns = [
 
     # Stats
     url(r'^descriptive/(?P<pk>\d+)/$', DescriptiveStatsView.as_view(), name='descriptive'),
+    url(r'^venn/(?P<pk>\d+)/$', VennView.as_view(), name='venn'),
 ]

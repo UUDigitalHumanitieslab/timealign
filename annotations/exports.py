@@ -1,6 +1,8 @@
+# -*- coding: utf-8 -*-
+
 from django.db.models import Count, Max
 
-from annotations.models import Annotation, Fragment, Word
+from annotations.models import Annotation, Fragment, Word, Tense
 from .management.commands.utils import open_csv, open_xlsx, pad_list
 
 
@@ -34,6 +36,24 @@ def export_pos_file(filename, format_, corpus, language,
         writer.writerow(header, is_header=True)
 
         for annotation in annotations:
+
+            if annotation.alignment.original_fragment.language.iso == 'es':
+                fr_an = Annotation.objects.filter(alignment__original_fragment=annotation.alignment.original_fragment,
+                                                  alignment__translated_fragment__language__iso='fr')
+                target_tense = Tense.objects.get(language__iso='fr', title=u'passé récent')
+                if not fr_an or fr_an[0].tense != target_tense:
+                    continue
+            """
+            if annotation.alignment.original_fragment.language.iso == 'fr':
+                fr_an = Annotation.objects.filter(alignment__original_fragment=annotation.alignment.original_fragment,
+                                                  alignment__translated_fragment__language__iso='es')
+                target_tense = Tense.objects.get(language__iso='es', title=u'pasado reciente')
+                if not fr_an or fr_an[0].tense != target_tense:
+                    if fr_an:
+                        print fr_an[0].tense
+                    continue
+            """
+
             words = annotation.words.all()
             w = [word.word for word in words]
             pos = [word.pos for word in words]

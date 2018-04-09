@@ -1,4 +1,5 @@
 from collections import defaultdict, Counter
+from itertools import combinations
 import json
 import numbers
 import random
@@ -207,5 +208,45 @@ class DescriptiveStatsView(ScenarioDetail):
         context['counters_json'] = json.dumps({language.title: values for language, values in counters.iteritems()})
         context['tuples'] = Counter(tuples.values()).most_common()
         context['colors'] = json.dumps(colors)
+
+        return context
+
+
+class VennView(ScenarioDetail):
+    model = Scenario
+    template_name = 'stats/venn.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(VennView, self).get_context_data(**kwargs)
+
+        tenses = self.object.mds_labels
+        languages = tenses.keys()
+
+        tuples = defaultdict(tuple)
+
+        for l in languages:
+            n = 0
+            for t in tenses[l]:
+                if isinstance(t, numbers.Number):
+                    tense = Tense.objects.get(pk=t)
+                    tense_label = tense.category.title
+                else:
+                    tense_label = t
+
+                value = 1 if tense_label == 'Past' else 0
+                tuples[n] += (value,)
+                n += 1
+
+        sets = list()
+
+        for i in xrange(1, 3):
+            for ls in combinations(languages, i):
+                total = 0
+                for l in ls:
+                    total = sum(t[languages.index(l)] for t in tuples.values())
+
+                sets.append({'sets': ls, 'size': total})
+
+        context['sets'] = json.dumps(sets)
 
         return context
