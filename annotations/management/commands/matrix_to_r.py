@@ -33,7 +33,9 @@ class Command(BaseCommand):
         robjects.r.assign('fragment_ids', robjects.StrVector(fragment_ids))
 
         for language in scenario.languages().all():
-            robjects.r.assign('tenses_{}'.format(language.iso), robjects.StrVector(tenses[language]))
+            language_key = language.language.iso
+            robjects.r.assign('tenses_{}'.format(language_key),
+                              robjects.StrVector(tenses[language_key]))
 
         # Save the workspace
         filename = '{}.RData'.format(scenario.title)
