@@ -131,6 +131,32 @@ def get_color(tense):
     elif tense in [u'non-verb', u'other']:
         return '#ff9896'
 
+    # Prepositions
+    elif tense in [u'on', u'op']:
+        return '#1f77b4'
+    elif tense in [u'at', u'aan']:
+        return '#ff7f0e'
+    elif tense in [u'in', u'al']:
+        return '#2ca02c'
+    elif tense in [u'om', u'btox']:
+        return '#d62728'
+    elif tense in [u'bij', u'b']:
+        return '#9467bd'
+    elif tense in [u'tegen', u'el']:
+        return '#8c564b'
+    elif tense in [u'des']:
+        return '#e377c2'
+    elif tense in [u'met']:
+        return '#7f7f7f'
+    elif tense in [u'naar', u'l']:
+        return '#bcbd22'
+    elif tense in [u'door']:
+        return '#17becf'
+    elif tense in [u'te', u'bfnim']:
+        return '#aec7e8'
+    elif tense in [u'omhoog', u'_a']:
+        return '#ffbb78'
+
     else:
         return ''
 
