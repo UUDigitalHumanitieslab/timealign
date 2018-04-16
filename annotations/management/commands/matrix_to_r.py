@@ -2,6 +2,7 @@
 import rpy2.robjects as robjects
 from rpy2.robjects.packages import importr
 from rpy2.robjects import numpy2ri
+from rpy2.rlike import container
 
 from django.core.management.base import BaseCommand, CommandError
 
@@ -21,7 +22,8 @@ class Command(BaseCommand):
         try:
             scenario = Scenario.objects.get(title=options['scenario'])
         except Scenario.DoesNotExist:
-            raise CommandError('Scenario with title {} does not exist'.format(options['scenario']))
+            raise CommandError('Scenario with title {} does not exist'.format(
+                options['scenario']))
 
         # Retrieve the pickled data
         matrix = scenario.mds_matrix
@@ -32,10 +34,16 @@ class Command(BaseCommand):
         robjects.r.assign('matrix', matrix)
         robjects.r.assign('fragment_ids', robjects.StrVector(fragment_ids))
 
-        for language in scenario.languages().all():
-            language_key = language.language.iso
-            robjects.r.assign('tenses_{}'.format(language_key),
-                              robjects.StrVector(tenses[language_key]))
+        language_keys = [language.language.iso
+                         for language in scenario.languages().all()]
+
+        df = container.OrdDict(
+            [('fragment_id', robjects.StrVector(fragment_ids))] +
+
+            [(language, robjects.StrVector(tenses[language]))
+             for language in language_keys])
+
+        robjects.r.assign('df', robjects.DataFrame(df))
 
         # Save the workspace
         filename = '{}.RData'.format(scenario.title)
