@@ -10,3 +10,4 @@ numpy
 scipy
 scikit-learn
 XlsxWriter
+rpy2==2.7.0
