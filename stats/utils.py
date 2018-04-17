@@ -19,7 +19,10 @@ def run_mds(scenario):
 
     # For each Fragment, get the tenses
     fragment_ids = []
-    tenses = defaultdict(list)
+
+    # per language (as key) stores a list of tenses, using the same order as fragment_ids
+    fragment_tenses = defaultdict(list)
+
     for language_from in languages_from:
         # Filter on Corpus and Language
         fragments = Fragment.objects.filter(document__corpus=corpus, language=language_from.language)
@@ -73,24 +76,52 @@ def run_mds(scenario):
                         annotated_tenses[a_language] = a_tense
 
             # ... but only allow Fragments that have Annotations in all languages
-            if len(annotated_tenses) == len(languages_to):
-                fragment_ids.append(fragment.id)
-                tenses[fragment.language.iso].append(get_tense(fragment, language_from))
-                for l, t in annotated_tenses.items():
-                    tenses[l].append(t)
+            # unless the scenario allows partial tuples.
+            if not annotated_tenses:
+                # no annotations at all, skip fragment
+                continue
 
-    # Create a list of lists with tenses for all languages
+            if (scenario.mds_allow_partial or
+                    len(annotated_tenses) == len(languages_to)):
+                fragment_ids.append(fragment.id)
+
+                # store tense of source language
+                fragment_tenses[fragment.language.iso].append(
+                    get_tense(fragment, language_from))
+
+                # store tenses of target languages
+                for language in languages_to:
+                #for l, t in annotated_tenses.items():
+                    key = language.language.iso
+                    fragment_tenses[key].append(annotated_tenses.get(key))
+
+    # this creates a transposed matrix of fragment_tenses:
+    # in fragment_tenses we find a list of tense labels per language,
+    # while tenses_matrix stores the a of tense labels per fragment
+    # for example:
+    # (tenses are objects but for simplicity they are strings here)
+    #
+    # fragment_tenses['en'] = [simple past, present perfect, future]
+    # fragment_tenses['fr'] = [imparfait, passé composé, futur]
+    # becomes
+    # tenses_matrix[0] = [simple past, imparfait]
+    # tenses_matrix[1] = [present perfect, passé composé]
+    # tenses_matrix[2] = [future, futur]
+    #
+    # this then allows to calculate a distance measure for each
+    # item of tenses_matrix
+
     tenses_matrix = defaultdict(list)
-    for t in tenses.values():
-        for n, tense in enumerate(t):
+    for language_tenses in fragment_tenses.values():
+        for n, tense in enumerate(language_tenses):
             tenses_matrix[n].append(tense)
 
     # Create a distance matrix
     matrix = []
-    for t1 in tenses_matrix.values():
+    for tense_set_1 in tenses_matrix.values():
         result = []
-        for t2 in tenses_matrix.values():
-            result.append(get_distance(t1, t2))
+        for tense_set_2 in tenses_matrix.values():
+            result.append(get_distance(tense_set_1, tense_set_2))
         matrix.append(result)
 
     # Perform Multidimensional Scaling
@@ -102,7 +133,7 @@ def run_mds(scenario):
     scenario.mds_matrix = matrix
     scenario.mds_model = pos.tolist()
     scenario.mds_fragments = fragment_ids
-    scenario.mds_labels = tenses
+    scenario.mds_labels = fragment_tenses
     scenario.mds_stress = mds.stress_
     scenario.save()
 

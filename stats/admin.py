@@ -34,7 +34,7 @@ class ScenarioAdmin(DjangoObjectActions, admin.ModelAdmin):
         }),
         ('Multidimensional Scaling', {
             'classes': ('collapse',),
-            'fields': ('mds_dimensions', )
+            'fields': ('mds_dimensions', 'mds_allow_partial')
         })
     )
 

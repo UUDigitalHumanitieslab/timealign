@@ -34,6 +34,10 @@ class Scenario(models.Model):
     mds_fragments = PickledObjectField('MDS fragments', blank=True)
     mds_labels = PickledObjectField('MDS labels', blank=True)
     mds_stress = models.FloatField('MDS stress', null=True)
+    mds_allow_partial = models.BooleanField(
+        'Allow partial tuples in model', default=False,
+        help_text='When enabled, the model will include tuples where'
+        'one or more of the target languages have no annotataion')
 
     last_run = models.DateTimeField(blank=True, null=True)
 
