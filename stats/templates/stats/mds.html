@@ -49,6 +49,9 @@
     </div>
     Dimension on y-axis:
     <div id="d2" class="btn-group" data-toggle="buttons">
+        <label class="btn btn-primary active">
+            <input type="radio" name="options" value="0" autocomplete="off">Constant
+        </label>
         {% for d in max_dimensions %}
         <label class="btn btn-primary active">
             <input type="radio" name="options" value="{{ d }}" autocomplete="off">{{ d }}
