@@ -131,7 +131,9 @@ class MDSView(ScenarioDetail):
         for n, l in enumerate(model):
             # Retrieve x/y dimensions, add some jitter
             x = l[d1 - 1] + random.uniform(-.5, .5) / 100
-            y = l[d2 - 1] + random.uniform(-.5, .5) / 100
+            y = random.uniform(-.5, .5) / 100
+            if d2 > 0:
+                y += l[d2 - 1]
 
             f = fragments[n]
             fragment = Fragment.objects.get(pk=f)
