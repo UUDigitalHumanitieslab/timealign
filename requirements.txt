@@ -13,6 +13,9 @@ django==1.8.19            # rq.filter: >=1.8,<1.9
 lxml==4.2.0
 mysql-python==1.2.5
 numpy==1.14.2
+rpy2==2.8.6
 scikit-learn==0.19.1
 scipy==1.0.0
+singledispatch==3.4.0.3   # via rpy2
+six==1.11.0               # via rpy2, singledispatch
 xlsxwriter==1.0.2
