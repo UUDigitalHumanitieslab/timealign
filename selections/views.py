@@ -55,7 +55,7 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
                 .filter(document__corpus__in=corpora)
 
             total = fragments.count()
-            completed = fragments.filter(selection__selected_by=user, selection__is_final=True).count()
+            completed = fragments.filter(selection__is_final=True).count()
             language_totals.append((language, completed, total))
         context['languages'] = language_totals
         context['current_corpora'] = corpora
