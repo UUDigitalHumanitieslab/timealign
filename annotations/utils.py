@@ -58,15 +58,10 @@ def get_distinct_tenses(language):
 def get_tenses(language):
     """
     Returns tenses for a language.
-    TODO: create a Tense model and save this stuff there.
     :param language: The given Language
     :return: A list of tenses
     """
-    t = [t.title for t in get_distinct_tenses(language)]
-    t.append(u'future perfect in the past')
-    t.append(u'future perfect in the past continuous')
-    t.append(u'imperative')
-    return t
+    return [t.title for t in get_distinct_tenses(language)]
 
 
 def update_dialogue(in_dialogue, fragment=None, sentence=None, word_range=None):

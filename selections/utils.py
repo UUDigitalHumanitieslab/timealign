@@ -30,7 +30,7 @@ def get_selection_order(fragment, user):
     """
     Retrieves the next order for the current PreProcessFragment and User
     :param fragment: The current PreProcessFragment
-    :param user:  The current User
+    :param user: The current User
     :return: The next order
     """
     selections = Selection.objects.filter(fragment=fragment, selected_by=user)

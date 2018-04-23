@@ -7,7 +7,7 @@ from .models import PreProcessFragment, Selection
 from .utils import get_random_fragment, get_open_fragments, get_selection_order
 
 
-class VPSelectTestCase(TestCase):
+class SelectionTestCase(TestCase):
     fixtures = ['languages']
 
     def setUp(self):

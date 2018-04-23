@@ -45,4 +45,4 @@ class SelectionForm(forms.ModelForm):
 
         if not (cleaned_data.get('is_no_target', False) or cleaned_data.get('already_complete', False)):
             if not cleaned_data['words']:
-                self.add_error('is_no_target', 'Please select the words composing the verb phrase.')
+                self.add_error('is_no_target', 'Please select the words composing the target phrase.')

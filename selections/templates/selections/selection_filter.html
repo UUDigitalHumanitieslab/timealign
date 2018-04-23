@@ -18,14 +18,14 @@
 </style>
 
 <div class="container">
-    <h1>Annotations</h1>
+    <h1>PreSelections</h1>
 
     <table class="table table-striped">
         <thead>
             <tr>
                 <th width="15%">Document</th>
                 <th width="20%">Selected by/at</th>
-                <th width="50%">Selected verb phrase</th>
+                <th width="50%">Selected target</th>
                 <th width="15%">Actions</th>
             </tr>
         </thead>
@@ -42,7 +42,7 @@
                         &empty;
                         {% else %}
                         {{ selection.selected_words }}
-                        ({{ selection.tense.title }})
+                        ({{ selection.tense }})
                         {% endif %}
                     </a>
                 </td>
