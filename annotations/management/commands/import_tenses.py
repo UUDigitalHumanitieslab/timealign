@@ -3,9 +3,9 @@
 from django.core.management.base import BaseCommand, CommandError
 
 import codecs
-import csv
 
 from annotations.models import Language, Tense, Annotation
+from core.utils import unicode_csv_reader
 
 
 class Command(BaseCommand):
@@ -53,17 +53,3 @@ def update_annotation(language, row, use_other_label=False):
         print u'Annotation with pk {} not found'.format(row[0])
     except Tense.DoesNotExist:
         raise CommandError(u'Tense for title {} not found'.format(row[1]))
-
-
-def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
-    # csv.py doesn't do Unicode; encode temporarily as UTF-8:
-    csv_reader = csv.reader(utf_8_encoder(unicode_csv_data),
-                            dialect=dialect, **kwargs)
-    for row in csv_reader:
-        # decode UTF-8 back to Unicode, cell by cell:
-        yield [unicode(cell, 'utf-8') for cell in row]
-
-
-def utf_8_encoder(unicode_csv_data):
-    for line in unicode_csv_data:
-        yield line.encode('utf-8')
