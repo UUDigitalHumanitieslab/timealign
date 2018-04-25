@@ -51,5 +51,6 @@ class Selection(models.Model):
         Retrieves the selected Words for this Selection.
         :return: A list of Strings with the selected Words.
         """
-        # TODO: is there a way to order on part of the id?! Or add an extra field...
-        return ' '.join([word.word for word in self.words.all().order_by('xml_id')])
+        # This assumes the database ordering is OK.
+        # TODO: Order on part of the xml_id. e.g. w18.1.10 should be after w18.1.9
+        return ' '.join([word.word for word in self.words.all().order_by('pk')])
