@@ -55,7 +55,7 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
                 .filter(document__corpus__in=corpora)
 
             total = fragments.count()
-            completed = fragments.filter(selection__is_final=True).count()
+            completed = fragments.exclude(selection=None).count()
             language_totals.append((language, completed, total))
         context['languages'] = language_totals
         context['current_corpora'] = corpora
@@ -82,7 +82,7 @@ class SelectionMixin(PermissionRequiredMixin):
         """Sets the PreProcessFragment on the context"""
         context = super(SelectionMixin, self).get_context_data(**kwargs)
         context['fragment'] = self.get_fragment()
-        context['selected_words'] = self.get_fragment().selected_words(self.request.user)
+        context['selected_words'] = self.get_fragment().selected_words()
         return context
 
     def get_fragment(self):
@@ -117,7 +117,7 @@ class SelectionCreate(SelectionMixin, generic.CreateView):
 
         # Set the previous Selection to is_final when the User signals the annotation has already been completed
         if 'already_complete' in self.request.POST:
-            last_selection = self.get_fragment().selection_set.filter(selected_by=self.request.user).order_by('-order')[0]
+            last_selection = self.get_fragment().selection_set.order_by('-order')[0]
             last_selection.is_final = True
             last_selection.save()
 

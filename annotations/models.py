@@ -39,6 +39,10 @@ class Corpus(models.Model):
     languages = models.ManyToManyField(Language)
     annotators = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
 
+    tense_based = models.BooleanField(
+        'Whether this Corpus is annotated for tense/aspect, or something else',
+        default=True)
+
     check_structure = models.BooleanField(
         'Check for formal structure in the Annotations',
         default=False)

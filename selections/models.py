@@ -5,14 +5,20 @@ from annotations.models import Fragment, Word
 
 
 class PreProcessFragment(Fragment):
-    def selected_words(self, user):
+    def selected_words(self, user=None):
         result = dict()
 
-        selections = self.selection_set.filter(selected_by=user)
+        selections = self.selection_set.all()
+        if user:
+            selections = selections.filter(selected_by=user)
+
         for selection in selections:
             result[selection.order] = [word.xml_id for word in selection.words.all()]
 
         return result
+
+    def has_final(self):
+        return self.selection_set.filter(is_final=True).exists()
 
 
 class Selection(models.Model):
@@ -40,7 +46,7 @@ class Selection(models.Model):
         get_latest_by = 'order'
         ordering = ('-selected_at', )
 
-    def selected_words(self):
+    def annotated_words(self):
         """
         Retrieves the selected Words for this Selection.
         :return: A list of Strings with the selected Words.

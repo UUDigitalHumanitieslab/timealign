@@ -16,7 +16,6 @@
         {{ fragment.language.title }}
         <span class="label label-default pull-right">{{ fragment.document.title }} - {{ fragment.first_sentence.xml_id }}</span>
     </h2>
-
     {% include "annotations/_sentences.html" with sentences=fragment.sentence_set.all selected_words=selected_words tooltips=1 %}
 
     <form action="" method="post" class="form">{% csrf_token %}

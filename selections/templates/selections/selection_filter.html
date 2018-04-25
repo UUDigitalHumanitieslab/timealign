@@ -43,8 +43,10 @@
                         {% if selection.is_no_target %}
                         &empty;
                         {% else %}
-                        {{ selection.selected_words }}
+                        {{ selection.annotated_words }}
+                        {% if fragment.document.corpus.tense_based %}
                         ({{ selection.tense }})
+                        {% endif %}
                         {% endif %}
                     </a>
                 </td>
