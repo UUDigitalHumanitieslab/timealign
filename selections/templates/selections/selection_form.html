@@ -63,6 +63,7 @@ $(function() {
         if ($("#id_is_no_target").is(':checked') || $("#id_already_complete").is(':checked'))
         {
             $("button[name=is_not_final]").hide();
+            $(".word").removeClass("selected");
         }
         else
         {

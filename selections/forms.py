@@ -6,7 +6,7 @@ from .models import Selection, Word
 
 
 class SelectionForm(forms.ModelForm):
-    already_complete = forms.BooleanField(label='Nothing more to select', required=False)
+    already_complete = forms.BooleanField(label='All targets have already been selected in this fragment', required=False)
 
     class Meta:
         model = Selection
@@ -49,6 +49,5 @@ class SelectionForm(forms.ModelForm):
         cleaned_data = super(SelectionForm, self).clean()
 
         if not (cleaned_data.get('is_no_target', False) or cleaned_data.get('already_complete', False)):
-            print cleaned_data
             if not cleaned_data['words']:
                 self.add_error('is_no_target', 'Please select the words composing the target phrase.')
