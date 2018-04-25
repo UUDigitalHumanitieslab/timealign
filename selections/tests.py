@@ -96,3 +96,17 @@ class SelectionTestCase(TestCase):
         s5.delete()  # Notice that this does not work when we delete s4. TODO: do we consider this a bug?
         self.assertEquals(1, get_open_fragments(self.u1, self.en).count())
         self.assertEquals(1, get_open_fragments(self.u2, self.en).count())
+
+    def test_xml_order(self):
+        s = Sentence.objects.create(xml_id='test_order', fragment=self.f1)
+        w1 = Word.objects.create(word='w1', sentence=s, xml_id='w1.1.9')
+        w2 = Word.objects.create(word='w2', sentence=s, xml_id='w1.2.9')
+        w3 = Word.objects.create(word='w3', sentence=s, xml_id='w1.1.10')
+        w4 = Word.objects.create(word='w4', sentence=s, xml_id='w2.1.10')
+
+        s1 = Selection.objects.create(fragment=self.f1, selected_by=self.u1)
+        s1.words = {w1, w2, w3, w4}
+        s1.save()
+
+        self.assertEquals(s1.annotated_words(), ' '.join([w1.word, w3.word, w2.word, w4.word]))
+

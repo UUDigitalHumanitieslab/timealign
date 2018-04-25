@@ -295,8 +295,13 @@ class Annotation(models.Model):
         unique_together = ('alignment', 'annotated_by', )
 
     def selected_words(self):
-        # TODO: is there a way to order on part of the id?! Or add an extra field...
-        return ' '.join([word.word for word in self.words.all().order_by('xml_id')])
+        """
+        Retrieves the selected Words for this Annotation.
+        Order is based on the xml_id, e.g. w18.1.10 should be after w18.1.9.
+        :return: A space-separated string with the selected words.
+        """
+        ordered_words = sorted(self.words.all(), key=lambda w: map(int, w.xml_id[1:].split('.')))
+        return ' '.join([word.word for word in ordered_words])
 
     def label(self):
         return self.tense.title if self.tense else self.other_label

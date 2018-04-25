@@ -49,8 +49,8 @@ class Selection(models.Model):
     def annotated_words(self):
         """
         Retrieves the selected Words for this Selection.
-        :return: A list of Strings with the selected Words.
+        Order is based on the xml_id, e.g. w18.1.10 should be after w18.1.9.
+        :return: A space-separated string with the selected words.
         """
-        # This assumes the database ordering is OK.
-        # TODO: Order on part of the xml_id. e.g. w18.1.10 should be after w18.1.9
-        return ' '.join([word.word for word in self.words.all().order_by('pk')])
+        ordered_words = sorted(self.words.all(), key=lambda w: map(int, w.xml_id[1:].split('.')))
+        return ' '.join([word.word for word in ordered_words])
