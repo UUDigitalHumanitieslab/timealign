@@ -71,12 +71,12 @@ $(function() {
     $(".translated .word").click(function() {
         var selected = $("select[name=words]").val() || [];
         if ($(this).hasClass("selected")) {
-            var index = selected.indexOf($(this).attr("id"));
+            var index = selected.indexOf($(this).attr("data-pk"));
             selected.splice(index, 1);
             $(this).removeClass("selected");
         }
         else {
-            selected.push($(this).attr("id"));
+            selected.push($(this).attr("data-pk"));
             $(this).addClass("selected");
         }
 
