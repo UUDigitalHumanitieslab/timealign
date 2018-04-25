@@ -14,6 +14,7 @@ class SelectionFilter(FilterSet):
             ('selected_at', 'annotated_at'),
             ('last_modified_at', 'last_modified_at'),
             ('fragment__document', 'document'),
+            ('fragment__sentence', 'sentence'),
         ),
     )
 
