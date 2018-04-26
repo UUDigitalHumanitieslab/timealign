@@ -1,7 +1,8 @@
 from django.conf.urls import url
 
 from .views import InstructionsView, IntroductionView, StatusView, \
-    SelectionCreate, SelectionUpdate, SelectionDelete, SelectionChoose, SelectionList
+    SelectionCreate, SelectionUpdate, SelectionDelete, SelectionChoose, SelectionList, \
+    PrepareDownload, SelectionsDownload
 
 urlpatterns = [
     # Static views
@@ -17,4 +18,9 @@ urlpatterns = [
 
     # List views
     url(r'^list/(?P<language>\w+)/$', SelectionList.as_view(), name='list'),
+
+    # Downloads
+    url(r'^prepare_download/(?P<language>\w+)/(?P<corpus>\w+)$', PrepareDownload.as_view(), name='prepare_download'),
+    url(r'^prepare_download/(?P<language>\w+)$', PrepareDownload.as_view(), name='prepare_download'),
+    url(r'^download$', SelectionsDownload.as_view(), name='download'),
 ]

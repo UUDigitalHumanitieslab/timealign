@@ -49,6 +49,9 @@
                     <a href="{% url 'selections:list' language.iso %}" role="button" class="btn btn-default btn-xs" title="List view">
                         <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
                     </a>
+                    <a href="{% url 'selections:prepare_download' language.iso %}" role="button" class="btn btn-default btn-xs" title="Download spreadsheet">
+                        <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+                    </a>
                 </td>
             </tr>
             {% endfor %}

@@ -1,15 +1,19 @@
+from tempfile import NamedTemporaryFile
+
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.views import generic
+from django.utils.http import urlquote
 
 from braces.views import PermissionRequiredMixin
 from django_filters.views import FilterView
 
-from annotations.models import Language
+from annotations.models import Language, Corpus, Document
 from annotations.utils import get_available_corpora
 
+from .exports import export_selections
 from .filters import SelectionFilter
 from .forms import SelectionForm
 from .models import PreProcessFragment, Selection
@@ -205,3 +209,51 @@ class SelectionList(PermissionRequiredMixin, FilterView):
         return Selection.objects \
             .filter(fragment__language__iso=self.kwargs['language']) \
             .filter(fragment__document__corpus__in=corpora)
+
+
+############
+# Download views
+############
+class PrepareDownload(generic.TemplateView):
+    template_name = 'selections/download.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(PrepareDownload, self).get_context_data(**kwargs)
+
+        language = kwargs['language']
+        corpora = get_available_corpora(self.request.user)
+        selected_corpus = corpora[0]
+        if kwargs.get('corpus'):
+            selected_corpus = Corpus.objects.get(id=int(kwargs['corpus']))
+
+        context['language'] = Language.objects.get(iso=language)
+        context['corpora'] = corpora
+        context['selected_corpus'] = selected_corpus
+        return context
+
+
+class SelectionsDownload(PermissionRequiredMixin, generic.View):
+    permission_required = 'selections.change_selection'
+
+    def get(self, request, *args, **kwargs):
+        language = request.GET['language']
+        corpus_id = request.GET['corpus']
+        document_id = request.GET['document']
+
+        with NamedTemporaryFile() as file_:
+            corpus = Corpus.objects.get(id=int(corpus_id))
+            if document_id == 'all':
+                export_selections(file_.name, 'xlsx', corpus, language)
+                title = 'all'
+            else:
+                document = Document.objects.get(id=int(document_id))
+                export_selections(file_.name, 'xlsx', corpus, language, document=document)
+                title = document.title
+
+            response = HttpResponse(file_, content_type='application/xlsx')
+            filename = '{}-{}-{}.xlsx'.format(urlquote(corpus.title),
+                                              urlquote(title),
+                                              language)
+            response['Content-Disposition'] = \
+                'attachment; filename={}'.format(filename)
+            return response
