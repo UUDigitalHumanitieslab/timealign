@@ -5,8 +5,8 @@ from lxml import etree
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from annotations.management.commands.add_fragments import add_sentences
-from annotations.models import Language, Corpus, Document, Fragment, Sentence, Alignment
+from .add_fragments import retrieve_languages, create_to_fragments
+from annotations.models import Corpus, Document, Sentence
 
 
 class Command(BaseCommand):
@@ -32,10 +32,7 @@ class Command(BaseCommand):
                 for n, row in enumerate(csv_reader):
                     # Retrieve the languages from the first row of the output
                     if n == 0:
-                        language_from = Language.objects.get(iso=row[1])
-                        languages_to = dict()
-                        for i in range(6, len(row), 2):
-                            languages_to[i] = Language.objects.get(iso=row[i])
+                        language_from, languages_to = retrieve_languages(row)
                         continue
 
                     with transaction.atomic():
@@ -65,15 +62,7 @@ class Command(BaseCommand):
                             sentence = sentences.first()
 
                         # Create the Fragment and Alignment
-                        for m, language_to in languages_to.items():
-                            if row[m]:
-                                to_fragment = Fragment.objects.create(language=language_to,
-                                                                      document=doc)
-                                add_sentences(to_fragment, row[m])
-
-                                Alignment.objects.create(original_fragment=sentence.fragment,
-                                                         translated_fragment=to_fragment,
-                                                         type=row[m - 1])
+                        create_to_fragments(doc, sentence.fragment, languages_to, row)
 
                     print 'Line {} processed'.format(n)
 
