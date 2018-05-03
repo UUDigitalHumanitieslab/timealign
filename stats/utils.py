@@ -136,23 +136,24 @@ def get_distance(array1, array2):
     return 1 - round(result / total, 2) if total > 0 else 0
 
 
-def get_tense_properties(tense_identifier):
+def get_tense_properties(tense_identifier, seq=0):
     if isinstance(tense_identifier, numbers.Number):
         tense = Tense.objects.get(pk=tense_identifier)
         tense_label = tense.title
         tense_color = tense.category.color
     else:
         tense_label = tense_identifier
-        tense_color = get_color(tense_identifier)
+        tense_color = get_color(tense_identifier, seq)
     return tense_label, tense_color
 
 
-def get_color(tense):
+def get_color(tense, seq=0):
     """
     This function maps a tense on a color from the d3 color scale.
     See https://github.com/d3/d3-3.x-api-reference/blob/master/Ordinal-Scales.md#categorical-colors for details.
     TODO: create a Tense model and save this stuff there.
     :param tense: The given tense
+    :param seq: The current sequence number
     :return: A color from the d3 color scale
     """
     if tense in [u'Perfekt', u'present perfect', u'pretérito perfecto compuesto', u'passé composé', u'vtt',
@@ -240,31 +241,27 @@ def get_color(tense):
     elif tense in [u'non-verb', u'other']:
         return '#ff9896'
 
-    # Prepositions
-    elif tense in [u'on', u'op']:
-        return '#1f77b4'
-    elif tense in [u'at', u'aan']:
-        return '#ff7f0e'
-    elif tense in [u'in', u'al']:
-        return '#2ca02c'
-    elif tense in [u'om', u'btox']:
-        return '#d62728'
-    elif tense in [u'bij', u'b']:
-        return '#9467bd'
-    elif tense in [u'tegen', u'el']:
-        return '#8c564b'
-    elif tense in [u'des']:
-        return '#e377c2'
-    elif tense in [u'met']:
-        return '#7f7f7f'
-    elif tense in [u'naar', u'l']:
-        return '#bcbd22'
-    elif tense in [u'door']:
-        return '#17becf'
-    elif tense in [u'te', u'bfnim']:
-        return '#aec7e8'
-    elif tense in [u'omhoog', u'_a']:
-        return '#ffbb78'
-
     else:
-        return ''
+        color_list = [
+            '#1f77b4',
+            '#ff7f0e',
+            '#2ca02c',
+            '#d62728',
+            '#9467bd',
+            '#8c564b',
+            '#e377c2',
+            '#7f7f7f',
+            '#bcbd22',
+            '#17becf',
+            '#aec7e8',
+            '#ffbb78',
+            '#98df8a',
+            '#ff9896',
+            '#c5b0d5',
+            '#c49c94',
+            '#f7b6d2',
+            '#f7b6d2',
+            '#dbdb8d',
+            '#9edae5',
+        ]
+        return color_list[seq % len(color_list)]

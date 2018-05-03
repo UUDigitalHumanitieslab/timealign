@@ -145,8 +145,10 @@ class MDSView(ScenarioDetail):
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
         matrix = []
+        labels = set()
         for tense, values in j.items():
-            tense_label, tense_color = get_tense_properties(tense)
+            tense_label, tense_color = get_tense_properties(tense, len(labels))
+            labels.add(tense_label)
 
             d = dict()
             d['key'] = tense_label
@@ -183,8 +185,10 @@ class DescriptiveStatsView(ScenarioDetail):
         for l in languages:
             c = Counter()
             n = 0
+            labels = set()
             for t in tenses[l.iso]:
-                tense_label, tense_color = get_tense_properties(t)
+                tense_label, tense_color = get_tense_properties(t, len(labels))
+                labels.add(tense_label)
 
                 c.update([tense_label])
                 tuples[n] += (tense_label,)

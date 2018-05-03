@@ -41,7 +41,7 @@ class Command(BaseCommand):
             labels = []
             colors = []
             for tense in tenses[sl.language.iso]:
-                label, color = get_tense_properties(tense)
+                label, color = get_tense_properties(tense, len(set(labels)))
                 labels.append(label)
                 colors.append(color)
 
