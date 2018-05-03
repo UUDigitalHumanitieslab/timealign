@@ -197,6 +197,9 @@ class Fragment(models.Model):
     def first_sentence(self):
         return self.sentence_set.all().order_by('xml_id')[0]
 
+    def xml_ids(self):
+        return ', '.join([s.xml_id for s in self.sentence_set.all()])
+
     def save(self, *args, **kwargs):
         """Sets the correct formal structure and sentence function on save of a Fragment"""
         self.formal_structure = self.get_formal_structure()
