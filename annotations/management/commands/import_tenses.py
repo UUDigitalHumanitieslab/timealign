@@ -4,8 +4,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 import codecs
 
-from annotations.models import Language, Tense, Annotation
-from core.utils import unicode_csv_reader
+from annotations.models import Language, Tense, Annotation, Fragment
 
 
 class Command(BaseCommand):
@@ -15,6 +14,7 @@ class Command(BaseCommand):
         parser.add_argument('language', type=str)
         parser.add_argument('filenames', nargs='+', type=str)
         parser.add_argument('--use_other_label', action='store_true', dest='use_other_label', default=False)
+        parser.add_argument('--model', action='store', dest='model', default='annotation')
 
     def handle(self, *args, **options):
         try:
@@ -23,13 +23,29 @@ class Command(BaseCommand):
             raise CommandError('Language {} does not exist'.format(options['language']))
 
         for filename in options['filenames']:
-            with codecs.open(filename, 'rb', 'utf-8') as csvfile:
-                csv_reader = unicode_csv_reader(csvfile, delimiter='\t')
-                next(csv_reader)  # skip header
+            with open(filename, 'rb') as csvfile:
+                try:
+                    process_file(csvfile, language, options['use_other_label'], options['model'])
+                    self.stdout.write('Successfully imported labels')
+                except ValueError as e:
+                    raise CommandError(e.message)
 
-                for row in csv_reader:
-                    if row:
-                        update_annotation(language, row, options['use_other_label'])
+
+def process_file(f, language, use_other_label, model='annotation'):
+    for n, row in enumerate(f):
+        if n == 0:
+            continue
+
+        row = row.strip()
+        if row:
+            encoded = [c.decode('utf-8') for c in row.split('\t')]
+
+            if model == 'annotation':
+                update_annotation(language, encoded, use_other_label)
+            elif model == 'fragment':
+                update_fragment(language, encoded, use_other_label)
+            else:
+                raise ValueError(u'Unknown model {}'.format(model))
 
 
 def update_annotation(language, row, use_other_label=False):
@@ -50,6 +66,25 @@ def update_annotation(language, row, use_other_label=False):
         # Save Annotation
         annotation.save()
     except Annotation.DoesNotExist:
-        print u'Annotation with pk {} not found'.format(row[0])
+        raise ValueError(u'Annotation with pk {} not found.'.format(row[0]))
     except Tense.DoesNotExist:
-        raise CommandError(u'Tense for title {} not found'.format(row[1]))
+        raise ValueError(u'Tense with title "{}" not found.'.format(row[1]))
+
+
+def update_fragment(language, row, use_other_label=False):
+    try:
+        # Retrieve Fragment
+        fragment = Fragment.objects.get(pk=row[0], language=language)
+
+        # Add Tense or other_label
+        if use_other_label:
+            fragment.other_label = row[1]
+        else:
+            fragment.tense = Tense.objects.get(title__iexact=row[1], language=language)
+
+        # Save Fragment
+        fragment.save()
+    except Fragment.DoesNotExist:
+        raise ValueError(u'Fragment with pk {} not found.'.format(row[0]))
+    except Tense.DoesNotExist:
+        raise ValueError(u'Tense with title "{}" not found.'.format(row[1]))

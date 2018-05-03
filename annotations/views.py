@@ -6,16 +6,16 @@ from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render, redirect
 from django.views import generic
 from django.utils.http import urlquote
 
-from braces.views import LoginRequiredMixin, PermissionRequiredMixin
+from braces.views import LoginRequiredMixin, PermissionRequiredMixin, SuperuserRequiredMixin
 from django_filters.views import FilterView
 
 from .exports import export_pos_file
 from .filters import AnnotationFilter
-from .forms import AnnotationForm
+from .forms import AnnotationForm, LabelImportForm
 from .models import Corpus, Document, Language, Fragment, Alignment, Annotation, TenseCategory, Tense
 from .utils import get_random_alignment, get_available_corpora
 
@@ -314,3 +314,27 @@ class ExportPOSDownload(PermissionRequiredMixin, generic.View):
             response['Content-Disposition'] = \
                 'attachment; filename={}'.format(filename)
             return response
+
+
+class ImportLabelsView(LoginRequiredMixin, SuperuserRequiredMixin, generic.View):
+    """
+    Allows superusers to import labels to Annotations and Fragments
+    """
+    form_class = LabelImportForm
+    template_name = 'annotations/label_form.html'
+
+    def get(self, request, *args, **kwargs):
+        form = self.form_class()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                form.save()
+                messages.success(self.request, u'Successfully imported the labels!')
+            except ValueError as e:
+                messages.error(self.request, u'Error during import: {}'.format(e.message))
+            return redirect(reverse('annotations:import-labels'))
+        else:
+            return render(request, self.template_name, {'form': form})
