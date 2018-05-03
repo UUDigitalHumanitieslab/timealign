@@ -2,7 +2,7 @@
 
 from django.core.management.base import BaseCommand
 
-from annotations.models import Annotation, Fragment
+from annotations.models import Annotation
 
 
 class Command(BaseCommand):

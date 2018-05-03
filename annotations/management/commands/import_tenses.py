@@ -2,8 +2,6 @@
 
 from django.core.management.base import BaseCommand, CommandError
 
-import codecs
-
 from annotations.models import Language, Tense, Annotation, Fragment
 
 

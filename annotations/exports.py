@@ -1,4 +1,4 @@
-from django.db.models import Count, Max, Case, When, IntegerField
+from django.db.models import Count, Max
 
 from annotations.models import Annotation, Fragment, Word
 from .management.commands.utils import open_csv, open_xlsx, pad_list

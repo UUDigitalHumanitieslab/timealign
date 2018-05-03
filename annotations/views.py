@@ -43,8 +43,6 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
         """Creates a list of tuples with information on the annotation progress"""
         context = super(StatusView, self).get_context_data(**kwargs)
 
-        user = self.request.user
-
         corpus_pk = self.kwargs.get('pk', None)
         if corpus_pk:
             corpora = [get_object_or_404(Corpus, pk=corpus_pk)]
