@@ -15,6 +15,7 @@ class Command(BaseCommand):
         parser.add_argument('source_language', type=str)
         parser.add_argument('languages', nargs='+', type=str)
         parser.add_argument('--doc', dest='document')
+        parser.add_argument('--formal_structure', dest='formal_structure')
 
     def handle(self, *args, **options):
         # Retrieve the Corpus from the database
@@ -42,8 +43,7 @@ class Command(BaseCommand):
             header = ['id', 'source words', 'sentence', 'tense']
 
             annotations = Annotation.objects. \
-                filter(alignment__translated_fragment__language__iso=language,
-                       alignment__translated_fragment__document__corpus=corpus)
+                filter(alignment__translated_fragment__document__corpus=corpus)
             annotations = annotations.filter(is_no_target=False, is_translation=True)
 
             if options['document'] is not None:
@@ -56,6 +56,13 @@ class Command(BaseCommand):
             fragments = Fragment.objects.filter(language=source_language, document__corpus=corpus)
             if options['document'] is not None:
                 fragments = fragments.filter(document__title=options['document'])
+
+            formal_structure = options['formal_structure']
+            if formal_structure is not None:
+                if formal_structure == 'narration':
+                    fragments = fragments.filter(formal_structure=Fragment.FS_NARRATION)
+                if formal_structure == 'dialogue':
+                    fragments = fragments.filter(formal_structure=Fragment.FS_DIALOGUE)
 
             rows = []
             for fragment in fragments:
