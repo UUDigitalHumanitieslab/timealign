@@ -24,7 +24,7 @@
     <h3 data-pk="{{ fragment.pk }}">
         {{ fragment.language.title }}
         <span class="label label-default pull-right">{{ fragment.document.title }}</span>
-        <span class="label label-primary pull-right">{{ fragment.tense|default:"Perfect" }}</span>
+        <span class="label label-primary pull-right">{{ fragment.label }}</span>
         {% if fragment.document.corpus.check_structure %}
         <span class="label label-warning pull-right">{{ fragment.get_formal_structure_display }}</span>
         <span class="label label-primary pull-right">{{ fragment.get_sentence_function_display }}</span>
