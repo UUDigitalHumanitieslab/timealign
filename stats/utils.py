@@ -241,6 +241,56 @@ def get_color(tense, seq=0):
     elif tense in [u'non-verb', u'other']:
         return '#ff9896'
 
+    # ViB
+    elif tense in [u'adjectif']:
+        return '#e6194b'
+    elif tense in [u'adverbe']:
+        return '#3cb44b'
+    elif tense in [u'article défini']:
+        return '#ff0000'
+    elif tense in [u'article défini pluriel']:
+        return '#bf0000'
+    elif tense in [u'article défini singulier']:
+        return '#ff0051'
+    elif tense in [u'article indéfini']:
+        return '#ff8400'
+    elif tense in [u'article indéfini pluriel']:
+        return '#8c4800'
+    elif tense in [u'article indéfini singulier']:
+        return '#4c2800'
+    elif tense in [u'déterminant défini pluriel']:
+        return '#adb300'
+    elif tense in [u'déterminant démonstratif']:
+        return '#56bf00'
+    elif tense in [u'déterminant indéfini']:
+        return '#285900'
+    elif tense in [u'déterminant possessif']:
+        return '#00e686'
+    elif tense in [u'expression']:
+        return '#e377c2'
+    elif tense in [u'nom commun']:
+        return '#7f7f7f'
+    elif tense in [u'nom propre']:
+        return '#bcbd22'
+    elif tense in [u'nom propre gén']:
+        return '#dbdb8d'
+    elif tense in [u'numéral']:
+        return '#17becf'
+    elif tense in [u'pronom démonstratif']:
+        return '#5b008c'
+    elif tense in [u'pronom indéfini']:
+        return '#2200ff'
+    elif tense in [u'pronom interrogatif']:
+        return '#0058e6'
+    elif tense in [u'pronom personnel']:
+        return '#006773'
+    elif tense in [u'pronom personnel adverbial']:
+        return '#00331e'
+    elif tense in [u'pronom relatif']:
+        return '#285900'
+    elif tense in [u'pronom réfléchi']:
+        return '#00e686'
+
     else:
         color_list = [
             '#1f77b4',
