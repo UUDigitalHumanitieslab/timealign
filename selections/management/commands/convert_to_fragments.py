@@ -10,7 +10,7 @@ from django.db import transaction
 
 from annotations.models import Language, Corpus, Document, Fragment, Tense
 from annotations.management.commands.add_fragments import retrieve_languages, create_to_fragments
-from selections.models import Selection
+from selections.models import Selection, PreProcessFragment
 
 
 class Command(BaseCommand):
@@ -83,8 +83,12 @@ class Command(BaseCommand):
                             w.is_target = w.xml_id in selected_words
                             w.save()
         else:
-            fragments = Fragment.objects.filter(document__corpus=corpus).filter(language=language)
+            # Fetch Fragments that are not PreProcessFragments (TODO: in 1.11, use .difference() for this)
+            fragments = Fragment.objects.filter(document__corpus=corpus, language=language)
+            pp_fragments = PreProcessFragment.objects.filter(document__corpus=corpus, language=language)
+            fragments = fragments.exclude(pk__in=pp_fragments)
 
+            # Create a Fragment cache
             for fragment in fragments:
                 for sentence in fragment.sentence_set.all():
                     fragment_cache[(fragment.document.pk, sentence.xml_id)].append(fragment)
