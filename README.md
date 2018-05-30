@@ -22,3 +22,9 @@ Starting from an empty Ubuntu 16.04 installation, you will need the following to
     python manage.py test
 
 If the test runs OK, you should be ready to roll!
+
+## Citing
+
+If you happen to have used (parts of) this project for your research, please refer to this paper:
+
+[van der Klis, M., Le Bruyn, B., de Swart, H. (2017)](http://www.aclweb.org/anthology/E17-2080). Mapping the Perfect via Translation Mining. *Proceedings of the 15th Conference of the European Chapter of the Association for Computational Linguistics: Volume 2, Short Papers* 2017, 497-502.

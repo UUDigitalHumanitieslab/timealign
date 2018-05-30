@@ -6,7 +6,7 @@ from .models import Selection, Word
 
 
 class SelectionForm(forms.ModelForm):
-    already_complete = forms.BooleanField(label='Nothing more to select', required=False)
+    already_complete = forms.BooleanField(label='All targets have already been selected in this fragment', required=False)
 
     class Meta:
         model = Selection
@@ -20,18 +20,23 @@ class SelectionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         """
-        Filters the Words on the translated language.
+        Allows selection of the target words
         """
         self.fragment = kwargs.pop('fragment', None)
         self.user = kwargs.pop('user', None)
 
         sentences = self.fragment.sentence_set.all()
-        tenses = get_tenses(self.fragment.language)
-        selected_words = self.fragment.selected_words(self.user)
+        selected_words = self.fragment.selected_words()
 
         super(SelectionForm, self).__init__(*args, **kwargs)
         self.fields['words'].queryset = Word.objects.filter(sentence__in=sentences)
-        self.fields['tense'].widget.choices = tuple(zip(tenses, tenses))
+
+        # Allow to select for tense is the Corpus is tense/aspect-based.
+        if self.fragment.document.corpus.tense_based:
+            tenses = get_tenses(self.fragment.language)
+            self.fields['tense'].widget.choices = tuple(zip(tenses, tenses))
+        else:
+            del self.fields['tense']
 
         if not selected_words:
             del self.fields['already_complete']
@@ -45,4 +50,4 @@ class SelectionForm(forms.ModelForm):
 
         if not (cleaned_data.get('is_no_target', False) or cleaned_data.get('already_complete', False)):
             if not cleaned_data['words']:
-                self.add_error('is_no_target', 'Please select the words composing the verb phrase.')
+                self.add_error('is_no_target', 'Please select the words composing the target phrase.')

@@ -8,9 +8,9 @@ from lxml import etree
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from annotations.models import Language, Corpus, Document, Fragment, Sentence, Word, Alignment, Tense
-from annotations.management.commands.add_fragments import add_sentences
-from selections.models import Selection
+from annotations.models import Language, Corpus, Document, Fragment, Tense
+from annotations.management.commands.add_fragments import retrieve_languages, create_to_fragments
+from selections.models import Selection, PreProcessFragment
 
 
 class Command(BaseCommand):
@@ -18,6 +18,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('corpus', type=str)
+        parser.add_argument('language', type=str)
         parser.add_argument('filenames', type=str, nargs='+')
 
         parser.add_argument('--create', action='store_true', dest='create', default=False,
@@ -30,16 +31,24 @@ class Command(BaseCommand):
         except Corpus.DoesNotExist:
             raise CommandError('Corpus with title {} does not exist'.format(options['corpus']))
 
+        # Retrieve the Language from the database
+        try:
+            language = Language.objects.get(iso=options['language'])
+        except Language.DoesNotExist:
+            raise CommandError('Language with iso {} does not exist'.format(options['language']))
+
+        # Check whether filenames have been supplied
         if len(options['filenames']) == 0:
             raise CommandError('No documents specified')
 
         fragment_cache = defaultdict(list)
-        selections = Selection.objects \
-            .filter(is_no_target=False, fragment__document__corpus=corpus) \
-            .filter(fragment__document__title=u'17.xml') \
-            .filter(selected_by__username=u'konstantinos')
 
         if options['create']:
+            selections = Selection.objects \
+                .filter(is_no_target=False) \
+                .filter(fragment__document__corpus=corpus) \
+                .filter(fragment__language=language)
+
             for selection in selections:
                 selected_words = []
                 for selected_word in selection.words.all():
@@ -51,7 +60,10 @@ class Command(BaseCommand):
 
                     f.__class__ = Fragment
                     f.pk = None
-                    f.tense = Tense.objects.get(language=f.language, title=selection.tense)
+
+                    if selection.tense:
+                        f.tense = Tense.objects.get(language=f.language, title=selection.tense)
+
                     f.save()
 
                     for sentence in sentences:
@@ -71,39 +83,33 @@ class Command(BaseCommand):
                             w.is_target = w.xml_id in selected_words
                             w.save()
         else:
-            for fragment in Fragment.objects \
-                    .filter(document__corpus=corpus) \
-                    .filter(language__iso='en') \
-                    .filter(document__title=u'17.xml'):
+            # Fetch Fragments that are not PreProcessFragments (TODO: in 1.11, use .difference() for this)
+            fragments = Fragment.objects.filter(document__corpus=corpus, language=language)
+            pp_fragments = PreProcessFragment.objects.filter(document__corpus=corpus, language=language)
+            fragments = fragments.exclude(pk__in=pp_fragments)
+
+            # Create a Fragment cache
+            for fragment in fragments:
                 for sentence in fragment.sentence_set.all():
                     fragment_cache[(fragment.document.pk, sentence.xml_id)].append(fragment)
 
         for filename in options['filenames']:
             with open(filename, 'rb') as f:
                 csv_reader = csv.reader(f, delimiter=';')
+                languages_to = dict()
                 for n, row in enumerate(csv_reader):
+                    # Retrieve the languages from the first row of the output
                     if n == 0:
-                        languages_to = dict()
-                        for i in xrange(3, 21, 2):
-                            if i >= len(row):
-                                break
-                            else:
-                                languages_to[i] = Language.objects.get(iso=row[i])
+                        _, languages_to = retrieve_languages(row)
                         continue
 
                     with transaction.atomic():
                         doc, _ = Document.objects.get_or_create(corpus=corpus, title=row[0])
 
-                        for s in etree.fromstring(row[2]).xpath('.//s'):
+                        for s in etree.fromstring(row[4]).xpath('.//s'):
                             fragments = fragment_cache.get((doc.pk, s.get('id')))
                             if fragments:
                                 for fragment in fragments:
-                                    for m, language_to in languages_to.items():
-                                        if row[m]:
-                                            to_fragment = Fragment.objects.create(language=language_to,
-                                                                                  document=doc)
-                                            add_sentences(to_fragment, row[m + 1])
+                                    create_to_fragments(doc, fragment, languages_to, row)
 
-                                            Alignment.objects.create(original_fragment=fragment,
-                                                                     translated_fragment=to_fragment,
-                                                                     type=row[m])
+                    print 'Line {} processed'.format(n)

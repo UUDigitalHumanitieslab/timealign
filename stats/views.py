@@ -11,8 +11,9 @@ from django.views import generic
 from braces.views import LoginRequiredMixin
 
 from .models import Scenario
+from .utils import get_tense_properties
 from annotations.models import Language, Tense, Fragment
-from annotations.utils import get_available_corpora, get_color
+from annotations.utils import get_available_corpora
 
 
 class ScenarioList(LoginRequiredMixin, generic.ListView):
@@ -130,7 +131,9 @@ class MDSView(ScenarioDetail):
         for n, l in enumerate(model):
             # Retrieve x/y dimensions, add some jitter
             x = l[d1 - 1] + random.uniform(-.5, .5) / 100
-            y = l[d2 - 1] + random.uniform(-.5, .5) / 100
+            y = random.uniform(-.5, .5) / 100
+            if d2 > 0:
+                y += l[d2 - 1]
 
             f = fragments[n]
             fragment = Fragment.objects.get(pk=f)
@@ -142,18 +145,15 @@ class MDSView(ScenarioDetail):
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
         matrix = []
-        for k, v in j.items():
+        labels = set()
+        for tense, values in j.items():
+            tense_label, tense_color = get_tense_properties(tense, len(labels))
+            labels.add(tense_label)
+
             d = dict()
-            d['values'] = v
-
-            if isinstance(k, numbers.Number):
-                t = Tense.objects.get(pk=k)
-                d['key'] = t.title
-                d['color'] = t.category.color
-            else:
-                d['key'] = k
-                d['color'] = get_color(k)
-
+            d['key'] = tense_label
+            d['color'] = tense_color
+            d['values'] = values
             matrix.append(d)
 
         # Add all variables to the context
@@ -185,14 +185,10 @@ class DescriptiveStatsView(ScenarioDetail):
         for l in languages:
             c = Counter()
             n = 0
+            labels = set()
             for t in tenses[l.iso]:
-                if isinstance(t, numbers.Number):
-                    tense = Tense.objects.get(pk=t)
-                    tense_label = tense.title
-                    tense_color = tense.category.color
-                else:
-                    tense_label = t
-                    tense_color = get_color(t)
+                tense_label, tense_color = get_tense_properties(t, len(labels))
+                labels.add(tense_label)
 
                 c.update([tense_label])
                 tuples[n] += (tense_label,)

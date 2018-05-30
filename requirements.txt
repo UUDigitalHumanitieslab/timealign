@@ -4,15 +4,18 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
-django-bootstrap3==9.1.0
-django-braces==1.12.0
+django-bootstrap3==10.0.1
+django-braces==1.13.0
 django-filter==1.1.0
 django-object-actions==1.0.0
 django-picklefield==1.0.0
 django==1.8.19            # rq.filter: >=1.8,<1.9
-lxml==4.2.0
+lxml==4.2.1
 mysql-python==1.2.5
-numpy==1.14.2
+numpy==1.14.3
+rpy2==2.8.6
 scikit-learn==0.19.1
-scipy==1.0.0
-xlsxwriter==1.0.2
+scipy==1.1.0
+singledispatch==3.4.0.3   # via rpy2
+six==1.11.0               # via rpy2, singledispatch
+xlsxwriter==1.0.5

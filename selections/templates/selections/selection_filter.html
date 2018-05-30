@@ -18,15 +18,16 @@
 </style>
 
 <div class="container">
-    <h1>Annotations</h1>
+    <h1>PreSelections</h1>
 
     <table class="table table-striped">
         <thead>
             <tr>
-                <th width="15%">Document</th>
-                <th width="20%">Selected by/at</th>
-                <th width="50%">Selected verb phrase</th>
-                <th width="15%">Actions</th>
+                <th width="10%">Document</th>
+                <th width="10%">Sentence</th>
+                <th width="30%">Selected by/at</th>
+                <th width="40%">Selected target</th>
+                <th width="10%">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -34,6 +35,7 @@
             <tr>
                 {% with fragment=selection.fragment %}
                 <td>{{ fragment.document.title }}</td>
+                <td>{{ fragment.first_sentence.xml_id }}</td>
                 <td>{{ selection.selected_by }} (<em>{{ selection.selected_at|date:"j M Y, G:i" }}</em>)</td>
                 <td>
                     <a title="Fragment" data-toggle="popover"
@@ -41,8 +43,10 @@
                         {% if selection.is_no_target %}
                         &empty;
                         {% else %}
-                        {{ selection.selected_words }}
-                        ({{ selection.tense.title }})
+                        {{ selection.annotated_words }}
+                        {% if fragment.document.corpus.tense_based %}
+                        ({{ selection.tense }})
+                        {% endif %}
                         {% endif %}
                     </a>
                 </td>
@@ -64,7 +68,7 @@
     </table>
 
     {% if is_paginated %}
-    {% bootstrap_pagination page_obj %}
+    {% bootstrap_pagination page_obj extra=request.GET.urlencode %}
     {% endif %}
 
     <h2>Filter</h2>

@@ -10,13 +10,12 @@
 </style>
 
 <div class="container">
-    <h1>VPSelect</h1>
+    <h1>PreSelect</h1>
 
-    <h3>
+    <h2>
         {{ fragment.language.title }}
-        <span class="label label-primary pull-right">{{ fragment.document.title }}</span>
-    </h3>
-
+        <span class="label label-default pull-right">{{ fragment.document.title }} - {{ fragment.first_sentence.xml_id }}</span>
+    </h2>
     {% include "annotations/_sentences.html" with sentences=fragment.sentence_set.all selected_words=selected_words tooltips=1 %}
 
     <form action="" method="post" class="form">{% csrf_token %}
@@ -25,9 +24,9 @@
             {% bootstrap_icon "ok" %} Submit
         </button>
         <button type="submit" name="is_not_final" class="btn btn-primary">
-            {% bootstrap_icon "ok" %} Submit and select another VP
+            {% bootstrap_icon "ok" %} Submit and select another target
         </button>
-        <a href="{% url 'selections:choose' fragment.language.iso %}" role="button" class="btn btn-warning">
+        <a href="{% url 'selections:choose' fragment.language.iso %}" role="button" class="btn btn-warning pull-right">
             {% bootstrap_icon "arrow-right" %} Go to another fragment
         </a>
     </form>
@@ -48,12 +47,12 @@ $(function() {
     $(".word").click(function() {
         var selected = $("select[name=words]").val() || [];
         if ($(this).hasClass("selected")) {
-            var index = selected.indexOf($(this).attr("id"));
+            var index = selected.indexOf($(this).attr("data-pk"));
             selected.splice(index, 1);
             $(this).removeClass("selected");
         }
         else {
-            selected.push($(this).attr("id"));
+            selected.push($(this).attr("data-pk"));
             $(this).addClass("selected");
         }
 
@@ -64,6 +63,7 @@ $(function() {
         if ($("#id_is_no_target").is(':checked') || $("#id_already_complete").is(':checked'))
         {
             $("button[name=is_not_final]").hide();
+            $(".word").removeClass("selected");
         }
         else
         {

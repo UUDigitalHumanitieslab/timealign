@@ -1,6 +1,4 @@
 from django.contrib import admin, messages
-from django.core.urlresolvers import reverse
-from django.shortcuts import redirect
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
@@ -45,7 +43,7 @@ class ScenarioAdmin(DjangoObjectActions, admin.ModelAdmin):
             run_mds(obj)
             obj.last_run = timezone.now()
             obj.save()
-        except ValueError as e:
+        except ValueError:
             self.message_user(request,
                               'Something went wrong while running scenario {}'.format(obj.title),
                               level=messages.ERROR)
@@ -57,6 +55,6 @@ class ScenarioAdmin(DjangoObjectActions, admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if obj.owner is None:
-            # avoid changing ownership when editing an existing scenario
+            # Avoid changing ownership when editing an existing scenario
             obj.owner = request.user
         super(ScenarioAdmin, self).save_model(request, obj, form, change)

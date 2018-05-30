@@ -5,19 +5,25 @@ from annotations.models import Fragment, Word
 
 
 class PreProcessFragment(Fragment):
-    def selected_words(self, user):
+    def selected_words(self, user=None):
         result = dict()
 
-        selections = self.selection_set.filter(selected_by=user)
+        selections = self.selection_set.all()
+        if user:
+            selections = selections.filter(selected_by=user)
+
         for selection in selections:
             result[selection.order] = [word.xml_id for word in selection.words.all()]
 
         return result
 
+    def has_final(self):
+        return self.selection_set.filter(is_final=True).exists()
+
 
 class Selection(models.Model):
     is_no_target = models.BooleanField(
-        'This fragment does not contain a verb phrase',
+        'This fragment does not contain a target',
         default=False)
 
     order = models.PositiveIntegerField(default=1)
@@ -40,10 +46,11 @@ class Selection(models.Model):
         get_latest_by = 'order'
         ordering = ('-selected_at', )
 
-    def selected_words(self):
+    def annotated_words(self):
         """
         Retrieves the selected Words for this Selection.
-        :return: A list of Strings with the selected Words.
+        Order is based on the xml_id, e.g. w18.1.10 should be after w18.1.9.
+        :return: A space-separated string with the selected words.
         """
-        # TODO: is there a way to order on part of the id?! Or add an extra field...
-        return ' '.join([word.word for word in self.words.all().order_by('xml_id')])
+        ordered_words = sorted(self.words.all(), key=lambda w: map(int, w.xml_id[1:].split('.')))
+        return ' '.join([word.word for word in ordered_words])

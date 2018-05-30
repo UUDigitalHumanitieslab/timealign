@@ -38,10 +38,7 @@ class Command(BaseCommand):
                 for n, row in enumerate(csv_reader):
                     # Retrieve the languages from the first row of the output
                     if n == 0:
-                        language_from = Language.objects.get(iso=row[1])
-                        languages_to = dict()
-                        for i in range(6, len(row), 2):
-                            languages_to[i] = Language.objects.get(iso=row[i])
+                        language_from, languages_to = retrieve_languages(row)
                         continue
 
                     # For every other line, create a Fragment and its Alignments
@@ -62,17 +59,29 @@ class Command(BaseCommand):
                         add_sentences(from_fragment, row[4], row[3].split(' '))
 
                         # Create the Fragments in other Languages and add the Alignment object
-                        for m, language_to in languages_to.items():
-                            if row[m]:
-                                to_fragment = Fragment.objects.create(language=language_to,
-                                                                      document=doc)
-                                add_sentences(to_fragment, row[m])
-
-                                Alignment.objects.create(original_fragment=from_fragment,
-                                                         translated_fragment=to_fragment,
-                                                         type=row[m - 1])
+                        create_to_fragments(doc, from_fragment, languages_to, row)
 
                     print 'Line {} processed'.format(n)
+
+
+def create_to_fragments(document, from_fragment, languages_to, row):
+    for m, language_to in languages_to.items():
+        if row[m]:
+            to_fragment = Fragment.objects.create(language=language_to,
+                                                  document=document)
+            add_sentences(to_fragment, row[m])
+
+            Alignment.objects.create(original_fragment=from_fragment,
+                                     translated_fragment=to_fragment,
+                                     type=row[m - 1])
+
+
+def retrieve_languages(row, header_width=6):
+    languages_to = dict()
+    language_from = Language.objects.get(iso=row[1])
+    for i in range(header_width, len(row), 2):
+        languages_to[i] = Language.objects.get(iso=row[i])
+    return language_from, languages_to
 
 
 def add_sentences(fragment, xml, target_ids=[]):

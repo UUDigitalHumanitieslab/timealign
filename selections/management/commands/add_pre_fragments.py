@@ -1,16 +1,15 @@
 import csv
 
-from lxml import etree
-
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from annotations.models import Language, Corpus, Document, Sentence, Word
+from annotations.models import Language, Corpus, Document
+from annotations.management.commands.add_fragments import add_sentences
 from selections.models import PreProcessFragment
 
 
 class Command(BaseCommand):
-    help = 'Reads in the Fragments for a Document and creates Alignments.'
+    help = 'Reads in a .csv-file and creates PreProcessFragments.'
 
     def add_arguments(self, parser):
         parser.add_argument('corpus', type=str)
@@ -36,26 +35,15 @@ class Command(BaseCommand):
             with open(filename, 'rb') as f:
                 csv_reader = csv.reader(f, delimiter=';')
                 for n, row in enumerate(csv_reader):
-                    # Skip header row
+                    # Retrieve language from header row
                     if n == 0:
+                        language = Language.objects.get(iso=row[1])
                         continue
 
                     with transaction.atomic():
-                        language = Language.objects.get(iso=row[1])
                         doc, _ = Document.objects.get_or_create(corpus=corpus, title=row[0])
 
                         from_fragment = PreProcessFragment.objects.create(language=language, document=doc)
-                        add_sentences(from_fragment, row[2])
+                        add_sentences(from_fragment, row[4])
 
                     print 'Line {} processed'.format(n)
-
-
-def add_sentences(fragment, xml):
-    for s in etree.fromstring(xml).xpath('.//s'):
-        sentence = Sentence.objects.create(xml_id=s.get('id'), fragment=fragment)
-        for w in s.xpath('.//w'):
-            xml_id = w.get('id')
-            pos = w.get('tree') or w.get('pos') or w.get('hun') or '?'
-            Word.objects.create(xml_id=xml_id, word=w.text,
-                                pos=pos, lemma=w.get('lem', '?'),
-                                sentence=sentence)

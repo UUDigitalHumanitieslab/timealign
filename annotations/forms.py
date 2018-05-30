@@ -1,6 +1,7 @@
 from django import forms
 
-from .models import Annotation, Word
+from .models import Annotation, Word, Language
+from .management.commands.import_tenses import process_file
 
 
 class AnnotationForm(forms.ModelForm):
@@ -42,3 +43,27 @@ class AnnotationForm(forms.ModelForm):
         if not cleaned_data['is_no_target'] and cleaned_data['is_translation']:
             if not cleaned_data['words']:
                 self.add_error('is_translation', 'Please select the words composing the translation.')
+
+
+class LabelImportForm(forms.Form):
+    label_file = forms.FileField(
+        help_text='This should be a tab-separated file, with id and label as columns.'
+                  'The first row (header) will not be imported.')
+    language = forms.ModelChoiceField(
+        queryset=Language.objects.all()
+    )
+    model = forms.ChoiceField(
+        choices=(('annotation', 'Annotation'), ('fragment', 'Fragment'),),
+        initial='annotation',
+        help_text='Select Fragment in case you want to import labels for the source Fragments, '
+                  'rather than the Annotations.')
+    use_other_label = forms.BooleanField(
+        initial=False,
+        required=False,
+        label='The imported labels are not tense/aspect-labels, but other labels',
+    )
+
+    def save(self):
+        data = self.cleaned_data
+
+        process_file(data['label_file'], data['language'], data['use_other_label'], data['model'])

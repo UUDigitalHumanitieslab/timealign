@@ -3,7 +3,7 @@
 from django.core.management.base import BaseCommand, CommandError
 
 from annotations.models import Corpus
-from annotations.exports import export_pos_file
+from selections.exports import export_selections
 
 
 class Command(BaseCommand):
@@ -13,7 +13,6 @@ class Command(BaseCommand):
         parser.add_argument('corpus', type=str)
         parser.add_argument('languages', nargs='+', type=str)
         parser.add_argument('--add_lemmata', action='store_true', dest='add_lemmata', default=False)
-        parser.add_argument('--include_non_targets', action='store_true', dest='include_non_targets', default=False)
         parser.add_argument('--xlsx', action='store_true', dest='format_xlsx', default=False)
         parser.add_argument('--doc', dest='document')
 
@@ -29,8 +28,6 @@ class Command(BaseCommand):
             if not corpus.languages.filter(iso=language):
                 raise CommandError('Language {} does not exist'.format(language))
 
-            filename = 'pos_{lang}.{ext}'.format(lang=language, ext=format_)
-            export_pos_file(filename, format_, corpus, language,
-                            document=options['document'],
-                            include_non_targets=options['include_non_targets'],
-                            add_lemmata=options['add_lemmata'])
+            filename = 'selections_{lang}.{ext}'.format(lang=language, ext=format_)
+            export_selections(filename, format_, corpus, language,
+                              document=options['document'], add_lemmata=options['add_lemmata'])
