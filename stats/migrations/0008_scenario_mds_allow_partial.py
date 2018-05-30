@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='scenario',
             name='mds_allow_partial',
-            field=models.BooleanField(default=False, help_text=b'When enabled, the model will include tuples whereone or more of the target languages have no annotataion', verbose_name=b'Allow partial tuples in model'),
+            field=models.BooleanField(default=False, help_text=b'When enabled, the model will include tuples where one or more of the target languages have no Annotation', verbose_name=b'Allow partial tuples in model'),
         ),
     ]

@@ -22,7 +22,7 @@ def run_mds(scenario):
     fragment_ids = []
 
     # per language (as key) stores a list of tenses, using the same order as fragment_ids
-    fragment_tenses = defaultdict(list)
+    fragment_labels = defaultdict(list)
 
     for language_from in languages_from:
         # Filter on Corpus and Language
@@ -46,7 +46,7 @@ def run_mds(scenario):
 
         # For every Fragment, retrieve the Annotations
         for fragment in fragments:
-            annotated_tenses = dict()
+            annotated_labels = dict()
 
             for language_to in languages_to:
                 annotations = Annotation.objects \
@@ -72,57 +72,52 @@ def run_mds(scenario):
                 if annotations:
                     a = annotations[0]  # TODO: For now, we only have one Annotation per Fragment. This might change in the future.
                     a_language = a.alignment.translated_fragment.language.iso
-                    a_tense = get_tense(a, language_to)
-                    if a_tense:
-                        annotated_tenses[a_language] = a_tense
+                    a_label = get_label(a, language_to)
+                    if a_label:
+                        annotated_labels[a_language] = a_label
 
             # ... but only allow Fragments that have Annotations in all languages
             # unless the scenario allows partial tuples.
-            if not annotated_tenses:
+            if not annotated_labels:
                 # no annotations at all, skip fragment
                 continue
 
-            if (scenario.mds_allow_partial or
-                    len(annotated_tenses) == len(languages_to)):
+            if scenario.mds_allow_partial or len(annotated_labels) == len(languages_to):
                 fragment_ids.append(fragment.id)
 
-                # store tense of source language
-                fragment_tenses[fragment.language.iso].append(
-                    get_tense(fragment, language_from))
+                # store label of source language
+                fragment_labels[fragment.language.iso].append(get_label(fragment, language_from))
 
-                # store tenses of target languages
+                # store label(s) of target language(s)
                 for language in languages_to:
-                #for l, t in annotated_tenses.items():
                     key = language.language.iso
-                    fragment_tenses[key].append(annotated_tenses.get(key))
+                    fragment_labels[key].append(annotated_labels.get(key))
 
-    # this creates a transposed matrix of fragment_tenses:
-    # in fragment_tenses we find a list of tense labels per language,
-    # while tenses_matrix stores the a of tense labels per fragment
+    # this creates a transposed matrix of fragment_labels:
+    # in fragment_labels we find a list of (tense) labels per language,
+    # while labels_matrix stores the a of (tense) labels per fragment
     # for example:
-    # (tenses are objects but for simplicity they are strings here)
     #
-    # fragment_tenses['en'] = [simple past, present perfect, future]
-    # fragment_tenses['fr'] = [imparfait, passé composé, futur]
+    # fragment_labels['en'] = [simple past, present perfect, future]
+    # fragment_labels['fr'] = [imparfait, passé composé, futur]
     # becomes
-    # tenses_matrix[0] = [simple past, imparfait]
-    # tenses_matrix[1] = [present perfect, passé composé]
-    # tenses_matrix[2] = [future, futur]
+    # labels_matrix[0] = [simple past, imparfait]
+    # labels_matrix[1] = [present perfect, passé composé]
+    # labels_matrix[2] = [future, futur]
     #
-    # this then allows to calculate a distance measure for each
-    # item of tenses_matrix
+    # this then allows to calculate a distance measure for each item of labels_matrix
 
-    tenses_matrix = defaultdict(list)
-    for language_tenses in fragment_tenses.values():
+    labels_matrix = defaultdict(list)
+    for language_tenses in fragment_labels.values():
         for n, tense in enumerate(language_tenses):
-            tenses_matrix[n].append(tense)
+            labels_matrix[n].append(tense)
 
     # Create a distance matrix
     matrix = []
-    for tense_set_1 in tenses_matrix.values():
+    for labels_1 in labels_matrix.values():
         result = []
-        for tense_set_2 in tenses_matrix.values():
-            result.append(get_distance(tense_set_1, tense_set_2))
+        for labels_2 in labels_matrix.values():
+            result.append(get_distance(labels_1, labels_2))
         matrix.append(result)
 
     # Perform Multidimensional Scaling
@@ -134,14 +129,15 @@ def run_mds(scenario):
     scenario.mds_matrix = matrix
     scenario.mds_model = pos.tolist()
     scenario.mds_fragments = fragment_ids
-    scenario.mds_labels = fragment_tenses
+    scenario.mds_labels = fragment_labels
     scenario.mds_stress = mds.stress_
     scenario.save()
 
 
-def get_tense(model, scenario_language):
+def get_label(model, scenario_language):
     result = ''
     if scenario_language.use_other_label:
+        # Special case for Scenario's that have 'le-combine' in the title. TODO: remove this hack.
         if u'le-combine' in scenario_language.scenario.title and model.other_label in [u'le1', u'le12']:
             result = 'le'
         else:
@@ -168,7 +164,10 @@ def get_distance(array1, array2):
 
 
 def get_tense_properties(tense_identifier, seq=0):
-    if isinstance(tense_identifier, numbers.Number):
+    if not tense_identifier:
+        tense_label = '<no label>'
+        tense_color = '#000000'
+    elif isinstance(tense_identifier, numbers.Number):
         tense = Tense.objects.get(pk=tense_identifier)
         tense_label = tense.title
         tense_color = tense.category.color

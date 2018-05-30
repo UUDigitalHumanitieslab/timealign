@@ -15,7 +15,6 @@ class Command(BaseCommand):
         try:
             scenario = Scenario.objects.get(title=options['scenario'])
         except Scenario.DoesNotExist:
-            raise CommandError('Scenario with title {} does not exist'.format(
-                options['scenario']))
+            raise CommandError('Scenario with title {} does not exist'.format(options['scenario']))
 
         run_mds(scenario)
