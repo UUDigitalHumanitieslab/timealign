@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
+    {% load staticfiles %}
+
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -25,6 +27,10 @@
         {# Load the qTip library #}
         <script src="https://cdn.jsdelivr.net/qtip2/3.0.3/basic/jquery.qtip.min.js"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/qtip2/3.0.3/basic/jquery.qtip.min.css">
+
+        {# Custom CSS #}
+        <link rel="stylesheet" type="text/css" href="{% static 'core/style.css' %}" />
+        <link rel="stylesheet" type="text/css" href="{% static 'core/nav.css' %}" />
 
         {# Allow for extra scripts and stylesheets #}
         {% block head %}{% endblock %}
