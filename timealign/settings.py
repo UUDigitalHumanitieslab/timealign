@@ -38,10 +38,12 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
 
     'bootstrap3',
+    'ckeditor',
     'django_filters',
     'django_object_actions',
 
     'core',
+    'news',
     'selections',
     'annotations',
     'stats',
