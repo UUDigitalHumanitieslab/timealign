@@ -1,0 +1,14 @@
+footer {
+    border-top: 5px solid;
+    margin-top: 20px;
+    padding-top: 20px;
+}
+
+footer img {
+    margin: auto;
+    display: block;
+}
+
+footer p {
+    text-align: center;
+}

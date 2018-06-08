@@ -41,14 +41,30 @@
 
         <div class="container">
             <div>{% bootstrap_messages %}</div>
+
             <div>{% block content %}{% endblock %}</div>
-            <hr>
-            <footer>
-                <p>
-                    &copy; 2018 <a href="https://www.uu.nl/en/research/utrecht-institute-of-linguistics-ots" target="_blank">UiL OTS</a>, Utrecht University.
-                    Powered by the <a href="http://dig.hum.uu.nl/" target="_blank">Digital Humanities Lab</a>, Utrecht University
-                </p>
-            </footer>
         </div>
+
+        <footer>
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-3">
+                        <img class="img-responsive" alt="Logo Utrecht University" src="{% static 'core/images/uu-logo.svg' %}">
+                    </div>
+                    <div class="col-sm-6">
+                        <p>
+                            &copy; 2018 <a href="https://www.uu.nl/en/research/utrecht-institute-of-linguistics-ots" target="_blank">UiL OTS</a>, Utrecht University.
+                            <br/>
+                            Research funded by <a href="https://www.nwo.nl/en" target="_blank">NWO</a> under grant 360-80-070.
+                            <br/>
+                            Powered by the <a href="http://dig.hum.uu.nl/" target="_blank">Digital Humanities Lab</a>, Utrecht University
+                        </p>
+                    </div>
+                    <div class="col-sm-3">
+                        <img class="img-responsive" alt="Logo NWO" src="{% static 'core/images/nwo-logo.png' %}">
+                    </div>
+                </div>
+            </div>
+        </footer>
     </body>
 </html>
