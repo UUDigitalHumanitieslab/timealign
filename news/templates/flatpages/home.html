@@ -1,0 +1,35 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+<div class="jumbotron">
+    <div class="container">
+        <h1>Time in Translation</h1>
+        <h2>The semantics of the <span style="font-variant: small-caps;">Perfect</span></h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        {{ flatpage.content }}
+    </div>
+    <div class="col-md-4">
+        <h2>News</h2>
+
+        {% load news_filters %}
+        {% get_posts as posts %}
+        {% for post in posts %}
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title">{{ post.date }}</h3>
+            </div>
+            <div class="panel-body">
+                <p>
+                    {{ post.content | safe }}
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
