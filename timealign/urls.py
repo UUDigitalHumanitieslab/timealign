@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^timealign/', include('annotations.urls', namespace='annotations')),
     url(r'^preselect/', include('selections.urls', namespace='selections')),
     url(r'^stats/', include('stats.urls', namespace='stats')),
+    url(r'^news/', include('news.urls', namespace='news')),
 
     url(r'^admin/', include(admin.site.urls)),
 

@@ -6,8 +6,13 @@ register = template.Library()
 
 
 @register.assignment_tag
-def get_posts():
+def get_posts(max_posts):
     """
     Returns all Posts
     """
-    return Post.objects.filter(is_published=True)
+    posts = Post.objects.filter(is_published=True)
+
+    if max_posts and len(posts) > max_posts:
+        posts = posts[:max_posts]
+
+    return posts
