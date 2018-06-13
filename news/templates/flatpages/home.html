@@ -1,0 +1,21 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+<div class="jumbotron">
+    <div class="container">
+        <h1>Time in Translation</h1>
+        <h2>The semantics of the <span style="font-variant: small-caps;">Perfect</span></h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        {{ flatpage.content }}
+    </div>
+    <div class="col-md-4">
+        {% include "news/_posts.html" with max_posts=5 %}
+        <a href="{% url 'news:posts' %}" role="button" class="btn btn-info pull-right">Show all news</a>
+    </div>
+</div>
+
+{% endblock %}
