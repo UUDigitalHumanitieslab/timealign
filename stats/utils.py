@@ -165,7 +165,7 @@ def get_distance(array1, array2):
 
 def get_tense_properties(tense_identifier, seq=0):
     if not tense_identifier:
-        tense_label = '<no label>'
+        tense_label = '-'
         tense_color = '#000000'
     elif isinstance(tense_identifier, numbers.Number):
         tense = Tense.objects.get(pk=tense_identifier)

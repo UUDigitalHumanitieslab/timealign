@@ -200,8 +200,9 @@ class DescriptiveStatsView(ScenarioDetail):
             counters[l] = c.most_common()
 
         context['counters'] = counters
-        context['counters_json'] = json.dumps({language.title: values for language, values in counters.iteritems()})
+        context['counters_json'] = json.dumps({language.iso: values for language, values in counters.items()})
         context['tuples'] = Counter(tuples.values()).most_common()
         context['colors'] = json.dumps(colors)
+        context['languages'] = json.dumps({l.iso: l.title for l in languages})
 
         return context

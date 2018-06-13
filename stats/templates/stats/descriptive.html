@@ -90,14 +90,17 @@
 </table>
 
 <script>
-  // contains occurance counts for tenses by language, in the following format:
+  // contains occurrence counts for tenses by language, in the following format:
   // {'language': ['tense':100, 'another_tense':200]}
   var counters = {{ counters_json|safe }};
 
   // system-assigned color for each tense
   var colors = {{ colors|safe }};
 
-  // used for calculating the total amount of tokens per langauge
+  // languages lookup (iso: label)
+  var languages = {{ languages | safe }};
+
+  // used for calculating the total amount of tokens per language
   var totals = {};
 
   for(var language in counters) {
@@ -127,7 +130,7 @@
         .append('div')
           .attr('class', 'chart');
 
-      div.append('h5').text(language);
+      div.append('h5').text(languages[language]);
 
       div.append('svg')
         .datum([{key: language, values: counters[language]}])
@@ -138,7 +141,7 @@
     });
   }
 
-  Object.keys(counters).forEach(graphLanguage);
+  Object.keys(counters).sort().forEach(graphLanguage);
 </script>
 
 {% endblock %}
