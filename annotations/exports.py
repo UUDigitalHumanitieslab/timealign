@@ -31,7 +31,7 @@ def export_pos_file(filename, format_, corpus, language,
             header.extend(['pos' + str(i + 1) for i in range(max_words)])
             if add_lemmata:
                 header.extend(['lemma' + str(i + 1) for i in range(max_words)])
-            header.extend(['comments', 'full fragment', 'source id', 'source words', 'source fragment'])
+            header.extend(['comments', 'full fragment', 'source id', 'source document', 'source sentences', 'source words', 'source fragment'])
             writer.writerow(header, is_header=True)
 
             for annotation in annotations:
@@ -47,7 +47,7 @@ def export_pos_file(filename, format_, corpus, language,
                                 pad_list(w, max_words) +
                                 pad_list(pos, max_words) +
                                 (pad_list(lemma, max_words) if add_lemmata else []) +
-                                [annotation.comments, tf.full(), of.pk, of.target_words(), of.full()])
+                                [annotation.comments, tf.full(), of.pk, of.document.title, of.xml_ids(), of.target_words(), of.full()])
 
 
 def export_fragments_file(filename, format_, corpus, language,
