@@ -6,15 +6,16 @@
 #
 django-bootstrap3==10.0.1
 django-braces==1.13.0
-django-ckeditor==5.4.0
+django-ckeditor==5.5.0
 django-filter==1.1.0
 django-js-asset==1.1.0    # via django-ckeditor
 django-object-actions==1.0.0
 django-picklefield==1.0.0
-django==1.8.19            # rq.filter: >=1.8,<1.9
+django==1.11.13           # rq.filter: >=1.11,<2.0
 lxml==4.2.1
 mysql-python==1.2.5
-numpy==1.14.4
+numpy==1.14.5
+pytz==2018.4              # via django
 rpy2==2.8.6
 scikit-learn==0.19.1
 scipy==1.1.0
