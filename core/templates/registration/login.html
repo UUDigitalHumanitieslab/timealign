@@ -13,7 +13,7 @@
     <p class="lead">
         Please log in with your username and password.
     </p>
-    <form method="post" action="{% url 'django.contrib.auth.views.login' %}">{% csrf_token %}
+    <form method="post" action="{% url 'login' %}">{% csrf_token %}
         <div class="form-group">
             <input id="id_username" name="username" type="text" placeholder="Username" class="form-control">
         </div>
