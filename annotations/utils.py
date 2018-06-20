@@ -21,7 +21,7 @@ def get_random_alignment(user, language_from, language_to, corpus=None):
         .filter(annotation=None)
 
     if corpus:
-        alignments = alignments.filter(original_fragment__document__corpus__id=corpus)
+        alignments = alignments.filter(original_fragment__document__corpus=corpus)
     else:
         alignments = alignments.filter(original_fragment__document__corpus__in=get_available_corpora(user))
 
