@@ -4,7 +4,7 @@ from tempfile import NamedTemporaryFile
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views import generic
