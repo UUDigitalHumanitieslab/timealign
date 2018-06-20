@@ -31,12 +31,12 @@ class Selection(models.Model):
 
     words = models.ManyToManyField(Word, blank=True)
     comments = models.TextField(blank=True)
-    fragment = models.ForeignKey(PreProcessFragment)
+    fragment = models.ForeignKey(PreProcessFragment, on_delete=models.CASCADE)
 
-    selected_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='selected_by')
+    selected_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='selected_by', on_delete=models.SET_NULL)
     selected_at = models.DateTimeField(auto_now_add=True)
 
-    last_modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='selection_last_modified_by')
+    last_modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='selection_last_modified_by', on_delete=models.SET_NULL)
     last_modified_at = models.DateTimeField(auto_now=True)
 
     tense = models.CharField('Tense', max_length=200, blank=True)

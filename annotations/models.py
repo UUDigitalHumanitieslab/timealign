@@ -24,8 +24,8 @@ class TenseCategory(models.Model):
 class Tense(models.Model):
     title = models.CharField(max_length=200)
 
-    language = models.ForeignKey(Language)
-    category = models.ForeignKey(TenseCategory)
+    language = models.ForeignKey(Language, on_delete=models.CASCADE)
+    category = models.ForeignKey(TenseCategory, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ('language', 'title', )
@@ -71,7 +71,7 @@ class Document(models.Model):
     title = models.CharField(max_length=200)
     description = models.CharField(max_length=200, blank=True)
 
-    corpus = models.ForeignKey(Corpus, related_name='documents')
+    corpus = models.ForeignKey(Corpus, related_name='documents', on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ('corpus', 'title', )
@@ -103,10 +103,10 @@ class Fragment(models.Model):
         (SF_IMPERATIVE, 'imperative'),
     )
 
-    language = models.ForeignKey(Language)
-    document = models.ForeignKey(Document)
+    language = models.ForeignKey(Language, on_delete=models.CASCADE)
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
 
-    tense = models.ForeignKey(Tense, null=True)
+    tense = models.ForeignKey(Tense, null=True, on_delete=models.SET_NULL)
     other_label = models.CharField(max_length=200, blank=True)
     formal_structure = models.PositiveIntegerField('Formal structure', choices=FORMAL_STRUCTURES, default=FS_NONE)
     sentence_function = models.PositiveIntegerField('Sentence function', choices=SENTENCE_FUNCTIONS, default=SF_NONE)
@@ -213,7 +213,7 @@ class Fragment(models.Model):
 class Sentence(models.Model):
     xml_id = models.CharField(max_length=20)
 
-    fragment = models.ForeignKey(Fragment)
+    fragment = models.ForeignKey(Fragment, on_delete=models.CASCADE)
 
     def to_html(self):
         result = '<li>'
@@ -248,7 +248,7 @@ class Word(models.Model):
     is_in_dialogue = models.BooleanField(default=False)
     is_in_dialogue_prob = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
 
-    sentence = models.ForeignKey(Sentence)
+    sentence = models.ForeignKey(Sentence, on_delete=models.CASCADE)
 
     def to_html(self):
         return u'<strong>{}</strong>'.format(self.word) if self.is_target else self.word
@@ -260,8 +260,8 @@ class Word(models.Model):
 class Alignment(models.Model):
     type = models.CharField(max_length=10)
 
-    original_fragment = models.ForeignKey(Fragment, null=True, related_name='original')
-    translated_fragment = models.ForeignKey(Fragment, null=True, related_name='translated')
+    original_fragment = models.ForeignKey(Fragment, null=True, related_name='original', on_delete=models.CASCADE)
+    translated_fragment = models.ForeignKey(Fragment, null=True, related_name='translated', on_delete=models.CASCADE)
 
 
 class Annotation(models.Model):
@@ -283,15 +283,15 @@ class Annotation(models.Model):
 
     words = models.ManyToManyField(Word, blank=True)
     comments = models.TextField(blank=True)
-    alignment = models.ForeignKey(Alignment)
+    alignment = models.ForeignKey(Alignment, on_delete=models.CASCADE)
 
-    annotated_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='annotated_by')
+    annotated_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='annotated_by', on_delete=models.SET_NULL)
     annotated_at = models.DateTimeField(auto_now_add=True)
 
-    last_modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='last_modified_by')
+    last_modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='last_modified_by', on_delete=models.SET_NULL)
     last_modified_at = models.DateTimeField(auto_now=True)
 
-    tense = models.ForeignKey(Tense, null=True)
+    tense = models.ForeignKey(Tense, null=True, on_delete=models.SET_NULL)
     other_label = models.CharField(max_length=200, blank=True)
 
     class Meta:

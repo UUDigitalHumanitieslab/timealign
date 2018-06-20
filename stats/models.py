@@ -15,7 +15,7 @@ class Scenario(models.Model):
         default=False,
         help_text='Checking this box signals that the scenario should not be displayed in the standard overview.')
 
-    corpus = models.ForeignKey(Corpus)
+    corpus = models.ForeignKey(Corpus, on_delete=models.CASCADE)
     documents = models.ManyToManyField(Document, blank=True)
 
     formal_structure = models.PositiveIntegerField('Formal structure', choices=Fragment.FORMAL_STRUCTURES, default=Fragment.FS_NONE)
@@ -40,8 +40,7 @@ class Scenario(models.Model):
 
     last_run = models.DateTimeField(blank=True, null=True)
 
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='scenarios',
-                              null=True)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='scenarios', null=True, on_delete=models.SET_NULL)
 
     def from_languages(self):
         return ', '.join([sl.language.title for sl in self.languages(as_from=True)])
@@ -57,9 +56,9 @@ class Scenario(models.Model):
 
 
 class ScenarioLanguage(models.Model):
-    scenario = models.ForeignKey(Scenario)
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
 
-    language = models.ForeignKey(Language)
+    language = models.ForeignKey(Language, on_delete=models.CASCADE)
     as_from = models.BooleanField()
     as_to = models.BooleanField()
     tenses = models.ManyToManyField(Tense, blank=True)
