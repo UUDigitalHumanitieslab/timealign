@@ -12,3 +12,8 @@ media/
 
 ### IDE settings
 .idea/
+
+### Unit test / coverage reports
+.coverage
+htmlcov/
+
