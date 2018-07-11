@@ -21,6 +21,7 @@ Starting from an empty Ubuntu 16.04 installation, you will need the following to
 
     python manage.py test
 
+Note that MySQL 8.x does not include necessary development headers. Use MySQL 5.
 If the test runs OK, you should be ready to roll!
 
 ## Citing

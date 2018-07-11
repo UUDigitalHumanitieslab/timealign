@@ -12,8 +12,14 @@ media/
 
 ### IDE settings
 .idea/
+.vscode/
 
 ### Unit test / coverage reports
 .coverage
 htmlcov/
 
+### Virtual Environments
+.env/
+
+### MacOS folder definitions
+.DS_Store
