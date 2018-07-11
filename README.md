@@ -9,20 +9,34 @@ You can install the required packages by calling `pip install -r requirements.tx
 
 Starting from an empty Ubuntu 16.04 installation, you will need the following to get you started:
 
+    # Clone the repository
     git clone [repository URL]
     cd timealign/
 
-    sudo apt-get install mysql-server libmysqlclient-dev
-
+    # Create a virtual environment
     sudo apt-get install python-dev virtualenv
     virtualenv .env
     source .env/bin/activate
     pip install -r requirements.txt
 
+    # If you want to use MySQL as your database backend (recommended)
+    sudo apt-get install mysql-server libmysqlclient-dev
+    # Create a database and change the databases section in timealign/settings.py accordingly
+    # Migrate the database using:
+    python manage.py migrate
+    
+    # Run the tests
     python manage.py test
 
-Note that MySQL 8.x does not include necessary development headers. Use MySQL 5.
-If the test runs OK, you should be ready to roll!
+If the test runs OK, you should be ready to roll! Run the webserver using:
+
+    python manage.py runserver
+
+## Documentation
+
+You can find ERD diagrams of the applications in [`doc/models`](doc/models/README.md).
+
+General information on the Time in Translation-project can be found on [our website](https://time-in-translation.hum.uu.nl/). 
 
 ## Citing
 
