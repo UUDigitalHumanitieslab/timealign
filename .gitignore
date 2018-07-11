@@ -23,3 +23,6 @@ htmlcov/
 
 ### MacOS folder definitions
 .DS_Store
+
+### Password protection
+timealign/settings.py
