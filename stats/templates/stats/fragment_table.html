@@ -1,0 +1,22 @@
+<table>
+    <tr>
+        <th>id</th>
+        <th>fragment</th>
+        <th>X</th>
+        <th>Y</th>
+    </tr>
+    {% for f in matrix_json.0.values %}
+    <tr>
+        <td>{{f.fragment_id}}</td>
+        <td>{{f.fragment | safe}}</td>
+        <td>{{f.x}}</td>
+        <td>{{f.y}}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<!-- <ul>
+    {% for f in matrix_json.0.values %}
+    <li>{{f.fragment_id}}, {{f.fragment}}, {{f.x}}, {{f.y}}</li>
+    {% endfor %}
+</ul> -->

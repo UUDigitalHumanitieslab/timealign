@@ -89,9 +89,16 @@ WSGI_APPLICATION = 'timealign.wsgi.application'
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': 'timealign.sqlite3',
+    # },
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'timealign.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'tint',
+        'USER': 'root',
+        'PASSWORD': 'wisql1',
+        'HOST': 'localhost'
     }
 }
 
