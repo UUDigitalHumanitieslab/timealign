@@ -7,9 +7,10 @@ from scipy.spatial import distance
 
 from braces.views import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.http import Http404
-from django.shortcuts import get_object_or_404
+from django.http import Http404, HttpResponse
+from django.shortcuts import get_object_or_404, render
 from django.views import generic
+from django.template.loader import get_template
 
 from annotations.models import Fragment, Language, Tense
 from annotations.utils import get_available_corpora
@@ -187,6 +188,9 @@ class MDSView(ScenarioDetail):
 
         return context
 
+    def post(self, request):
+        print(request.POST)
+
 
 class DescriptiveStatsView(ScenarioDetail):
     model = Scenario
@@ -233,12 +237,21 @@ class FragmentTableView(MDSView, ScenarioDetail):
     model = Scenario
     template_name = 'stats/fragment_table.html'
 
+    # POST request
+
     def get_context_data(self, **kwargs):
         context = super(FragmentTableView, self).get_context_data(**kwargs)
 
-        context['matrix_json'] = json.loads(context['matrix'])
-
-        # 1 fragment
-        # pprint(context['matrix_json'][0]['values'][0]['fragment'])
-
         return context
+
+    def post(self, request):
+        # print(request.POST)
+        # return render(request, 'stats/fragment_table.html', request.POST)
+        # post_data = request.POST['fragments']
+        # post_data = dict(request.POST.iterlists())
+        # print(post_data['fragments'])
+        # print(request.POST)
+        print(request.body)
+        # t = get_template('stats/fragment_table.html')
+        # html = t.render({'post_data': request.POST})
+        return render(request, 'stats/fragment_table.html')
