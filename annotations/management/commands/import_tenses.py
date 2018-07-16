@@ -80,6 +80,10 @@ def update_fragment(language, row, use_other_label=False):
         else:
             fragment.tense = Tense.objects.get(title__iexact=row[1], language=language)
 
+        # Add is_stative annotation
+        if len(row) == 3:
+            fragment.is_stative = row[2] == 'stative'
+
         # Save Fragment
         fragment.save()
     except Fragment.DoesNotExist:

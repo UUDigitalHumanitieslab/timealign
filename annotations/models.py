@@ -111,6 +111,8 @@ class Fragment(models.Model):
     formal_structure = models.PositiveIntegerField('Formal structure', choices=FORMAL_STRUCTURES, default=FS_NONE)
     sentence_function = models.PositiveIntegerField('Sentence function', choices=SENTENCE_FUNCTIONS, default=SF_NONE)
 
+    is_stative = models.BooleanField(default=False)
+
     def to_html(self):
         result = '<ul>'
         for sentence in self.sentence_set.all():
