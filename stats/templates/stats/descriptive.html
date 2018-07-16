@@ -69,6 +69,35 @@
 </div>
 
 <h3>
+    Totals per (tense) category
+</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th></th>
+                {% for language in languages %}
+                <th>{{ language.title }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+        {% for tensecat, counts in tensecat_table.items %}
+            <tr>
+                {% if not tensecat %}
+                <td><em>other</em></td>
+                {% else %}
+                <th>{{ tensecat }}</th>
+                {% endif %}
+                {% for count in counts %}
+                <td>{{ count }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<h3>
     Tuple frequency
 </h3>
 
@@ -95,10 +124,10 @@
   var counters = {{ counters_json|safe }};
 
   // system-assigned color for each tense
-  var colors = {{ colors|safe }};
+  var colors = {{ colors_json|safe }};
 
   // languages lookup (iso: label)
-  var languages = {{ languages | safe }};
+  var languages = {{ languages_json | safe }};
 
   // used for calculating the total amount of tokens per language
   var totals = {};
