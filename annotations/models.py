@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 
+from core.utils import check_format, CSV, HTML, XLSX
+
 
 class Language(models.Model):
     iso = models.CharField(max_length=2, unique=True)
@@ -157,8 +159,10 @@ class Fragment(models.Model):
                 result.append((language, None))  # This happens if there's no Alignment for this Fragment in the given language
         return result
 
-    def full(self, marked=False):
-        return '\n'.join([sentence.full(marked) for sentence in self.sentence_set.all()])
+    def full(self, format_=False, annotation=None):
+        check_format(format_)
+
+        return '\n'.join([sentence.full(format_, annotation) for sentence in self.sentence_set.all()])
 
     def label(self):
         return self.tense.title if self.tense else self.other_label
@@ -222,14 +226,22 @@ class Sentence(models.Model):
         result += '</li>'
         return result
 
-    def full(self, marked=False):
+    def full(self, format_=False, annotation=None):
+        check_format(format_)
+
         words = []
         for word in self.word_set.all():
-            if marked and word.is_target:
-                words.append('<strong>' + word.word + '</strong>')
+            is_target = word.is_target or (annotation and word in annotation.words.all())
+
+            if is_target and format_:
+                if format_ in [CSV, XLSX]:
+                    words.append('*' + word.word + '*')
+                if format_ == HTML:
+                    words.append('<strong>' + word.word + '</strong>')
             else:
                 words.append(word.word)
-            if marked and len(words) % 20 == 0:
+
+            if format_ == HTML and len(words) % 20 == 0:
                 words.append('<br>')
         return ' '.join(words)
 

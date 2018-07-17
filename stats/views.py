@@ -14,6 +14,7 @@ from .models import Scenario
 from .utils import get_tense_properties
 from annotations.models import Language, Tense, Fragment
 from annotations.utils import get_available_corpora
+from core.utils import HTML
 
 
 class ScenarioList(LoginRequiredMixin, generic.ListView):
@@ -140,7 +141,7 @@ class MDSView(ScenarioDetail):
             ts = [tenses[l][n] for l in tenses.keys()]
             t = [Tense.objects.get(pk=t).title if isinstance(t, numbers.Number) else t for t in ts]
             # Add all values to the dictionary
-            j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(True), 'tenses': t})
+            j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(HTML), 'tenses': t})
 
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?

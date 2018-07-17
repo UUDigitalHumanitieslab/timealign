@@ -19,6 +19,8 @@ from .forms import AnnotationForm, LabelImportForm
 from .models import Corpus, Document, Language, Fragment, Alignment, Annotation, TenseCategory, Tense
 from .utils import get_random_alignment, get_available_corpora
 
+from core.utils import XLSX
+
 
 ##############
 # Static views
@@ -297,11 +299,11 @@ class ExportPOSDownload(PermissionRequiredMixin, generic.View):
         with NamedTemporaryFile() as file_:
             corpus = Corpus.objects.get(id=int(corpus_id))
             if document_id == 'all':
-                export_pos_file(file_.name, 'xlsx', corpus, language, include_non_targets=include_non_targets)
+                export_pos_file(file_.name, XLSX, corpus, language, include_non_targets=include_non_targets)
                 title = 'all'
             else:
                 document = Document.objects.get(id=int(document_id))
-                export_pos_file(file_.name, 'xlsx', corpus, language, include_non_targets=include_non_targets,
+                export_pos_file(file_.name, XLSX, corpus, language, include_non_targets=include_non_targets,
                                 document=document)
                 title = document.title
 

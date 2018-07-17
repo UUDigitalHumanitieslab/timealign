@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from annotations.models import Corpus
 from annotations.exports import export_pos_file
+from core.utils import CSV, XLSX
 
 
 class Command(BaseCommand):
@@ -24,7 +25,7 @@ class Command(BaseCommand):
         except Corpus.DoesNotExist:
             raise CommandError('Corpus with title {} does not exist'.format(options['corpus']))
 
-        format_ = 'xlsx' if options['format_xlsx'] else 'csv'
+        format_ = XLSX if options['format_xlsx'] else CSV
         for language in options['languages']:
             if not corpus.languages.filter(iso=language):
                 raise CommandError('Language {} does not exist'.format(language))

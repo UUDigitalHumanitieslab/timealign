@@ -1,5 +1,15 @@
 import csv
 
+CSV = 'csv'
+HTML = 'html'
+XLSX = 'xlsx'
+FORMATS = [CSV, HTML, XLSX]
+
+
+def check_format(format_):
+    if format_ and format_ not in FORMATS:
+        raise ValueError('Incorrect formatting {} provided'.format(format_))
+
 
 def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
     # csv.py doesn't do Unicode; encode temporarily as UTF-8:
