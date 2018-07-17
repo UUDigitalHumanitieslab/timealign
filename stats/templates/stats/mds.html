@@ -71,6 +71,13 @@
         Toggle Brush
     </button </div>
 
+    <!-- Form for posting data to server -->
+    <form name="fragmentform" action="." method="post">
+        {% csrf_token %}
+        <!-- <input type="text" name="csrfmiddlewaretoken"> -->
+        <input type="text" name="fragment_ids">
+    </form>
+
     <script>
         var matrix = {{ matrix| safe }};
 
@@ -133,36 +140,7 @@
                 console.log(brushExtent);
             }
 
-            function naiveUpdateBrush() {
-                // const { selection } = d3.event;
-                const selection = d3.event.target.extent();
-                var csrftoken = Cookies.get('csrftoken');
 
-                var brushedNodes = [];
-                for (tense of matrix) {
-                    for (point of tense.values) {
-                        if (rectContains(selection, [point.x, point.y])) {
-                            brushedNodes.push(point)
-                        }
-                    }
-                }
-                console.log(brushedNodes);
-                post_data = {
-                    'csrfmiddlewaretoken': csrftoken,
-                    // 'fragments': brushedNodes
-                    'nodes': brushedNodes
-                };
-                // $.post('/stats/mds/fragment_table/', post_data);
-
-                $.ajax({
-                    url: '/stats/mds/fragment_table/',
-                    data: post_data,
-                    dataType: 'json',
-                    success: function (data) {
-
-                    }
-                });
-            }
 
             // d3.select('#chart svg').on('mousedown', function () {
             //     brush_elm = self.scrubberContent.select("brush").node();
@@ -194,7 +172,31 @@
             });
         });
 
+        function naiveUpdateBrush() {
+            const selection = d3.event.target.extent();
+            const csrftoken = Cookies.get('csrftoken');
+            var brushedNodes = [];
+            for (tense of matrix) {
+                for (point of tense.values) {
+                    if (rectContains(selection, [point.x, point.y])) {
+                        brushedNodes.push(point.fragment_id)
+                    }
+                }
+            }
 
+            post_data = {
+                'csrfmiddlewaretoken': csrftoken,
+                // 'fragments': brushedNodes
+                'fragment_ids': JSON.stringify(brushedNodes)
+            };
+            // $.post('fragment_table/', post_data).done(function (data) {
+            //     console.log(data)
+            // });
+            // $('input[name="csrftoken"]').val(csrftoken);
+            $('input[name="fragment_ids"]').val(JSON.stringify(brushedNodes));
+            $('form[name="fragmentform"]').submit();
+
+        }
 
         function rectContains(rect, point) {
             return rect[0][0] <= point[0] && point[0] <= rect[1][0] &&

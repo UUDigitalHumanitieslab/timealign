@@ -1,18 +1,16 @@
-<!-- <table border="1px black">
+<table border="1px black">
     <tr>
-        <th>id</th>
-        <th>fragment</th>
-        <th>X</th>
-        <th>Y</th>
+        <th>document</th>
+        <th>xml id</th>
+        <th>target words</th>
+        <!-- <th>full text</th> -->
     </tr>
-    {% for f in matrix_json.0.values %}
+    {% for f in out %}
     <tr>
-        <td>{{f.fragment_id}}</td>
-        <td>{{f.fragment | safe}}</td>
-        <td>{{f.x}}</td>
-        <td>{{f.y}}</td>
+        <td>{{f.doc_title}}</td>
+        <td>{{f.xml_ids}}</td>
+        <td style="cursor:pointer" onclick="location.href='/timealign/show/{{f.fragment_id}}'" "title="{{f.full}} ">{{f.target_words}}</td>
+        <!-- <td>{{f.full | safe}}</td> -->
     </tr>
     {% endfor %}
-</table> -->
-
-Hallo?
+</table>

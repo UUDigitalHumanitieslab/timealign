@@ -3,20 +3,32 @@ import numbers
 import random
 from collections import Counter, defaultdict
 from pprint import pprint
-from scipy.spatial import distance
 
 from braces.views import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
-from django.views import generic
 from django.template.loader import get_template
+from django.template.response import TemplateResponse
+from django.urls import reverse
+from django.utils import six
+from django.utils.encoding import iri_to_uri
+from django.views import generic
+from scipy.spatial import distance
 
-from annotations.models import Fragment, Language, Tense
+from annotations.models import Fragment, Language, Tense, Document
 from annotations.utils import get_available_corpora
 
 from .models import Scenario
 from .utils import get_tense_properties
+
+
+class HttpResponseTemporaryRedirect(HttpResponse):
+    status_code = 307
+
+    def __init__(self, redirect_to):
+        HttpResponse.__init__(self)
+        self['Location'] = iri_to_uri(redirect_to)
 
 
 class ScenarioList(LoginRequiredMixin, generic.ListView):
@@ -188,8 +200,11 @@ class MDSView(ScenarioDetail):
 
         return context
 
-    def post(self, request):
-        print(request.POST)
+    def post(self, request, pk):
+        request.session['fragment_ids'] = json.loads(
+            request.POST['fragment_ids'])
+        url = reverse('stats:fragment_table', kwargs={'pk': pk})
+        return HttpResponseRedirect(url)
 
 
 class DescriptiveStatsView(ScenarioDetail):
@@ -237,21 +252,30 @@ class FragmentTableView(MDSView, ScenarioDetail):
     model = Scenario
     template_name = 'stats/fragment_table.html'
 
-    # POST request
-
     def get_context_data(self, **kwargs):
         context = super(FragmentTableView, self).get_context_data(**kwargs)
+        fragment_ids = self.request.session['fragment_ids']
+        # print(fragment_ids)
+        # fragments_to_show = Fragment.objects.filter(id__in=fragment_ids)
+        # print(len(fragments_to_show))
+        # print(fragments_to_show)
+
+        fragments = Fragment.objects.filter(id__in=fragment_ids)
+        context['out'] = []
+        for f in fragments:
+            # print(f.id)
+            # print(f.document.title)
+            # print(f.xml_ids())
+            # print(f.full(marked=True))
+            # print('---------')
+            context['out'].append(
+                {
+                    'fragment_id': f.id,
+                    'doc_title': f.document.title,
+                    'xml_ids': f.xml_ids(),
+                    'target_words': f.target_words(),
+                    'full': f.full(marked=True),
+                }
+            )
 
         return context
-
-    def post(self, request):
-        # print(request.POST)
-        # return render(request, 'stats/fragment_table.html', request.POST)
-        # post_data = request.POST['fragments']
-        # post_data = dict(request.POST.iterlists())
-        # print(post_data['fragments'])
-        # print(request.POST)
-        print(request.body)
-        # t = get_template('stats/fragment_table.html')
-        # html = t.render({'post_data': request.POST})
-        return render(request, 'stats/fragment_table.html')

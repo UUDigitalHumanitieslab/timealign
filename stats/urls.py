@@ -12,7 +12,8 @@ urlpatterns = [
     url(r'^show/(?P<pk>\d+)/$', ScenarioDetail.as_view(), name='show'),
 
     # Fragment Table
-    url(r'^mds/fragment_table/$',
+    # url(r'^mds/fragment_table', FragmentTableView.as_view(), name='fragment_table'),
+    url(r'^mds/(?P<pk>\d+)/fragment_table/$',
         FragmentTableView.as_view(), name='fragment_table'),
     # url(r'^mds/(?P<pk>\d+)/(?P<language>\w+)/fragmenttable/$',
     #     FragmentTableView.as_view(), name='fragmenttable'),
