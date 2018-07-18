@@ -102,6 +102,7 @@
             chart.scatter.dispatch.on("elementClick", function (e) {
                 console.log(e.point);
                 // window.location = "{% url 'annotations:show' 999 %}".replace(999, e.point.fragment_id);
+
             });
 
             // Add the data to the chart and start creating the chart
@@ -117,40 +118,47 @@
             // Brush functionality 
             // ****************************************
 
-            var brushC = d3.select('#chart svg g');
-            brushC.empty() ? brushC.append('g') : brushC.select('g')
-                .attr("class", "brush")
-                .call(d3.svg.brush()
-                    .x(chart.xAxis.scale())
-                    .y(chart.yAxis.scale())
-                    .on('brushend', naiveUpdateBrush)
-                    .extent([0, 0])
+            // var brushC = d3.select('#chart svg g');
+            // brushC.empty() ? brushC.append('g') : brushC.select('g')
+            //     .attr("class", "brush")
+            //     .call(d3.svg.brush()
+            //         .x(chart.xAxis.scale())
+            //         .y(chart.yAxis.scale())
+            //         .on('brushend', naiveUpdateBrush)
+            //         .extent([0, 0])
 
-                )
-                .selectAll('rect')
-                .attr('height', 320)//change according to you chart height
-                //i have hard coded it since it was a 'quick and dirty' fix
-                //you may try to get it from chart, if you can please update me.
-                ;
+            //     )
+            //     .selectAll('rect')
+            //     .attr('height', 320)//change according to you chart height
+            //     //i have hard coded it since it was a 'quick and dirty' fix
+            //     //you may try to get it from chart, if you can please update me.
+            //     ;
 
+            function naiveUpdateBrush() {
+                const selection = d3.event.target.extent();
+                const csrftoken = Cookies.get('csrftoken');
+                var brushedNodes = [];
+                for (tense of matrix) {
+                    for (point of tense.values) {
+                        if (rectContains(selection, [point.x, point.y])) {
+                            brushedNodes.push(point.fragment_id)
+                        }
+                    }
+                }
 
-            function onBrush() {
-                brushExtent = d3.event.target.extent();
-                console.log(chart.selectAll("circle"));
-                console.log(brushExtent);
+                if (brushedNodes.length > 0) {
+                    $('input[name="fragment_ids"]').val(JSON.stringify(brushedNodes));
+                    $('form[name="fragmentform"]').submit();
+                }
+                else {
+                    sel = d3.selectAll('.brush');
+                    sel[0].call(d3.event.target.move, null);
+                    // console.log(d3.event.target);
+                    // d3.event.target.call( );
+
+                    // d3.selectAll(".brush").call(d3.svg.brush.move, null);
+                }
             }
-
-
-
-            // d3.select('#chart svg').on('mousedown', function () {
-            //     brush_elm = self.scrubberContent.select("brush").node();
-            //     new_click_event = new Event('mousedown');
-            //     new_click_event.pageX = d3.event.pageX;
-            //     new_click_event.clientX = d3.event.clientX;
-            //     new_click_event.pageY = d3.event.pageY;
-            //     new_click_event.clientY = d3.event.clientY;
-            //     brush_elm.dispatchEvent(new_click_event);
-            // });
 
             nv.utils.windowResize(chart.update);
             return chart;
@@ -172,35 +180,15 @@
             });
         });
 
-        function naiveUpdateBrush() {
-            const selection = d3.event.target.extent();
-            const csrftoken = Cookies.get('csrftoken');
-            var brushedNodes = [];
-            for (tense of matrix) {
-                for (point of tense.values) {
-                    if (rectContains(selection, [point.x, point.y])) {
-                        brushedNodes.push(point.fragment_id)
-                    }
-                }
-            }
-
-            post_data = {
-                'csrfmiddlewaretoken': csrftoken,
-                // 'fragments': brushedNodes
-                'fragment_ids': JSON.stringify(brushedNodes)
-            };
-            // $.post('fragment_table/', post_data).done(function (data) {
-            //     console.log(data)
-            // });
-            // $('input[name="csrftoken"]').val(csrftoken);
-            $('input[name="fragment_ids"]').val(JSON.stringify(brushedNodes));
-            $('form[name="fragmentform"]').submit();
-
-        }
-
         function rectContains(rect, point) {
             return rect[0][0] <= point[0] && point[0] <= rect[1][0] &&
                 rect[0][1] <= point[1] && point[1] <= rect[1][1];
-        }
+        };
+
+        function distance(p1, p2) {
+            var dx = p2.x - p1.x;
+            var dy = p2.y - p1.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        };
 
     </script> {% endblock %}
