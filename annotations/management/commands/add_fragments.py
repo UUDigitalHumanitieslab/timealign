@@ -62,7 +62,7 @@ class Command(BaseCommand):
                         # Create the Fragments in other Languages and add the Alignment object
                         create_to_fragments(doc, from_fragment, languages_to, row)
 
-                    print 'Line {} processed'.format(n)
+                    self.stdout.write(self.style.SUCCESS('Line {} processed'.format(n)))
 
 
 def create_to_fragments(document, from_fragment, languages_to, row):

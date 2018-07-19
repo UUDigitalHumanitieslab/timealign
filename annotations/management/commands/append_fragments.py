@@ -46,7 +46,7 @@ class Command(BaseCommand):
                                                             fragment__document=doc)
 
                         if not sentences:
-                            print 'No match found for {}'.format(xml_id)
+                            self.stdout.write(self.style.WARNING('No match found for {}'.format(xml_id)))
                             continue
 
                         sentence = None
@@ -57,7 +57,7 @@ class Command(BaseCommand):
                                     sentence = s
 
                             if sentence is None:
-                                print 'No match found for {}'.format(xml_id)
+                                self.stdout.write(self.style.WARNING('No match found for {}'.format(xml_id)))
                                 continue
                         else:
                             sentence = sentences.first()
@@ -65,7 +65,7 @@ class Command(BaseCommand):
                         # Create the Fragment and Alignment
                         create_to_fragments(doc, sentence.fragment, languages_to, row)
 
-                    print 'Line {} processed'.format(n)
+                    self.stdout.write(self.style.SUCCESS('Line {} processed'.format(n)))
 
 
 def get_first_sentence_id(xml):

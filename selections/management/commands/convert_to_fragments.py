@@ -114,4 +114,4 @@ class Command(BaseCommand):
                                 for fragment in fragments:
                                     create_to_fragments(doc, fragment, languages_to, row)
 
-                    print 'Line {} processed'.format(n)
+                    self.stdout.write(self.style.SUCCESS('Line {} processed'.format(n)))

@@ -48,4 +48,4 @@ class Command(BaseCommand):
                         from_fragment = PreProcessFragment.objects.create(language=language, document=doc)
                         add_sentences(from_fragment, row[COLUMN_XML])
 
-                    print 'Line {} processed'.format(n)
+                    self.stdout.write(self.style.SUCCESS('Line {} processed'.format(n)))
