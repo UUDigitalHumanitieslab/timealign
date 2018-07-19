@@ -10,6 +10,8 @@ from django.db import transaction
 
 from annotations.models import Language, Corpus, Document, Fragment, Tense
 from annotations.management.commands.add_fragments import retrieve_languages, create_to_fragments
+from annotations.management.commands.constants import COLUMN_DOCUMENT, COLUMN_XML
+
 from selections.models import Selection, PreProcessFragment
 
 
@@ -104,9 +106,9 @@ class Command(BaseCommand):
                         continue
 
                     with transaction.atomic():
-                        doc, _ = Document.objects.get_or_create(corpus=corpus, title=row[0])
+                        doc, _ = Document.objects.get_or_create(corpus=corpus, title=row[COLUMN_DOCUMENT])
 
-                        for s in etree.fromstring(row[4]).xpath('.//s'):
+                        for s in etree.fromstring(row[COLUMN_XML]).xpath('.//s'):
                             fragments = fragment_cache.get((doc.pk, s.get('id')))
                             if fragments:
                                 for fragment in fragments:
