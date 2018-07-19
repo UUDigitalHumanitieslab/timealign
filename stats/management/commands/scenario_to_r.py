@@ -27,14 +27,14 @@ class Command(BaseCommand):
             raise CommandError('Scenario with title {} does not exist'.format(options['scenario']))
 
         # Retrieve the pickled data
-        matrix = scenario.mds_matrix
+        mds_matrix = scenario.mds_matrix
         fragment_ids = scenario.mds_fragments
         tenses = scenario.mds_labels
 
         # Assign the pickled data to R variables
         robjects.r.assign('scenario_title', scenario.title)
         robjects.r.assign('scenario_description', scenario.description)
-        robjects.r.assign('matrix', matrix)
+        robjects.r.assign('mds_matrix', mds_matrix)
         robjects.r.assign('fragment_ids', robjects.StrVector(fragment_ids))
 
         for sl in scenario.languages().all():
