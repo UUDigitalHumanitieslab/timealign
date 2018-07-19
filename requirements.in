@@ -2,7 +2,7 @@ Django>=1.11,<2.0
 django-bootstrap3
 django-braces
 django-ckeditor
-django-filter
+django-filter<2.0
 django-object-actions
 django-picklefield
 lxml
