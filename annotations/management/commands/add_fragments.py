@@ -80,7 +80,7 @@ def create_to_fragments(document, from_fragment, languages_to, row):
 def retrieve_languages(row, header_width=FROM_WIDTH):
     languages_to = dict()
     language_from = Language.objects.get(iso=row[COLUMN_XML])
-    for i in range(header_width, len(row), TO_WIDTH):
+    for i in range(header_width + 1, len(row), TO_WIDTH):
         languages_to[i] = Language.objects.get(iso=row[i])
     return language_from, languages_to
 
