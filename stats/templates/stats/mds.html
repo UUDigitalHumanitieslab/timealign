@@ -1,10 +1,24 @@
-{% extends "base/base.html" %} {% load bootstrap3 %} {% block head %}
+{% extends "base/base.html" %} {% load bootstrap3 %} {% load static %} {% block head %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
 <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
     crossorigin="anonymous"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.css"> {% endblock %} {% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.css">
+<link href="{%static 'style.css' %}" rel="stylesheet" type="text/css" />
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#spinner").bind("ajaxSend", function () {
+            $(this).show();
+        }).bind("ajaxStop", function () {
+            $(this).hide();
+        }).bind("ajaxError", function () {
+            $(this).hide();
+        });
+
+    });
+</script> {% endblock %} {% block content %}
 <h2>MDS visualization (scenario
     <em>
         <a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a>
@@ -75,8 +89,12 @@
     <form name="fragmentform" action="." method="post">
         {% csrf_token %}
         <!-- <input type="text" name="csrfmiddlewaretoken"> -->
-        <input type="text" name="fragment_ids">
+        <input type="hidden" name="fragment_ids">
     </form>
+
+    <div id="spinner" class="spinner" style="display:none;">
+        <img id="img-spinner" src="{%static 'images/spinner.gif'%}" alt="Loading" />
+    </div>
 
     <script>
         var matrix = {{ matrix| safe }};
@@ -100,7 +118,8 @@
 
             // Create a click-through to the data
             chart.scatter.dispatch.on("elementClick", function (e) {
-                console.log(e.point);
+                // console.log(e.point);
+                select_neighbours(e.point);
                 // window.location = "{% url 'annotations:show' 999 %}".replace(999, e.point.fragment_id);
 
             });
@@ -133,6 +152,23 @@
             //     //i have hard coded it since it was a 'quick and dirty' fix
             //     //you may try to get it from chart, if you can please update me.
             //     ;
+            function select_neighbours(origin, distance = .1) {
+                $('#spinner').show();
+                var brushedNodes = [];
+                for (tense of matrix) {
+                    for (point of tense.values) {
+                        if (within_distance(origin, point, distance)) {
+                            if (_.isEqual(point.tenses.sort(), origin.tenses.sort())) {
+                                brushedNodes.push(point.fragment_id)
+                            }
+                        }
+                    }
+                }
+                console.log("Selected " + brushedNodes.length, " nodes.");
+                console.log(brushedNodes);
+                $('input[name="fragment_ids"]').val(JSON.stringify(brushedNodes));
+                $('form[name="fragmentform"]').submit();
+            }
 
             function naiveUpdateBrush() {
                 const selection = d3.event.target.extent();
@@ -140,11 +176,13 @@
                 var brushedNodes = [];
                 for (tense of matrix) {
                     for (point of tense.values) {
-                        if (rectContains(selection, [point.x, point.y])) {
+                        if (rectContains(selection, [point.x, point.y]) &&
+                            point.tenses == e.tenses) {
                             brushedNodes.push(point.fragment_id)
                         }
                     }
                 }
+
 
                 if (brushedNodes.length > 0) {
                     $('input[name="fragment_ids"]').val(JSON.stringify(brushedNodes));
@@ -191,4 +229,11 @@
             return Math.sqrt(dx * dx + dy * dy);
         };
 
+        function within_distance(origin, point, distance) {
+            var dx = point.x - origin.x;
+            var dy = point.y - origin.y;
+            var d = Math.sqrt(dx * dx + dy * dy)
+
+            return d <= distance
+        }
     </script> {% endblock %}
