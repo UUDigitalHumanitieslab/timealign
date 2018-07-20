@@ -1,7 +1,5 @@
-{% extends "base/base.html" %} {% load bootstrap3 %} {% block head %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.css">
+{% extends "base/base.html" %} {% load bootstrap3 %} {% load static %} {% block head %}
+<link href="{%static 'style.css' %}" rel="stylesheet" type="text/css" />
 <script>
     $(document).ready(function () {
         $('[data-toggle="tooltip"]').tooltip({ html: true });
@@ -14,19 +12,16 @@
         <tr>
             <th>document</th>
             <th>xml id</th>
-            <th>target words</th>
-            <!-- <th>full text</th> -->
+            <th style="text-align:center">target words</th>
         </tr>
     </thead>
-    <tbody style="overflow-y: scroll">
+    <tbody>
         {% for f in out %}
         <tr onclick="document.location='/timealign/show/{{f.fragment_id}}'">
             <td>{{f.doc_title}}</td>
             <td>{{f.xml_ids}}</td>
-            <!-- <td style=" cursor:pointer " onclick="location.href='/timealign/show/{{f.fragment_id}}' " title="{{f.full|safe}} ">{{f.target_words}}</td> -->
-            <td data-toggle="tooltip" title="{{f.full}}">
+            <td style="text-align:center" data-toggle="tooltip" title="{{f.full}}">
                 {{f.target_words|safe}}
-                <!-- <a href=/timealign/show/{{f.fragment_id}} data-toggle="tooltip" title="{{f.full}}">{{f.target_words|safe}}</a> -->
             </td>
         </tr>
         {% endfor %}
