@@ -2,13 +2,18 @@ from collections import defaultdict, Counter, OrderedDict
 import json
 import numbers
 import random
-
-from django.core.exceptions import PermissionDenied
-from django.http import Http404
-from django.shortcuts import get_object_or_404
-from django.views import generic
+from collections import Counter, defaultdict
 
 from braces.views import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
+from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.urls import reverse
+from django.utils.encoding import iri_to_uri
+from django.views import generic
+
+from annotations.models import Fragment, Language, Tense
+from annotations.utils import get_available_corpora
 
 from .models import Scenario
 from .utils import get_tense_properties
@@ -18,17 +23,22 @@ from core.utils import HTML
 
 
 class ScenarioList(LoginRequiredMixin, generic.ListView):
+    """
+    Shows a list of scenarios
+    """
     model = Scenario
     context_object_name = 'scenarios'
 
     def filter_scenarios(self, scenarios, corpus=None, language=None,
                          show_test=False):
+        """filter scenarios"""
         if not show_test:
             scenarios = scenarios.exclude(is_test=True)
         if corpus:
             scenarios = scenarios.filter(corpus__id=corpus)
         if language:
-            scenarios = scenarios.filter(scenariolanguage__language__iso=language)
+            scenarios = scenarios.filter(
+                scenariolanguage__language__iso=language)
 
         # exclude scenarios that belong to corpora that the user is not allowed
         # to annotate
@@ -47,7 +57,8 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
         scenarios = Scenario.objects.exclude(last_run__isnull=True)
         corpus = self.request.GET.get('corpus')
         language = self.request.GET.get('language')
-        scenarios = self.filter_scenarios(scenarios, corpus, language, show_test)
+        scenarios = self.filter_scenarios(
+            scenarios, corpus, language, show_test)
 
         scenarios = scenarios.exclude(owner=self.request.user)
 
@@ -79,7 +90,8 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
             context['selected_language'] = language
 
         # scenarios that belong to the current user are displayed seperately.
-        # they need to be queried separately because we should include test scenarios.
+        # they need to be queried separately
+        # because we should include test scenarios.
         user_scenarios = self.filter_scenarios(
             self.request.user.scenarios,
             corpus, language, show_test=True)
@@ -89,6 +101,9 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
 
 
 class ScenarioDetail(LoginRequiredMixin, generic.DetailView):
+    """
+    Shows details of a selected scenario
+    """
     model = Scenario
 
     def get_object(self, queryset=None):
@@ -113,13 +128,16 @@ class MDSView(ScenarioDetail):
 
         # Retrieve kwargs
         scenario = self.object
-        language = self.kwargs.get('language', scenario.languages().order_by('language__iso').first().language.iso)
-        d1 = int(self.kwargs.get('d1', 1))  # We choose dimensions to be 1-based
+        language = self.kwargs.get('language', scenario.languages().order_by(
+            'language__iso').first().language.iso)
+        # We choose dimensions to be 1-based
+        d1 = int(self.kwargs.get('d1', 1))
         d2 = int(self.kwargs.get('d2', 2))
 
         language_object = get_object_or_404(Language, iso=language)
         if language_object not in [sl.language for sl in scenario.languages()]:
-            raise Http404('Language {} does not exist in Scenario {}'.format(language_object, scenario.pk))
+            raise Http404('Language {} does not exist in Scenario {}'.format(
+                language_object, scenario.pk))
 
         # Retrieve pickled data
         model = scenario.mds_model
@@ -139,7 +157,8 @@ class MDSView(ScenarioDetail):
             f = fragments[n]
             fragment = Fragment.objects.get(pk=f)
             ts = [tenses[l][n] for l in tenses.keys()]
-            t = [Tense.objects.get(pk=t).title if isinstance(t, numbers.Number) else t for t in ts]
+            t = [Tense.objects.get(pk=t).title if isinstance(
+                t, numbers.Number) else t for t in ts]
             # Add all values to the dictionary
             j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(HTML), 'tenses': t})
 
@@ -160,16 +179,27 @@ class MDSView(ScenarioDetail):
         # Add all variables to the context
         context['matrix'] = json.dumps(matrix)
         context['language'] = language
-        context['languages'] = Language.objects.filter(iso__in=tenses.keys()).order_by('iso')
+        context['languages'] = Language.objects.filter(
+            iso__in=tenses.keys()).order_by('iso')
         context['d1'] = d1
         context['d2'] = d2
-        context['max_dimensions'] = range(1, len(model[0]) + 1)  # We choose dimensions to be 1-based
+        # We choose dimensions to be 1-based
+        context['max_dimensions'] = range(1, len(model[0]) + 1)
         context['stress'] = scenario.mds_stress
 
         return context
 
+    def post(self, request, pk):
+        request.session['fragment_ids'] = json.loads(
+            request.POST['fragment_ids'])
+        url = reverse('stats:fragment_table', kwargs={'pk': pk})
+        return HttpResponseRedirect(url)
+
 
 class DescriptiveStatsView(ScenarioDetail):
+    """
+    Shows descriptive statistics of a selected scenario
+    """
     model = Scenario
     template_name = 'stats/descriptive.html'
 
@@ -226,5 +256,29 @@ class DescriptiveStatsView(ScenarioDetail):
         context['colors_json'] = json.dumps(colors)
         context['languages'] = languages
         context['languages_json'] = json.dumps({l.iso: l.title for l in languages})
+
+        return context
+
+
+class FragmentTableView(MDSView, ScenarioDetail):
+    model = Scenario
+    template_name = 'stats/fragment_table.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(FragmentTableView, self).get_context_data(**kwargs)
+        fragment_ids = self.request.session['fragment_ids']
+
+        fragments = Fragment.objects.filter(id__in=fragment_ids)
+        context['out'] = []
+        for f in fragments:
+            context['out'].append(
+                {
+                    'fragment_id': f.id,
+                    'doc_title': f.document.title,
+                    'xml_ids': f.xml_ids(),
+                    'target_words': f.target_words(),
+                    'full': f.full(marked=True),
+                }
+            )
 
         return context

@@ -1,0 +1,31 @@
+{% extends "base/base.html" %} {% load bootstrap3 %} {% load static %} {% block head %}
+<link href="{%static 'style.css' %}" rel="stylesheet" type="text/css" />
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="tooltip"]').tooltip({ html: true });
+    });</script> {% endblock %} {% block content %}
+
+
+
+<table class="table table-hover">
+    <thead class="thead-dark">
+        <tr>
+            <th>document</th>
+            <th>xml id</th>
+            <th style="text-align:center">target words</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for f in out %}
+        <tr onclick="document.location='/timealign/show/{{f.fragment_id}}'">
+            <td>{{f.doc_title}}</td>
+            <td>{{f.xml_ids}}</td>
+            <td style="text-align:center" data-toggle="tooltip" title="{{f.full}}">
+                {{f.target_words|safe}}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

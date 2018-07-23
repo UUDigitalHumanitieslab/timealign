@@ -1,21 +1,38 @@
-{% extends "base/base.html" %}
-
-{% load bootstrap3 %}
-
-{% block head %}
+{% extends "base/base.html" %} {% load bootstrap3 %} {% load static %} {% block head %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+    crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.css">
-{% endblock %}
+<link href="{%static 'style.css' %}" rel="stylesheet" type="text/css" />
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#spinner").bind("ajaxSend", function () {
+            $(this).show();
+        }).bind("ajaxStop", function () {
+            $(this).hide();
+        }).bind("ajaxError", function () {
+            $(this).hide();
+        });
 
-{% block content %}
-<h2>MDS visualization (scenario <em><a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a></em>)</h2>
-<p><em>Stress: {{ stress|floatformat:"-3" }}</em></p>
+    });
+</script> {% endblock %} {% block content %}
+<h2>MDS visualization (scenario
+    <em>
+        <a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a>
+    </em>)</h2>
+<p>
+    <em>Stress: {{ stress|floatformat:"-3" }}</em>
+</p>
 
 <div class="alert alert-info alert-dismissable" role="alert">
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    This scatter plot shows the results Multidimensional Scaling of the dissimilarity matrix of tense tuples.
-    Please see the <a href="{% url 'project' %}" class="alert-link">project summary</a> for more details.
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    This scatter plot shows the results Multidimensional Scaling of the dissimilarity matrix of tense tuples. Please see the
+    <a href="{% url 'project' %}" class="alert-link">project summary</a> for more details.
 </div>
 
 <div id="chart">
@@ -25,9 +42,11 @@
 <h2>Filters</h2>
 
 <div class="alert alert-info alert-dismissable" role="alert">
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    Below, you can change the labels and the dimensions displayed on the x- and y-axis.
-    Click the green button to confirm your selection and update the scatter plot.
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    Below, you can change the labels and the dimensions displayed on the x- and y-axis. Click the green button to confirm your
+    selection and update the scatter plot.
 </div>
 
 <div class="row">
@@ -60,59 +79,161 @@
     </div>
     <button type="submit" class="btn btn-success">
         {% bootstrap_icon "ok" %} Go!
-    </button>
-</div>
+    </button </div>
 
-<script>
-    var matrix = {{ matrix|safe }};
+    <button id="bruh-btn" class="btn btn-primary">
+        Toggle Brush
+    </button </div>
 
-    nv.addGraph(function() {
-        // Start a scatter plot, force the X and Y axis to good defaults,
-        // and use specific colors for tenses rather than the defaults
-        var chart = nv.models.scatterChart()
-            .forceX([-.5, .5])
-            .forceY([-.5, .5])
-            .color(function(d) { return d.color; });
+    <!-- Form for posting data to server -->
+    <form name="fragmentform" action="." method="post">
+        {% csrf_token %}
+        <!-- <input type="text" name="csrfmiddlewaretoken"> -->
+        <input type="hidden" name="fragment_ids">
+    </form>
 
-        // Set a proper tick format for the axes
-        chart.xAxis.tickFormat(d3.format('.02f'));
-        chart.yAxis.tickFormat(d3.format('.02f'));
+    <div id="spinner" class="spinner" style="display:none;">
+        <img id="img-spinner" src="{%static 'images/spinner.gif'%}" alt="Loading" />
+    </div>
 
-        // Show the tenses in the tooltip
-        chart.tooltip.contentGenerator(function(e) {
-            return '<strong>' + e.point.fragment_id + '</strong>: <em>' + e.point.fragment + '</em><br>' + e.point.tenses;
+    <script>
+        var matrix = {{ matrix| safe }};
+
+        nv.addGraph(function () {
+            // Start a scatter plot, force the X and Y axis to good defaults,
+            // and use specific colors for tenses rather than the defaults
+            var chart = nv.models.scatterChart()
+                .forceX([-.5, .5])
+                .forceY([-.5, .5])
+                .color(function (d) { return d.color; });
+
+            // Set a proper tick format for the axes
+            chart.xAxis.tickFormat(d3.format('.02f'));
+            chart.yAxis.tickFormat(d3.format('.02f'));
+
+            // Show the tenses in the tooltip
+            chart.tooltip.contentGenerator(function (e) {
+                return '<strong>' + e.point.fragment_id + '</strong>: <em>' + e.point.fragment + '</em><br>' + e.point.tenses;
+            });
+
+            // Create a click-through to the data
+            chart.scatter.dispatch.on("elementClick", function (e) {
+                // console.log(e.point);
+                select_neighbours(e.point);
+                // window.location = "{% url 'annotations:show' 999 %}".replace(999, e.point.fragment_id);
+
+            });
+
+            // Add the data to the chart and start creating the chart
+            d3.select('#chart svg')
+                .datum(matrix)
+                .transition()
+                .duration(350)
+                .call(chart);
+
+
+
+            // ****************************************
+            // Brush functionality 
+            // ****************************************
+
+            // var brushC = d3.select('#chart svg g');
+            // brushC.empty() ? brushC.append('g') : brushC.select('g')
+            //     .attr("class", "brush")
+            //     .call(d3.svg.brush()
+            //         .x(chart.xAxis.scale())
+            //         .y(chart.yAxis.scale())
+            //         .on('brushend', naiveUpdateBrush)
+            //         .extent([0, 0])
+
+            //     )
+            //     .selectAll('rect')
+            //     .attr('height', 320)//change according to you chart height
+            //     //i have hard coded it since it was a 'quick and dirty' fix
+            //     //you may try to get it from chart, if you can please update me.
+            //     ;
+            function select_neighbours(origin, distance = .1) {
+                $('#spinner').show();
+                var brushedNodes = [];
+                for (tense of matrix) {
+                    for (point of tense.values) {
+                        if (within_distance(origin, point, distance)) {
+                            if (_.isEqual(point.tenses.sort(), origin.tenses.sort())) {
+                                brushedNodes.push(point.fragment_id)
+                            }
+                        }
+                    }
+                }
+                console.log("Selected " + brushedNodes.length, " nodes.");
+                console.log(brushedNodes);
+                $('input[name="fragment_ids"]').val(JSON.stringify(brushedNodes));
+                $('form[name="fragmentform"]').submit();
+            }
+
+            function naiveUpdateBrush() {
+                const selection = d3.event.target.extent();
+                const csrftoken = Cookies.get('csrftoken');
+                var brushedNodes = [];
+                for (tense of matrix) {
+                    for (point of tense.values) {
+                        if (rectContains(selection, [point.x, point.y]) &&
+                            point.tenses == e.tenses) {
+                            brushedNodes.push(point.fragment_id)
+                        }
+                    }
+                }
+
+
+                if (brushedNodes.length > 0) {
+                    $('input[name="fragment_ids"]').val(JSON.stringify(brushedNodes));
+                    $('form[name="fragmentform"]').submit();
+                }
+                else {
+                    sel = d3.selectAll('.brush');
+                    sel[0].call(d3.event.target.move, null);
+                    // console.log(d3.event.target);
+                    // d3.event.target.call( );
+
+                    // d3.selectAll(".brush").call(d3.svg.brush.move, null);
+                }
+            }
+
+            nv.utils.windowResize(chart.update);
+            return chart;
+        });
+    </script>
+
+    <script>
+        $(function () {
+            $("#language input[value='{{ language }}'").closest(".btn").button("toggle");
+            $("#d1 input[value='{{ d1 }}'").closest(".btn").button("toggle");
+            $("#d2 input[value='{{ d2 }}'").closest(".btn").button("toggle");
+
+            $("button[type='submit']").click(function () {
+                var l = $("#language > .btn.active > input").val();
+                var d1 = $("#d1 > .btn.active > input").val();
+                var d2 = $("#d2 > .btn.active > input").val();
+                var url = "{% url 'stats:mds' scenario.pk 'language' 1111 2222 %}";
+                window.location = url.replace("language", l).replace('1111', d1).replace('2222', d2);
+            });
         });
 
-        // Create a click-through to the data
-        chart.scatter.dispatch.on("elementClick", function(e) {
-            window.location = "{% url 'annotations:show' 999 %}".replace(999, e.point.fragment_id);
-        });
+        function rectContains(rect, point) {
+            return rect[0][0] <= point[0] && point[0] <= rect[1][0] &&
+                rect[0][1] <= point[1] && point[1] <= rect[1][1];
+        };
 
-        // Add the data to the chart and start creating the chart
-        d3.select('#chart svg')
-            .datum(matrix)
-            .transition()
-            .duration(350)
-            .call(chart);
+        function distance(p1, p2) {
+            var dx = p2.x - p1.x;
+            var dy = p2.y - p1.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        };
 
-        nv.utils.windowResize(chart.update);
-        return chart;
-    });
-</script>
+        function within_distance(origin, point, distance) {
+            var dx = point.x - origin.x;
+            var dy = point.y - origin.y;
+            var d = Math.sqrt(dx * dx + dy * dy)
 
-<script>
-$(function() {
-    $("#language input[value='{{ language }}'").closest(".btn").button("toggle");
-    $("#d1 input[value='{{ d1 }}'").closest(".btn").button("toggle");
-    $("#d2 input[value='{{ d2 }}'").closest(".btn").button("toggle");
-
-    $("button[type='submit']").click(function() {
-        var l = $("#language > .btn.active > input").val();
-        var d1 = $("#d1 > .btn.active > input").val();
-        var d2 = $("#d2 > .btn.active > input").val();
-        var url = "{% url 'stats:mds' scenario.pk 'language' 1111 2222 %}";
-        window.location = url.replace("language", l).replace('1111', d1).replace('2222', d2);
-    });
-});
-</script>
-{% endblock %}
+            return d <= distance
+        }
+    </script> {% endblock %}
