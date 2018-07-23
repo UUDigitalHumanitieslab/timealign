@@ -1,3 +1,4 @@
+from collections import defaultdict, Counter, OrderedDict
 import json
 import numbers
 import random
@@ -16,14 +17,9 @@ from annotations.utils import get_available_corpora
 
 from .models import Scenario
 from .utils import get_tense_properties
-
-
-class HttpResponseTemporaryRedirect(HttpResponse):
-    status_code = 307
-
-    def __init__(self, redirect_to):
-        HttpResponse.__init__(self)
-        self['Location'] = iri_to_uri(redirect_to)
+from annotations.models import Language, Tense, Fragment
+from annotations.utils import get_available_corpora
+from core.utils import HTML
 
 
 class ScenarioList(LoginRequiredMixin, generic.ListView):
@@ -164,16 +160,14 @@ class MDSView(ScenarioDetail):
             t = [Tense.objects.get(pk=t).title if isinstance(
                 t, numbers.Number) else t for t in ts]
             # Add all values to the dictionary
-            j[tenses[language][n]].append(
-                {'x': x, 'y': y, 'fragment_id': f,
-                 'fragment': fragment.full(True), 'tenses': t})
+            j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(HTML), 'tenses': t})
 
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
         matrix = []
         labels = set()
         for tense, values in j.items():
-            tense_label, tense_color = get_tense_properties(tense, len(labels))
+            tense_label, tense_color, _ = get_tense_properties(tense, len(labels))
             labels.add(tense_label)
 
             d = dict()
@@ -215,33 +209,53 @@ class DescriptiveStatsView(ScenarioDetail):
         tenses = self.object.mds_labels
         languages = Language.objects.filter(iso__in=tenses.keys())
 
-        counters = dict()
+        counters_tenses = dict()
+        counters_tensecats = dict()
         tuples = defaultdict(tuple)
         colors = dict()
+        distinct_tensecats = set()
 
         for l in languages:
-            c = Counter()
+            c_tenses = Counter()
+            c_tensecats = Counter()
             n = 0
             labels = set()
             for t in tenses[l.iso]:
-                tense_label, tense_color = get_tense_properties(t, len(labels))
+                tense_label, tense_color, tense_category = get_tense_properties(t, len(labels))
                 labels.add(tense_label)
+                distinct_tensecats.add(tense_category)
 
-                c.update([tense_label])
+                c_tenses.update([tense_label])
+                c_tensecats.update([tense_category])
                 tuples[n] += (tense_label,)
                 n += 1
 
                 if tense_label not in colors:
                     colors[tense_label] = tense_color
 
-            counters[l] = c.most_common()
+            counters_tenses[l] = c_tenses.most_common()
+            counters_tensecats[l] = c_tensecats
 
-        context['counters'] = counters
-        context['counters_json'] = json.dumps(
-            {language.iso: values for language, values in counters.items()})
+        tensecat_table = defaultdict(list)
+        for l in languages:
+            tensecat_counts = counters_tensecats[l]
+            for tensecat in distinct_tensecats:
+                if tensecat in tensecat_counts.keys():
+                    tensecat_table[tensecat].append(tensecat_counts[tensecat])
+                else:
+                    tensecat_table[tensecat].append(0)
+
+        tensecat_table_ordered = OrderedDict(sorted(tensecat_table.items(),
+                                                    key=lambda item: sum(item[1]) if item[0] else 0,
+                                                    reverse=True))
+
+        context['counters'] = counters_tenses
+        context['counters_json'] = json.dumps({language.iso: values for language, values in counters_tenses.items()})
+        context['tensecat_table'] = tensecat_table_ordered
         context['tuples'] = Counter(tuples.values()).most_common()
-        context['colors'] = json.dumps(colors)
-        context['languages'] = json.dumps({l.iso: l.title for l in languages})
+        context['colors_json'] = json.dumps(colors)
+        context['languages'] = languages
+        context['languages_json'] = json.dumps({l.iso: l.title for l in languages})
 
         return context
 

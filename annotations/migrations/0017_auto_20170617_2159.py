@@ -39,8 +39,6 @@ class Migration(migrations.Migration):
                     result = 'passé composé'
                 elif language == 'nl':
                     result = 'vtt'
-                else:
-                    print language
             return result
 
         def get_alternative(language, tense):
@@ -121,8 +119,6 @@ class Migration(migrations.Migration):
                 if get_alignments(fragment, as_translation=True).count() == 0:
                     fragment.tense = get_default_tense(fragment.document.corpus.title, fragment.language.iso)
                     fragment.save()
-                else:
-                    print fragment
 
             tense = fragment.tense
             if tense:

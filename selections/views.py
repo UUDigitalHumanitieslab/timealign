@@ -19,6 +19,8 @@ from .forms import SelectionForm
 from .models import PreProcessFragment, Selection
 from .utils import get_random_fragment, get_selection_order
 
+from core.utils import XLSX
+
 
 ##############
 # Static views
@@ -243,11 +245,11 @@ class SelectionsDownload(PermissionRequiredMixin, generic.View):
         with NamedTemporaryFile() as file_:
             corpus = Corpus.objects.get(id=int(corpus_id))
             if document_id == 'all':
-                export_selections(file_.name, 'xlsx', corpus, language)
+                export_selections(file_.name, XLSX, corpus, language)
                 title = 'all'
             else:
                 document = Document.objects.get(id=int(document_id))
-                export_selections(file_.name, 'xlsx', corpus, language, document=document)
+                export_selections(file_.name, XLSX, corpus, language, document=document)
                 title = document.title
 
             response = HttpResponse(file_, content_type='application/xlsx')

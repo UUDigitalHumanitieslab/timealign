@@ -5,6 +5,8 @@ from django.db import transaction
 
 from annotations.models import Language, Corpus, Document
 from annotations.management.commands.add_fragments import add_sentences
+from annotations.management.commands.constants import COLUMN_DOCUMENT, COLUMN_XML
+
 from selections.models import PreProcessFragment
 
 
@@ -37,13 +39,13 @@ class Command(BaseCommand):
                 for n, row in enumerate(csv_reader):
                     # Retrieve language from header row
                     if n == 0:
-                        language = Language.objects.get(iso=row[1])
+                        language = Language.objects.get(iso=row[COLUMN_XML])
                         continue
 
                     with transaction.atomic():
-                        doc, _ = Document.objects.get_or_create(corpus=corpus, title=row[0])
+                        doc, _ = Document.objects.get_or_create(corpus=corpus, title=row[COLUMN_DOCUMENT])
 
                         from_fragment = PreProcessFragment.objects.create(language=language, document=doc)
-                        add_sentences(from_fragment, row[4])
+                        add_sentences(from_fragment, row[COLUMN_XML])
 
-                    print 'Line {} processed'.format(n)
+                    self.stdout.write(self.style.SUCCESS('Line {} processed'.format(n)))

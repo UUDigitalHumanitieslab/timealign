@@ -5,6 +5,7 @@ from lxml import etree
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
+from .constants import COLUMN_DOCUMENT, COLUMN_IDS, COLUMN_XML
 from .add_fragments import retrieve_languages, create_to_fragments
 from annotations.models import Corpus, Document, Sentence
 
@@ -36,8 +37,8 @@ class Command(BaseCommand):
                         continue
 
                     with transaction.atomic():
-                        doc = Document.objects.get(corpus=corpus, title=row[0])
-                        xml_id = get_first_sentence_id(row[4])
+                        doc = Document.objects.get(corpus=corpus, title=row[COLUMN_DOCUMENT])
+                        xml_id = get_first_sentence_id(row[COLUMN_XML])
 
                         # Retrieve the matching sentence
                         sentences = Sentence.objects.filter(xml_id=xml_id,
@@ -45,18 +46,18 @@ class Command(BaseCommand):
                                                             fragment__document=doc)
 
                         if not sentences:
-                            print 'No match found for {}'.format(xml_id)
+                            self.stdout.write(self.style.WARNING('No match found for {}'.format(xml_id)))
                             continue
 
                         sentence = None
                         if sentences.count() >= 1:
                             # Find the matching sentence using the target id's
                             for s in sentences:
-                                if [w.xml_id for w in s.word_set.filter(is_target=True)] == row[3].split(' '):
+                                if [w.xml_id for w in s.word_set.filter(is_target=True)] == row[COLUMN_IDS].split(' '):
                                     sentence = s
 
                             if sentence is None:
-                                print 'No match found for {}'.format(xml_id)
+                                self.stdout.write(self.style.WARNING('No match found for {}'.format(xml_id)))
                                 continue
                         else:
                             sentence = sentences.first()
@@ -64,7 +65,7 @@ class Command(BaseCommand):
                         # Create the Fragment and Alignment
                         create_to_fragments(doc, sentence.fragment, languages_to, row)
 
-                    print 'Line {} processed'.format(n)
+                    self.stdout.write(self.style.SUCCESS('Line {} processed'.format(n)))
 
 
 def get_first_sentence_id(xml):

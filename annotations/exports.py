@@ -2,11 +2,12 @@ from django.db.models import Count, Max
 
 from annotations.models import Annotation, Fragment, Word
 from .management.commands.utils import open_csv, open_xlsx, pad_list
+from core.utils import XLSX
 
 
 def export_pos_file(filename, format_, corpus, language,
                     document=None, include_non_targets=False, add_lemmata=False):
-    if format_ == 'xlsx':
+    if format_ == XLSX:
         opener = open_xlsx
     else:
         opener = open_csv
@@ -47,12 +48,13 @@ def export_pos_file(filename, format_, corpus, language,
                                 pad_list(w, max_words) +
                                 pad_list(pos, max_words) +
                                 (pad_list(lemma, max_words) if add_lemmata else []) +
-                                [annotation.comments, tf.full(), of.pk, of.document.title, of.xml_ids(), of.target_words(), of.full()])
+                                [annotation.comments, tf.full(format_, annotation),
+                                 of.pk, of.document.title, of.xml_ids(), of.target_words(), of.full(format_)])
 
 
 def export_fragments_file(filename, format_, corpus, language,
                           document=None, add_lemmata=False):
-    if format_ == 'xlsx':
+    if format_ == XLSX:
         opener = open_xlsx
     else:
         opener = open_csv
@@ -88,7 +90,7 @@ def export_fragments_file(filename, format_, corpus, language,
                     w = [word.word for word in words]
                     pos = [word.pos for word in words]
                     lemma = [word.lemma for word in words]
-                    f = fragment.full()
+                    f = fragment.full(format_)
                     writer.writerow([fragment.pk, fragment.label()] +
                                     pad_list(w, max_words) +
                                     pad_list(pos, max_words) +

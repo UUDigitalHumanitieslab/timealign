@@ -5,6 +5,7 @@ from django.db.models import Count, Max
 
 from annotations.models import Corpus, Language, Annotation, Fragment, Word
 from .utils import UnicodeWriter, pad_list
+from core.utils import CSV
 
 
 class Command(BaseCommand):
@@ -80,12 +81,12 @@ class Command(BaseCommand):
                     words = Word.objects.filter(sentence__fragment=fragment, is_target=True)
                     row.append(str(fragment.pk))
                     row.append(' '.join([word.word for word in words]))
-                    row.append(fragment.full())
+                    row.append(fragment.full(CSV))
                     row.append(fragment.tense.title)
 
                     for annotation in annotations:
                         w = [word.word for word in annotation.words.all()]
-                        row.append(annotation.alignment.translated_fragment.full())
+                        row.append(annotation.alignment.translated_fragment.full(CSV))
                         row.append(annotation.label())
                         row.extend(pad_list(w, max_words))
 

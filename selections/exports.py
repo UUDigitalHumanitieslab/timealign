@@ -2,11 +2,12 @@ from django.db.models import Count, Max
 
 from selections.models import Selection
 from annotations.management.commands.utils import open_csv, open_xlsx, pad_list
+from core.utils import CSV, XLSX
 
 
 def export_selections(filename, format_, corpus, language,
                       document=None, add_lemmata=False):
-    if format_ == 'xlsx':
+    if format_ == XLSX:
         opener = open_xlsx
     else:
         opener = open_csv
@@ -58,6 +59,6 @@ def get_row(selection, add_lemmata, max_words):
     w_details = pad_list(w, max_words) + pad_list(pos, max_words) + (pad_list(lemma, max_words) if add_lemmata else [])
 
     fragment = selection.fragment
-    f_details = [selection.comments, selection.order, fragment.first_sentence().xml_id, fragment.full()]
+    f_details = [selection.comments, selection.order, fragment.first_sentence().xml_id, fragment.full(CSV)]
 
     return s_details + w_details + f_details
