@@ -6,19 +6,8 @@
 <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
     crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.css">
-<link href="{%static 'style.css' %}" rel="stylesheet" type="text/css" />
-<script type="text/javascript">
-    $(document).ready(function () {
-        $("#spinner").bind("ajaxSend", function () {
-            $(this).show();
-        }).bind("ajaxStop", function () {
-            $(this).hide();
-        }).bind("ajaxError", function () {
-            $(this).hide();
-        });
+<link href="{%static 'style.css' %}" rel="stylesheet" type="text/css" /> {% endblock %} {% block content %}
 
-    });
-</script> {% endblock %} {% block content %}
 <h2>MDS visualization (scenario
     <em>
         <a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a>
@@ -81,19 +70,22 @@
         {% bootstrap_icon "ok" %} Go!
     </button </div>
 
-    <button id="bruh-btn" class="btn btn-primary">
+    <!-- <button id="bruh-btn" class="btn btn-primary">
         Toggle Brush
-    </button </div>
+    </button </div> -->
 
     <!-- Form for posting data to server -->
     <form name="fragmentform" action="." method="post">
         {% csrf_token %}
         <!-- <input type="text" name="csrfmiddlewaretoken"> -->
         <input type="hidden" name="fragment_ids">
+        <input type="hidden" name="tenses">
     </form>
 
-    <div id="spinner" class="spinner" style="display:none;">
-        <img id="img-spinner" src="{%static 'images/spinner.gif'%}" alt="Loading" />
+    <div class="loading-overlay" style="display:none">
+        <div id="spinner" class="spinner">
+            <img id="img-spinner" src="{%static 'images/spinner.gif'%}" alt="Loading" />
+        </div>
     </div>
 
     <script>
@@ -119,6 +111,7 @@
             // Create a click-through to the data
             chart.scatter.dispatch.on("elementClick", function (e) {
                 // console.log(e.point);
+                // $('.loading-overlay').show();
                 select_neighbours(e.point);
                 // window.location = "{% url 'annotations:show' 999 %}".replace(999, e.point.fragment_id);
 
@@ -152,25 +145,79 @@
             //     //i have hard coded it since it was a 'quick and dirty' fix
             //     //you may try to get it from chart, if you can please update me.
             //     ;
+
             function select_neighbours(origin, distance = .1) {
-                $('#spinner').show();
                 var brushedNodes = [];
-                for (tense of matrix) {
-                    for (point of tense.values) {
-                        if (within_distance(origin, point, distance)) {
-                            if (_.isEqual(point.tenses.sort(), origin.tenses.sort())) {
-                                brushedNodes.push(point.fragment_id)
+                // for (tense of matrix) {
+                //     for (point of tense.values) {
+                //         if (within_distance(origin, point, distance)) {
+                //             if (_.isEqual(point.tenses.sort(), origin.tenses.sort())) {
+                //                 brushedNodes.push(point.fragment_id)
+                //                 // console.log(point)
+                //             }
+                //         }
+                //     }
+                // }
+
+                var data = d3.selectAll('circle')
+                console.log(data)
+                for (circle of data[0]) {
+                    var f = circle.__data__[4]
+                    if (f != undefined) {
+                        if (within_distance(origin, f, distance)) {
+                            if (_.isEqual(f.tenses.sort(), origin.tenses.sort())) {
+                                brushedNodes.push(f.fragment_id)
+                                circle.className.baseVal = 'selected'
+                                circle.className.animVal = 'selected'
+                                // console.log(d3.selectAll('.selected'))
+                                d3.selectAll('.selected').style('fill', 'yellow').attr('r', 5)
+                                // console.log(circle.cx.baseVal.value)
+                                // d3.select('#chart svg')
+                                //     .append('circle')
+                                //     .attr('cx', circle.cx.baseVal.value)
+                                //     .attr('cy', circle.cy.baseVal.value)
+                                //     .attr('r', circle.r.baseVal.value)
+                                //     .style('stroke', 'black')
+                                //     .style('fill', 'yellow')
                             }
                         }
                     }
                 }
-                console.log("Selected " + brushedNodes.length, " nodes.");
+
+                d3.select('#chart svg')
+                    .append('circle')
+                    .attr('cx', chart.xAxis.range(0))
+                    .attr('cy', chart.yAxis.range(0))
+                    .attr('r', 5)
+                    .attr('class', ' test')
+                    .style('stroke', 'black')
+                    .style('fill', 'yellow')
+                // console.log(chart.xAxis)
+                console.log(chart.xAxis.scale())
+                console.log(d3.select('.test'))
                 console.log(brushedNodes);
+
+                // var data = d3.selectAll('circle')
+                // console.log(data[0])
+                // console.log(data[0][0].__data__[4])
+                // nvd3 Highlighting Nodes
+                // var data = d3.select('#chart svg').datum()
+                // var next = d3.select('.nv-groups')
+                //     .selectAll("circle.myPoint")
+                //     .data(data.filter(function (d) { return $.inArray(d.fragment_id, brushedNodes) }))
+                //     .enter().append("circle").attr("class", "myPoint")
+                //     .attr("cx", function (d) { return (d.x) })
+                //     .attr("cy", function (d) { return (d.y) })
+                //     .attr("r", 5)
+                // console.log(next);
+                // console.log("Selected " + brushedNodes.length, " nodes.");
+                // console.log(brushedNodes);
+                $('input[name="tenses"]').val(JSON.stringify(origin.tenses));
                 $('input[name="fragment_ids"]').val(JSON.stringify(brushedNodes));
-                $('form[name="fragmentform"]').submit();
+                // $('form[name="fragmentform"]').submit();
             }
 
-            function naiveUpdateBrush() {
+            function UpdateBrush() {
                 const selection = d3.event.target.extent();
                 const csrftoken = Cookies.get('csrftoken');
                 var brushedNodes = [];
@@ -183,7 +230,6 @@
                     }
                 }
 
-
                 if (brushedNodes.length > 0) {
                     $('input[name="fragment_ids"]').val(JSON.stringify(brushedNodes));
                     $('form[name="fragmentform"]').submit();
@@ -191,10 +237,6 @@
                 else {
                     sel = d3.selectAll('.brush');
                     sel[0].call(d3.event.target.move, null);
-                    // console.log(d3.event.target);
-                    // d3.event.target.call( );
-
-                    // d3.selectAll(".brush").call(d3.svg.brush.move, null);
                 }
             }
 
