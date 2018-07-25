@@ -27,7 +27,7 @@
     </thead>
     <tbody>
         {% for f in out %}
-        <tr onclick="document.location='/timealign/show/{{f.fragment_id}}'">
+        <tr style="cursor:pointer" onclick="document.location='/timealign/show/{{f.fragment_id}}'">
             <td>{{f.doc_title}}</td>
             <td>{{f.xml_ids}}</td>
             <td style="text-align:center" data-toggle="tooltip" title="{{f.full}}">

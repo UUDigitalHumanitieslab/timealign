@@ -40,7 +40,7 @@
     Language:
     <div id="language" class="btn-group" data-toggle="buttons">
         {% for l in languages %}
-        <label class="btn btn-primary active">
+        <label class="btn btn-primary">
             <input type="radio" name="options" value="{{ l.iso }}" autocomplete="off">{{ l.title }}
         </label>
         {% endfor %}
@@ -48,18 +48,18 @@
     Dimension on x-axis:
     <div id="d1" class="btn-group" data-toggle="buttons">
         {% for d in max_dimensions %}
-        <label class="btn btn-primary active">
+        <label class="btn btn-primary">
             <input type="radio" name="options" value="{{ d }}" autocomplete="off">{{ d }}
         </label>
         {% endfor %}
     </div>
     Dimension on y-axis:
     <div id="d2" class="btn-group" data-toggle="buttons">
-        <label class="btn btn-primary active">
+        <label class="btn btn-primary">
             <input type="radio" name="options" value="0" autocomplete="off">&empty;
         </label>
         {% for d in max_dimensions %}
-        <label class="btn btn-primary active">
+        <label class="btn btn-primary">
             <input type="radio" name="options" value="{{ d }}" autocomplete="off">{{ d }}
         </label>
         {% endfor %}
@@ -277,13 +277,9 @@
 
     <script>
         $(function () {
-            console.log('{{ language }}')
-            console.log($("#language input[value='{{ language }}'").closest(".btn"))
             $("#language input[value='{{ language }}'").closest(".btn").addClass("active");
             $("#d1 input[value='{{ d1 }}'").closest(".btn").addClass("active");
-            $("#d1 input[value='{{ d2 }}'").closest(".btn").addClass("active");
-            // $("#d1 input[value='{{ d1 }}'").closest(".btn").button("toggle");
-            // $("#d2 input[value='{{ d2 }}'").closest(".btn").button("toggle");
+            $("#d2 input[value='{{ d2 }}'").closest(".btn").addClass("active");
 
             $("button[type='submit']").click(function () {
                 var l = $("#language > .btn.active > input").val();
