@@ -25,7 +25,10 @@
 <div id="chart">
     <!-- <svg style="height: 490px; width: 100%"></svg> -->
 </div>
-
+<div class="slidecontainer">
+    <input type="range" min="0" max=".02" value=".01" step=".001" class="slider" id="distance-slider">
+    <span id="distance-value"></span>
+</div>
 <h2>Filters</h2>
 
 <div class="alert alert-info alert-dismissable" role="alert">
@@ -89,6 +92,13 @@
 
 
     <script>
+        var slider = document.getElementById("distance-slider");
+        var output = document.getElementById("distance-value");
+        output.innerHTML = slider.value;
+
+        slider.oninput = function () {
+            output.innerHTML = this.value;
+        }
         // var flat_data = JSON.parse("{{flat_data}}");
         var flat_data = {{ flat_data | safe}}
         var containerWidth = d3.select(".container").node().getBoundingClientRect().width,
@@ -223,7 +233,7 @@
             })
             .on("click", function (d) {
                 $('.loading-overlay').show();
-                select_neighbours(d);
+                select_neighbours(d, slider.value);
             })
 
         function select_neighbours(origin, distance = .1) {
