@@ -1,11 +1,8 @@
 {% extends "base/base.html" %} {% load bootstrap3 %} {% load static %} {% block head %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
 <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
     crossorigin="anonymous"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.css">
 <link href="{%static 'style.css' %}" rel="stylesheet" type="text/css" /> {% endblock %} {% block content %}
 
 
@@ -280,7 +277,11 @@
 
     <script>
         $(function () {
-            // $("#language input[value='{{ language }}'").closest(".btn").button("toggle");
+            console.log('{{ language }}')
+            console.log($("#language input[value='{{ language }}'").closest(".btn"))
+            $("#language input[value='{{ language }}'").closest(".btn").addClass("active");
+            $("#d1 input[value='{{ d1 }}'").closest(".btn").addClass("active");
+            $("#d1 input[value='{{ d2 }}'").closest(".btn").addClass("active");
             // $("#d1 input[value='{{ d1 }}'").closest(".btn").button("toggle");
             // $("#d2 input[value='{{ d2 }}'").closest(".btn").button("toggle");
 
