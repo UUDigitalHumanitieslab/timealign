@@ -3,6 +3,8 @@ import json
 import numbers
 import random
 from collections import Counter, defaultdict
+from pprint import pprint
+from itertools import chain
 
 from braces.views import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
@@ -121,7 +123,7 @@ class ScenarioDetail(LoginRequiredMixin, generic.DetailView):
 class MDSView(ScenarioDetail):
     """Loads the matrix plot view"""
     model = Scenario
-    template_name = 'stats/mds.html'
+    template_name = 'stats/mds_d3.html'
 
     def get_context_data(self, **kwargs):
         context = super(MDSView, self).get_context_data(**kwargs)
@@ -189,9 +191,23 @@ class MDSView(ScenarioDetail):
         context['max_dimensions'] = range(1, len(model[0]) + 1)
         context['stress'] = scenario.mds_stress
 
+        # flat data representation for d3
+        flat_data = []
+        for series in json.loads(context['matrix']):
+            for fragment in series['values']:
+                s = {'key': series['key'],
+                     'color': series['color']}
+                flat_data.append(
+                    dict(chain(
+                        s.iteritems(),
+                        fragment.iteritems()
+                    ))
+                )
+        context['flat_data'] = json.dumps(flat_data)
+
         return context
 
-    def post(self, request, pk):
+    def post(self, request, pk, *args, **kwargs):
         request.session['fragment_ids'] = json.loads(
             request.POST['fragment_ids'])
         request.session['tenses'] = json.loads(

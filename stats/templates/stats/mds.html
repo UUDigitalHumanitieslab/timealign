@@ -111,7 +111,7 @@
             // Create a click-through to the data
             chart.scatter.dispatch.on("elementClick", function (e) {
                 // console.log(e.point);
-                // $('.loading-overlay').show();
+                $('.loading-overlay').show();
                 select_neighbours(e.point);
                 // window.location = "{% url 'annotations:show' 999 %}".replace(999, e.point.fragment_id);
 
@@ -170,7 +170,7 @@
                                 circle.className.baseVal = 'selected'
                                 circle.className.animVal = 'selected'
                                 // console.log(d3.selectAll('.selected'))
-                                d3.selectAll('.selected').style('fill', 'yellow').attr('r', 5)
+                                // d3.selectAll('.selected').style('fill', 'yellow').attr('r', 5)
                                 // console.log(circle.cx.baseVal.value)
                                 // d3.select('#chart svg')
                                 //     .append('circle')
@@ -184,14 +184,14 @@
                     }
                 }
 
-                d3.select('#chart svg')
-                    .append('circle')
-                    .attr('cx', chart.xAxis.range(0))
-                    .attr('cy', chart.yAxis.range(0))
-                    .attr('r', 5)
-                    .attr('class', ' test')
-                    .style('stroke', 'black')
-                    .style('fill', 'yellow')
+                // d3.select('#chart svg')
+                //     .append('circle')
+                //     .attr('cx', chart.xAxis.range(0))
+                //     .attr('cy', chart.yAxis.range(0))
+                //     .attr('r', 5)
+                //     .attr('class', ' test')
+                //     .style('stroke', 'black')
+                //     .style('fill', 'yellow')
                 // console.log(chart.xAxis)
                 console.log(chart.xAxis.scale())
                 console.log(d3.select('.test'))
@@ -214,7 +214,7 @@
                 // console.log(brushedNodes);
                 $('input[name="tenses"]').val(JSON.stringify(origin.tenses));
                 $('input[name="fragment_ids"]').val(JSON.stringify(brushedNodes));
-                // $('form[name="fragmentform"]').submit();
+                $('form[name="fragmentform"]').submit();
             }
 
             function UpdateBrush() {
@@ -247,11 +247,12 @@
 
     <script>
         $(function () {
-            $("#language input[value='{{ language }}'").closest(".btn").button("toggle");
-            $("#d1 input[value='{{ d1 }}'").closest(".btn").button("toggle");
-            $("#d2 input[value='{{ d2 }}'").closest(".btn").button("toggle");
+            // $("#language input[value='{{ language }}'").closest(".btn").button("toggle");
+            // $("#d1 input[value='{{ d1 }}'").closest(".btn").button("toggle");
+            // $("#d2 input[value='{{ d2 }}'").closest(".btn").button("toggle");
 
             $("button[type='submit']").click(function () {
+                console.log('hiphoi')
                 var l = $("#language > .btn.active > input").val();
                 var d1 = $("#d1 > .btn.active > input").val();
                 var d2 = $("#d2 > .btn.active > input").val();
