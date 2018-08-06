@@ -6,7 +6,7 @@ from core.utils import XLSX
 
 
 def export_pos_file(filename, format_, corpus, language,
-                    document=None, include_non_targets=False, add_lemmata=False):
+                    document=None, include_non_targets=False, add_lemmata=False, formal_structure=None):
     if format_ == XLSX:
         opener = open_xlsx
     else:
@@ -23,8 +23,18 @@ def export_pos_file(filename, format_, corpus, language,
         if document is not None:
             annotations = annotations.filter(alignment__translated_fragment__document__title=document)
 
+        if formal_structure is not None:
+            if formal_structure == 'narration':
+                annotations = annotations.filter(alignment__original_fragment__formal_structure=Fragment.FS_NARRATION)
+            if formal_structure == 'dialogue':
+                annotations = annotations.filter(alignment__original_fragment__formal_structure=Fragment.FS_DIALOGUE)
+
         annotations = annotations.select_related().annotate(selected_words=Count('words'))
         max_words = annotations.aggregate(Max('selected_words'))['selected_words__max']
+
+        # Sort by document and sentence.xml_id
+        annotations = sorted(annotations, key=lambda a: (a.alignment.original_fragment.document.title,
+                                                         map(int, a.alignment.original_fragment.first_sentence().xml_id[1:].split('.'))))
 
         if annotations:
             header = ['id', 'tense', 'source/target', 'is correct target?', 'is correct translation?']
@@ -65,8 +75,9 @@ def export_fragments_file(filename, format_, corpus, language,
         if document is not None:
             fragments = fragments.filter(document__title=document)
 
-        # Sort by sentence.xml_id
-        fragments = sorted(fragments, key=lambda f: (map(int, f.first_sentence().xml_id[1:].split('.'))))
+        # Sort by document and sentence.xml_id
+        fragments = sorted(fragments, key=lambda f: (f.document.title,
+                                                     map(int, f.first_sentence().xml_id[1:].split('.'))))
 
         if fragments:
             # TODO: see if we can do this query-based
@@ -81,7 +92,7 @@ def export_fragments_file(filename, format_, corpus, language,
             header.extend(['pos' + str(i + 1) for i in range(max_words)])
             if add_lemmata:
                 header.extend(['lemma' + str(i + 1) for i in range(max_words)])
-            header.extend(['comments', 'full fragment'])
+            header.extend(['document', 'sentence id', 'target ids', 'full fragment'])
             writer.writerow(header, is_header=True)
 
             for fragment in fragments:
@@ -95,4 +106,4 @@ def export_fragments_file(filename, format_, corpus, language,
                                     pad_list(w, max_words) +
                                     pad_list(pos, max_words) +
                                     (pad_list(lemma, max_words) if add_lemmata else []) +
-                                    ['', f])
+                                    [fragment.document.title, fragment.first_sentence().xml_id, fragment.target_words(), f])
