@@ -14,6 +14,7 @@ class Command(BaseCommand):
         parser.add_argument('corpus', type=str)
         parser.add_argument('languages', nargs='+', type=str)
         parser.add_argument('--add_lemmata', action='store_true', dest='add_lemmata', default=False)
+        parser.add_argument('--add_indices', action='store_true', dest='add_indices', default=False)
         parser.add_argument('--include_non_targets', action='store_true', dest='include_non_targets', default=False)
         parser.add_argument('--xlsx', action='store_true', dest='format_xlsx', default=False)
         parser.add_argument('--doc', dest='document')
@@ -34,4 +35,5 @@ class Command(BaseCommand):
             export_pos_file(filename, format_, corpus, language,
                             document=options['document'],
                             include_non_targets=options['include_non_targets'],
-                            add_lemmata=options['add_lemmata'])
+                            add_lemmata=options['add_lemmata'],
+                            add_indices=options['add_indices'])
