@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     'core.apps.CoreConfig',
     'news.apps.NewsConfig',
+    'publications.apps.PublicationsConfig',
     'selections.apps.SelectionsConfig',
     'annotations.apps.AnnotationsConfig',
     'stats.apps.StatsConfig',
