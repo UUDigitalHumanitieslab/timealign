@@ -1,0 +1,21 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+<div>
+    <h1>Student research</h1>
+    <p>
+        This page lists students that completed research in the Time in Translation project.
+        If you are interested in doing your thesis or internship in our project, please do <a href="{% url 'contact' %}">contact us</a>.
+    </p>
+    <ul>
+        {% for thesis in theses %}
+        <li>
+            {{ thesis.get_authors }} ({{ thesis.get_level_display }}, {{ thesis.programme.title }})
+            {{ thesis.description }}:
+            <em><a href="{{ thesis.get_url }}" target="_blank">{{ thesis.title }}</a></em>
+            {% if thesis.appendix %}- <a href="{{ thesis.appendix.url }}" target="_blank">Appendix</a> {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
