@@ -265,6 +265,18 @@ class Word(models.Model):
     def to_html(self):
         return u'<strong>{}</strong>'.format(self.word) if self.is_target else self.word
 
+    def index(self):
+        """
+        Returns the start index of the Word in the Sentence.
+        """
+        from .utils import is_before
+
+        result = 0
+        for word in self.sentence.word_set.all():
+            if is_before(word.xml_id, self.xml_id):
+                result += len(word.word) + 1
+        return result
+
     def __unicode__(self):
         return self.word
 

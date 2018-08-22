@@ -6,7 +6,7 @@ from core.utils import XLSX
 
 
 def export_pos_file(filename, format_, corpus, language,
-                    document=None, include_non_targets=False, add_lemmata=False, formal_structure=None):
+                    document=None, include_non_targets=False, add_lemmata=False, add_indices=False, formal_structure=None):
     if format_ == XLSX:
         opener = open_xlsx
     else:
@@ -42,6 +42,8 @@ def export_pos_file(filename, format_, corpus, language,
             header.extend(['pos' + str(i + 1) for i in range(max_words)])
             if add_lemmata:
                 header.extend(['lemma' + str(i + 1) for i in range(max_words)])
+            if add_indices:
+                header.extend(['index' + str(i + 1) for i in range(max_words)])
             header.extend(['comments', 'full fragment', 'source id', 'source document', 'source sentences', 'source words', 'source fragment'])
             writer.writerow(header, is_header=True)
 
@@ -50,6 +52,7 @@ def export_pos_file(filename, format_, corpus, language,
                 w = [word.word for word in words]
                 pos = [word.pos for word in words]
                 lemma = [word.lemma for word in words]
+                index = [word.index() for word in words]
                 tf = annotation.alignment.translated_fragment
                 of = annotation.alignment.original_fragment
                 writer.writerow([annotation.pk, annotation.label(), 'target',
@@ -58,12 +61,13 @@ def export_pos_file(filename, format_, corpus, language,
                                 pad_list(w, max_words) +
                                 pad_list(pos, max_words) +
                                 (pad_list(lemma, max_words) if add_lemmata else []) +
+                                (pad_list(index, max_words) if add_indices else []) +
                                 [annotation.comments, tf.full(format_, annotation),
                                  of.pk, of.document.title, of.xml_ids(), of.target_words(), of.full(format_)])
 
 
 def export_fragments_file(filename, format_, corpus, language,
-                          document=None, add_lemmata=False):
+                          document=None, add_lemmata=False, add_indices=False):
     if format_ == XLSX:
         opener = open_xlsx
     else:
@@ -92,6 +96,8 @@ def export_fragments_file(filename, format_, corpus, language,
             header.extend(['pos' + str(i + 1) for i in range(max_words)])
             if add_lemmata:
                 header.extend(['lemma' + str(i + 1) for i in range(max_words)])
+            if add_indices:
+                header.extend(['index' + str(i + 1) for i in range(max_words)])
             header.extend(['document', 'sentence id', 'target ids', 'full fragment'])
             writer.writerow(header, is_header=True)
 
@@ -101,9 +107,11 @@ def export_fragments_file(filename, format_, corpus, language,
                     w = [word.word for word in words]
                     pos = [word.pos for word in words]
                     lemma = [word.lemma for word in words]
+                    index = [word.index() for word in words]
                     f = fragment.full(format_)
                     writer.writerow([fragment.pk, fragment.label()] +
                                     pad_list(w, max_words) +
                                     pad_list(pos, max_words) +
                                     (pad_list(lemma, max_words) if add_lemmata else []) +
+                                    (pad_list(index, max_words) if add_indices else []) +
                                     [fragment.document.title, fragment.first_sentence().xml_id, fragment.target_words(), f])

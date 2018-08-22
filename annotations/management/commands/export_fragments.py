@@ -14,6 +14,7 @@ class Command(BaseCommand):
         parser.add_argument('corpus', type=str)
         parser.add_argument('languages', nargs='+', type=str)
         parser.add_argument('--add_lemmata', action='store_true', dest='add_lemmata', default=False)
+        parser.add_argument('--add_indices', action='store_true', dest='add_indices', default=False)
         parser.add_argument('--xlsx', action='store_true', dest='format_xlsx', default=False)
         parser.add_argument('--doc', dest='document')
 
@@ -32,4 +33,5 @@ class Command(BaseCommand):
             filename = 'fragments_{lang}.{ext}'.format(lang=language, ext=format_)
             export_fragments_file(filename, format_, corpus, language,
                                   document=options['document'],
-                                  add_lemmata=options['add_lemmata'])
+                                  add_lemmata=options['add_lemmata'],
+                                  add_indices=options['add_indices'])

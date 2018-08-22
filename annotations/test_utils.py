@@ -1,5 +1,5 @@
 from .models import Corpus, Annotation, Tense
-from .utils import get_random_alignment, get_available_corpora, get_tenses
+from .utils import get_random_alignment, get_available_corpora, get_tenses, is_before
 from .test_models import BaseTestCase
 
 
@@ -40,3 +40,26 @@ class UtilsTestCase(BaseTestCase):
         a.save()
 
         self.assertEqual(get_tenses(self.nl), ['vtt'])
+
+    def test_is_before(self):
+        xml_id1 = '13'
+
+        xml_id2 = '14'
+        self.assertTrue(is_before(xml_id1, xml_id2))
+
+        xml_id2 = '12'
+        self.assertFalse(is_before(xml_id1, xml_id2))
+
+        xml_id2 = '131'
+        self.assertTrue(is_before(xml_id1, xml_id2))
+
+        xml_id1 = 'w13.12.11'
+
+        xml_id2 = 'w13.12.12'
+        self.assertTrue(is_before(xml_id1, xml_id2))
+
+        xml_id2 = 'w13.12.9'
+        self.assertFalse(is_before(xml_id1, xml_id2))
+
+        xml_id2 = 'w13.13.13'
+        self.assertTrue(is_before(xml_id1, xml_id2))
