@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Annotation, Word, Language
+from .models import Annotation, Word, Language, Tense
 from .management.commands.import_tenses import process_file
 
 
@@ -8,7 +8,10 @@ class AnnotationForm(forms.ModelForm):
     class Meta:
         model = Annotation
         fields = [
-            'is_no_target', 'is_translation', 'is_not_labeled_structure', 'is_not_same_structure', 'comments', 'words',
+            'is_no_target', 'is_translation',
+            'is_not_labeled_structure', 'is_not_same_structure',
+            'tense', 'other_label',
+            'comments', 'words',
         ]
         widgets = {
             'comments': forms.Textarea(attrs={'rows': 2}),
@@ -24,14 +27,22 @@ class AnnotationForm(forms.ModelForm):
         label = self.alignment.original_fragment.label()
         structure = self.alignment.original_fragment.get_formal_structure_display()
 
+        self.user = kwargs.pop('user', None)
+
         super(AnnotationForm, self).__init__(*args, **kwargs)
         self.fields['words'].queryset = Word.objects.filter(sentence__in=translated_sentences)
         self.fields['is_no_target'].label = self.fields['is_no_target'].label.format(label)
         self.fields['is_not_labeled_structure'].label = self.fields['is_not_labeled_structure'].label.format(structure)
+        self.fields['tense'].queryset = Tense.objects.filter(language=self.alignment.translated_fragment.language)
 
         if not corpus.check_structure:
             del self.fields['is_not_labeled_structure']
             del self.fields['is_not_same_structure']
+
+        # Only allow to edit tense/other_label if the current User is a superuser AND we are editing, not creating
+        if not self.user.is_superuser or self.instance.pk is None:
+            del self.fields['tense']
+            del self.fields['other_label']
 
     def clean(self):
         """

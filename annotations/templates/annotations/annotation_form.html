@@ -47,9 +47,11 @@
                 <button type="submit" class="btn btn-primary">
                     {% bootstrap_icon "ok" %} Submit
                 </button>
+                {% if not annotation %}
                 <a href="{% url 'annotations:choose' f1.document.corpus.pk f1.language.iso f2.language.iso %}" role="button" class="btn btn-warning pull-right">
                     {% bootstrap_icon "arrow-right" %} Go to another fragment
                 </a>
+                {% endif %}
             </form>
         </div>
     </div>
