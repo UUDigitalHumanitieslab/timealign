@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import re
+
 from django.db.models import Count
 
 from .models import Corpus, Tense, Alignment, Annotation, Word
@@ -94,3 +96,23 @@ def update_dialogue(in_dialogue, fragment=None, sentence=None, word_range=None):
 
     for fragment in fragments:
         fragment.save()
+
+
+XML_ID_REGEX = re.compile(r'w?(\d[\.\d]*)')
+
+
+def is_before(xml_id1, xml_id2):
+    result = False
+
+    match1 = re.match(XML_ID_REGEX, xml_id1)
+    match2 = re.match(XML_ID_REGEX, xml_id2)
+    if match1 and match2:
+        parts1 = [int(i) for i in match1.group(1).split('.')]
+        parts2 = [int(i) for i in match2.group(1).split('.')]
+
+        for p1, p2 in zip(parts1, parts2):
+            if p1 < p2:
+                result = True
+                break
+
+    return result

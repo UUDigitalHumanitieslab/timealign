@@ -84,8 +84,9 @@ class AnnotationMixin(SuccessMessageMixin, PermissionRequiredMixin):
     permission_required = 'annotations.change_annotation'
 
     def get_form_kwargs(self):
-        """Sets the Alignment as a form kwarg"""
+        """Sets the User and the Alignment as a form kwarg"""
         kwargs = super(AnnotationMixin, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
         kwargs['alignment'] = self.get_alignment()
         return kwargs
 

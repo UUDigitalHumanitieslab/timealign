@@ -42,11 +42,11 @@ INSTALLED_APPS = [
     'django_filters',
     'django_object_actions',
 
-    'core',
-    'news',
-    'selections',
-    'annotations',
-    'stats',
+    'core.apps.CoreConfig',
+    'news.apps.NewsConfig',
+    'selections.apps.SelectionsConfig',
+    'annotations.apps.AnnotationsConfig',
+    'stats.apps.StatsConfig',
 
     'django.contrib.admin',
 
