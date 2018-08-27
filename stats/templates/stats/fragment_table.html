@@ -3,8 +3,19 @@
 <script src="https://unpkg.com/floatthead"></script>
 <script>
     $(document).ready(function () {
-        $('[data-toggle="tooltip"]').tooltip({ html: true });
-        $(() => $('table').floatThead());
+        $('[data-toggle="tooltip"]').tooltip({
+            html: true,
+            placement: "bottom"
+        });
+        $('[data-toggle="popover"]').popover({
+            html: true,
+            placement: "bottom",
+            trigger: "hover",
+            container: "body",
+        });
+        $(() => $('table').floatThead({
+            zIndex: 0
+        }));
     });</script> {% endblock %} {% block content %}
 <h2>Fragment overview (scenario
     <em>
@@ -13,25 +24,32 @@
 </h2>
 
 <h4 style="display:inline-block">
-    {{out|length}} fragment{{out|pluralize:"s" }} with tenses:
+    {{out|length}} fragment{{out|pluralize:"s" }} with labels:
 </h4>
 {% for tense in tenses %} {{tense|safe|lower}}{%if not forloop.last%},{%endif%} {% endfor %}
 
-<table class="table table-hover">
-    <thead class="thead-inverse">
+<table class="table table-striped">
+    <thead>
         <tr>
-            <th>document</th>
-            <th>xml id</th>
-            <th style="text-align:center">target words</th>
+            <th>Document</th>
+            <th>XML ID</th>
+            <th>Target words</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
         {% for f in out %}
-        <tr style="cursor:pointer" onclick="document.location='/timealign/show/{{f.fragment_id}}'">
+        <tr>
+            <!-- <tr style="cursor:pointer" onclick="document.location='/timealign/show/{{f.fragment_id}}'"> -->
             <td>{{f.doc_title}}</td>
             <td>{{f.xml_ids}}</td>
-            <td style="text-align:center" data-toggle="tooltip" title="{{f.full}}">
+            <td data-toggle="popover" data-content="{{f.full}}" title="Fragment">
                 {{f.target_words|safe}}
+            </td>
+            <td>
+                <a href="/timealign/show/{{f.fragment_id}}" style="position:fixed" role="button" class="btn btn-primary btn-xs" title="View fragment">
+                    <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                </a>
             </td>
         </tr>
         {% endfor %}

@@ -25,10 +25,10 @@
 <div id="chart">
     <!-- <svg style="height: 490px; width: 100%"></svg> -->
 </div>
-<div class="slidecontainer">
+<!-- <div class="slidecontainer">
     <input type="range" min="0" max=".02" value=".01" step=".001" class="slider" id="distance-slider">
     <span id="distance-value"></span>
-</div>
+</div> -->
 <h2>Filters</h2>
 
 <div class="alert alert-info alert-dismissable" role="alert">
@@ -71,10 +71,6 @@
         {% bootstrap_icon "ok" %} Go!
     </button </div>
 
-    <!-- <button id="bruh-btn" class="btn btn-primary">
-        Toggle Brush
-    </button </div> -->
-
     <!-- Form for posting data to server -->
     <form name="fragmentform" action="." method="post">
         {% csrf_token %}
@@ -90,25 +86,19 @@
     </div>
 
 
-
     <script>
-        var slider = document.getElementById("distance-slider");
-        var output = document.getElementById("distance-value");
-        output.innerHTML = slider.value;
-
-        slider.oninput = function () {
-            output.innerHTML = this.value;
-        }
-        // var flat_data = JSON.parse("{{flat_data}}");
         var flat_data = {{ flat_data | safe}}
         var containerWidth = d3.select(".container").node().getBoundingClientRect().width,
             margin = { top: 20, right: 20, bottom: 30, left: 40 },
             width = containerWidth - margin.left - margin.right,
             height = 490 - margin.top - margin.bottom;
 
+        calculate_domain(flat_data)
         // setup x 
         var xValue = function (d) { return d.x; }, // data -> value
-            xScale = d3.scale.linear().range([0, width]), // value -> display
+            xScale = d3.scale.linear()
+                .domain(calculate_domain(flat_data))
+                .range([0, width]), // value -> display
             xMap = function (d) { return xScale(xValue(d)); }, // data -> display
             xAxis = d3.svg.axis()
                 .scale(xScale)
@@ -117,7 +107,9 @@
 
         // setup y
         var yValue = function (d) { return d.y; }, // data -> value
-            yScale = d3.scale.linear().range([height, 0]), // value -> display
+            yScale = d3.scale.linear()
+                .domain(calculate_domain(flat_data))
+                .range([height, 0]), // value -> display
             yMap = function (d) { return yScale(yValue(d)); }, // data -> display
             yAxis = d3.svg.axis()
                 .scale(yScale)
@@ -139,35 +131,16 @@
             .attr("class", "tooltip")
             .style("opacity", 0);
 
-        // fore domain
-        xScale.domain([-.6, .6]);
-        yScale.domain([-.6, .6]);
-
         // x-axis
         svg.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + height + ")")
-            .call(xAxis)
-        // .append("text")
-        // .attr("class", "label")
-        // .attr("x", width)
-        // .attr("y", -6)
-        // .style("text-anchor", "end")
-        // .text("Calories");
+            .call(xAxis);
 
         // y-axis
         svg.append("g")
             .attr("class", "y axis")
-            .call(yAxis)
-        // .append("text")
-        // .attr("class", "label")
-        // .attr("transform", "rotate(-90)")
-        // .attr("y", 6)
-        // .attr("dy", ".71em")
-        // .style("text-anchor", "end")
-        // .text("Protein (g)");
-        // var data = {{ flat_data| safe}}
-        // console.log(flat_data);
+            .call(yAxis);
 
         //Draw a grid
         var yAxisGrid = yAxis.ticks(xScale.ticks().length)
@@ -180,6 +153,7 @@
             .tickFormat("")
             .orient("top");
 
+
         svg.append("g")
             .classed('y', true)
             .classed('grid', true)
@@ -189,11 +163,6 @@
             .classed('x', true)
             .classed('grid', true)
             .call(xAxisGrid);
-        // var data = [
-        //     { 'key': 'Prae', 'x': .1, 'y': .1 },
-        //     { 'key': 'Prae2', 'x': .2, 'y': .2 },
-        //     { 'key': 'Prae3', 'x': .3, 'y': .3 }
-        // ]
 
         svg.selectAll(".dot")
             .data(flat_data)
@@ -233,8 +202,26 @@
             })
             .on("click", function (d) {
                 $('.loading-overlay').show();
-                select_neighbours(d, slider.value);
+                select_neighbours(d);
             })
+
+        function calculate_domain(dataset) {
+            min = Math.min(
+                d3.min(dataset, function (d) { return d.x }),
+                d3.min(dataset, function (d) { return d.y }))
+            max = Math.max(
+                d3.max(dataset, function (d) { return d.x }),
+                d3.max(dataset, function (d) { return d.y }))
+
+            limit = round_up(Math.max(Math.abs(min), Math.abs(max)), 1)
+
+            return [limit * -1, limit]
+        }
+
+        function round_up(num, precision) {
+            precision = Math.pow(10, precision)
+            return Math.ceil(num * precision) / precision
+        }
 
         function select_neighbours(origin, distance = .1) {
             var brushedNodes = [];
@@ -273,6 +260,7 @@
             }
 
             if (brushedNodes.length > 0) {
+                $('input[name="tenses"]').val(JSON.stringify(point.tenses));
                 $('input[name="fragment_ids"]').val(JSON.stringify(brushedNodes));
                 $('form[name="fragmentform"]').submit();
             }
