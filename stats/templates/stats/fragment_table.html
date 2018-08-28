@@ -54,7 +54,8 @@
                 {{f.target_words|safe}}
             </td>
             <td>
-                <a href="/timealign/show/{{f.fragment_id}}" style="position:fixed" role="button" class="btn btn-primary btn-xs" title="View fragment">
+                <a href="{% url 'annotations:show' f.fragment_id %}" style="position:fixed" role="button" class="btn btn-primary btn-xs"
+                    title="View fragment">
                     <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
                 </a>
             </td>

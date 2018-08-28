@@ -164,6 +164,27 @@
             .classed('grid', true)
             .call(xAxisGrid);
 
+        //always show top grid line
+        svg.append("line")
+            .style("stroke", "lightgrey")
+            .style("stroke-opacity", .7)
+            .style("stroke-width", 1)
+            .attr("x1", 0)
+            .attr("y1", 0)
+            .attr("x2", width)
+            .attr("y2", 0);
+
+        //always show right grid line
+        svg.append("line")
+            .style("stroke", "lightgrey")
+            .style("stroke-opacity", .7)
+            .style("stroke-width", 1)
+            .attr("x1", width)
+            .attr("y1", 0)
+            .attr("x2", width)
+            .attr("y2", height);
+
+        //add data points
         svg.selectAll(".dot")
             .data(flat_data)
             .enter()
@@ -235,7 +256,6 @@
                             brushedNodes.push(f.fragment_id)
                             circle.className.baseVal = 'selected'
                             circle.className.animVal = 'selected'
-                            // console.log(d3.selectAll('.selected'))
                             d3.selectAll('.selected').style('fill', 'yellow').attr('r', 5)
                         }
                     }
