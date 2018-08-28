@@ -16,12 +16,20 @@
         $(() => $('table').floatThead({
             zIndex: 0
         }));
-    });</script> {% endblock %} {% block content %}
-<h2>Fragment overview (scenario
-    <em>
-        <a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a>
-    </em>)
-</h2>
+    });
+    var back_url = "{% url 'stats:mds' scenario.pk %}"
+</script> {% endblock %} {% block content %}
+<div>
+    <h2 style="display:inline">Fragment overview (scenario
+        <em>
+            <a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a>
+        </em>)
+
+    </h2>
+    <span style="float:right;">
+        <button class="btn btn-primary" onclick="location.href=back_url">Back to MDS visualisation</button>
+    </span>
+</div>
 
 <h4 style="display:inline-block">
     {{out|length}} fragment{{out|pluralize:"s" }} with labels:
@@ -40,7 +48,6 @@
     <tbody>
         {% for f in out %}
         <tr>
-            <!-- <tr style="cursor:pointer" onclick="document.location='/timealign/show/{{f.fragment_id}}'"> -->
             <td>{{f.doc_title}}</td>
             <td>{{f.xml_ids}}</td>
             <td data-toggle="popover" data-content="{{f.full}}" title="Fragment">
