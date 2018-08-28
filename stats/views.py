@@ -193,7 +193,11 @@ class MDSView(ScenarioDetail):
 
         # flat data representation for d3
         flat_data = []
-        for series in json.loads(context['matrix']):
+        series_list = []
+        for series in matrix:
+            series_list.append(
+                {'key': series['key'], 'color': series['color']}
+            )
             for fragment in series['values']:
                 s = {'key': series['key'],
                      'color': series['color']}
@@ -204,6 +208,7 @@ class MDSView(ScenarioDetail):
                     ))
                 )
         context['flat_data'] = json.dumps(flat_data)
+        context['series_list'] = json.dumps(series_list)
 
         return context
 
