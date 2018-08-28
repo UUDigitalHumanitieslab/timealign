@@ -303,7 +303,7 @@ class FragmentTableView(MDSView, ScenarioDetail):
                     'doc_title': f.document.title,
                     'xml_ids': f.xml_ids(),
                     'target_words': f.target_words(),
-                    'full': f.full(),
+                    'full': f.full(HTML),
                 }
             )
 
