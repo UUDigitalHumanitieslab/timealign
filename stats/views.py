@@ -277,7 +277,7 @@ class FragmentTableView(MDSView, ScenarioDetail):
                     'doc_title': f.document.title,
                     'xml_ids': f.xml_ids(),
                     'target_words': f.target_words(),
-                    'full': f.full(marked=True),
+                    'full': f.full(HTML),
                 }
             )
 
