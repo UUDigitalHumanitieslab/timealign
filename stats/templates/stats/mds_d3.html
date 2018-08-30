@@ -5,8 +5,6 @@
     crossorigin="anonymous"></script>
 <link href="{%static 'style.css' %}" rel="stylesheet" type="text/css" /> {% endblock %} {% block content %}
 
-<div class="legend"></div>
-
 <h2>MDS visualization (scenario
     <em>
         <a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a>
@@ -23,8 +21,8 @@
     <a href="{% url 'project' %}" class="alert-link">project summary</a> for more details.
 </div>
 
-<div id="chart">
-</div>
+<div id="chartLegend"></div>
+<div id="chart"></div>
 
 <h2>Filters</h2>
 
@@ -71,7 +69,6 @@
     <!-- Form for posting data to server -->
     <form name="fragmentform" action="." method="post">
         {% csrf_token %}
-        <!-- <input type="text" name="csrfmiddlewaretoken"> -->
         <input type="hidden" name="fragment_ids">
         <input type="hidden" name="tenses">
     </form>
@@ -91,7 +88,9 @@
             width = containerWidth - margin.left - margin.right,
             height = 490 - margin.top - margin.bottom;
 
+        // calculate axis boundaries
         calculate_domain(flat_data)
+
         // setup x 
         var xValue = function (d) { return d.x; }, // data -> value
             xScale = d3.scale.linear()
@@ -151,7 +150,6 @@
             .tickFormat("")
             .orient("top");
 
-
         svg.append("g")
             .classed('y', true)
             .classed('grid', true)
@@ -164,9 +162,7 @@
 
         //always show top grid line
         svg.append("line")
-            .style("stroke", "lightgrey")
-            .style("stroke-opacity", .7)
-            .style("stroke-width", 1)
+            .classed('grid', true)
             .attr("x1", 0)
             .attr("y1", 0)
             .attr("x2", width)
@@ -174,53 +170,61 @@
 
         //always show right grid line
         svg.append("line")
-            .style("stroke", "lightgrey")
-            .style("stroke-opacity", .7)
-            .style("stroke-width", 1)
+            .classed('grid', true)
             .attr("x1", width)
             .attr("y1", 0)
             .attr("x2", width)
             .attr("y2", height);
 
-        //add legend
-        var legend = svg.selectAll(".legend")
+        d3.select("#chartLegend")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", 0 + margin.top + margin.bottom)
+            .style("float", "right")
+            .classed("noselect", true)
+
+        //add legend entries
+        var legend = d3.select("#chartLegend").selectAll(".legend")
             .data(series_list)
-            .enter().append("g")
-            .attr("class", "legend")
-            .attr("transform", function (d, i) { return "translate(0," + i * 20 + ")"; });
+            .enter()
+            .append("div")
+            .classed("legendEntry", true)
+            .classed("active", true)
+            .on({
+                "click": function (d) {
+                    var active = d3.select(this).classed("active")
+                    newOpacity = active ? 0 : 1;
+                    if (active) {
+                        d3.select(this)
+                            .style("opacity", .5)
+                            .classed("active", false)
+                    }
+                    else {
+                        d3.select(this)
+                            .style("opacity", 1)
+                            .classed("active", true)
+                    }
+                    d3.selectAll(".dot")
+                        .filter(function (e) { return d.key === e.key })
+                        .style("opacity", newOpacity)
+                },
+                "mouseover": function (d) {
+                    d3.select(this).style("cursor", "pointer");
+                },
+                "mouseout": function (d) {
+                    d3.select(this).style("cursor", "default");
+                }
+            }
+            );
 
         // draw legend colored rectangles
-        legend.append("rect")
-            .attr("x", width - 18)
-            .attr("width", 18)
-            .attr("height", 18)
-            .style("fill", function (d) { return d.color });
+        legend.append("span")
+            .attr("class", "legendDot")
+            .style("background-color", function (d) { return d.color; })
 
         // draw legend text
-        legend.append("text")
-            .attr("x", width - 24)
-            .attr("y", 9)
-            .attr("dy", ".35em")
-            .style("text-anchor", "end")
+        legend.append("span")
+            .style("display", "inline-block")
             .text(function (d) { return d.key; })
-            .on("click", function (d) {
-                var active = d3.select(this).classed("active")
-                newOpacity = active ? 0 : 1;
-                if (active) {
-                    d3.selectAll(".c" + d.key)
-                        .style("opacity", newOpacity)
-                    d3.select(this)
-                        .style("fill-opacity", .5)
-                        .classed("active", false)
-                }
-                else {
-                    d3.selectAll(".c" + d.key)
-                        .style("opacity", newOpacity)
-                    d3.select(this)
-                        .style("fill-opacity", 1)
-                        .classed("active", true)
-                }
-            })
 
         //add data points
         svg.selectAll(".dot")
@@ -228,7 +232,6 @@
             .enter()
             .append("circle")
             .attr("class", "dot")
-            .attr("class", function (d) { return "c" + d.key })
             .attr("r", 3.5)
             .attr("cx", xMap)
             .attr("cy", yMap)
@@ -251,11 +254,6 @@
                     .style("left", (d3.event.pageX + 10) + "px")
                     .style("top", (d3.event.pageY - 28) + "px");
             })
-            // .on("mouseout", function (d) {
-            //     tooltip.transition()
-            //         .duration(50)
-            //         .style("opacity", 0);
-            // })
             .on("mouseout", function (d) {
                 d3.select(this).style("fill-opacity", 1);
                 tooltip.style("opacity", 0);
