@@ -19,22 +19,25 @@
     });
     var back_url = "{% url 'stats:mds' scenario.pk %}"
 </script> {% endblock %} {% block content %}
+
 <div>
     <h2 style="display:inline">Fragment overview (scenario
         <em>
             <a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a>
         </em>)
-
     </h2>
-    <span style="float:right;">
-        <button class="btn btn-primary" onclick="location.href=back_url">Back to MDS visualisation</button>
-    </span>
+    <button class="btn btn-primary" style="float:right; margin-bottom:10px;" onclick="location.href=back_url">
+        <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+        Back to MDS visualisation
+    </button>
 </div>
 
 <h4 style="display:inline-block">
     {{out|length}} fragment{{out|pluralize:"s" }} with labels:
 </h4>
 {% for tense in tenses %} {{tense|safe|lower}}{%if not forloop.last%},{%endif%} {% endfor %}
+
+
 
 <table class="table table-striped">
     <thead>
@@ -50,12 +53,10 @@
         <tr>
             <td>{{f.doc_title}}</td>
             <td>{{f.xml_ids}}</td>
-            <td data-toggle="popover" data-content="{{f.full}}" title="Fragment">
-                {{f.target_words|safe}}
+            <td data-toggle="popover" data-content="{{f.full}}" title="Fragment"> {{f.target_words|safe}}
             </td>
             <td>
-                <a href="{% url 'annotations:show' f.fragment_id %}" style="position:fixed" role="button" class="btn btn-primary btn-xs"
-                    title="View fragment">
+                <a href="{% url 'annotations:show' f.fragment_id %}" role="button" class="btn btn-primary btn-xs" title="View fragment">
                     <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
                 </a>
             </td>
