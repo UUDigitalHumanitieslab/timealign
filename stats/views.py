@@ -123,7 +123,7 @@ class ScenarioDetail(LoginRequiredMixin, generic.DetailView):
 class MDSView(ScenarioDetail):
     """Loads the matrix plot view"""
     model = Scenario
-    template_name = 'stats/mds_d3.html'
+    template_name = 'stats/mds.html'
 
     def get_context_data(self, **kwargs):
         context = super(MDSView, self).get_context_data(**kwargs)
