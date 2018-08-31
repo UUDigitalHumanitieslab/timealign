@@ -63,7 +63,8 @@ class Corpus(models.Model):
     def get_annotators(self):
         result = 'none'
         if self.annotators.exists():
-            result = ', '.join([user.username for user in self.annotators.all()])
+            result = ', '.join(
+                [user.username for user in self.annotators.all()])
         return result
 
     get_annotators.short_description = 'Annotators'
@@ -73,7 +74,10 @@ class Document(models.Model):
     title = models.CharField(max_length=200)
     description = models.CharField(max_length=200, blank=True)
 
-    corpus = models.ForeignKey(Corpus, related_name='documents', on_delete=models.CASCADE)
+    upload = models.FileField(upload_to='uploads/', blank=True)
+
+    corpus = models.ForeignKey(
+        Corpus, related_name='documents', on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ('corpus', 'title', )
@@ -110,8 +114,10 @@ class Fragment(models.Model):
 
     tense = models.ForeignKey(Tense, null=True, on_delete=models.SET_NULL)
     other_label = models.CharField(max_length=200, blank=True)
-    formal_structure = models.PositiveIntegerField('Formal structure', choices=FORMAL_STRUCTURES, default=FS_NONE)
-    sentence_function = models.PositiveIntegerField('Sentence function', choices=SENTENCE_FUNCTIONS, default=SF_NONE)
+    formal_structure = models.PositiveIntegerField(
+        'Formal structure', choices=FORMAL_STRUCTURES, default=FS_NONE)
+    sentence_function = models.PositiveIntegerField(
+        'Sentence function', choices=SENTENCE_FUNCTIONS, default=SF_NONE)
 
     def to_html(self):
         result = '<ul>'
@@ -127,7 +133,8 @@ class Fragment(models.Model):
         """
         result = []
         for sentence in self.sentence_set.all():
-            result.extend([word.word for word in sentence.word_set.filter(is_target=True)])
+            result.extend(
+                [word.word for word in sentence.word_set.filter(is_target=True)])
         return ' '.join(result)
 
     def get_alignments(self, as_original=False, as_translation=False):
@@ -144,19 +151,23 @@ class Fragment(models.Model):
         :return: A list of Annotations per language, with None if there's no Annotation or Alignment for this Fragment.
         """
         result = []
-        other_languages = self.document.corpus.languages.exclude(pk=self.language.pk)
+        other_languages = self.document.corpus.languages.exclude(
+            pk=self.language.pk)
         for language in other_languages:
             # Note that there should be only one Alignment per language, so we can use .first() here.
-            alignment = self.original.filter(translated_fragment__language=language).first()
+            alignment = self.original.filter(
+                translated_fragment__language=language).first()
             if alignment:
                 # TODO: We currently consider only one Annotation per Alignment, YMMV.
                 annotation = alignment.annotation_set.first()
                 if annotation:
                     result.append((language, annotation))
                 else:
-                    result.append((language, None))  # This happens if there's no Annotation yet
+                    # This happens if there's no Annotation yet
+                    result.append((language, None))
             else:
-                result.append((language, None))  # This happens if there's no Alignment for this Fragment in the given language
+                # This happens if there's no Alignment for this Fragment in the given language
+                result.append((language, None))
         return result
 
     def full(self, format_=False, annotation=None):
@@ -231,7 +242,8 @@ class Sentence(models.Model):
 
         words = []
         for word in self.word_set.all():
-            is_target = word.is_target or (annotation and word in annotation.words.all())
+            is_target = word.is_target or (
+                annotation and word in annotation.words.all())
 
             if is_target and format_:
                 if format_ in [CSV, XLSX]:
@@ -258,7 +270,8 @@ class Word(models.Model):
     is_target = models.BooleanField(default=False)
 
     is_in_dialogue = models.BooleanField(default=False)
-    is_in_dialogue_prob = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
+    is_in_dialogue_prob = models.DecimalField(
+        max_digits=3, decimal_places=2, default=0.00)
 
     sentence = models.ForeignKey(Sentence, on_delete=models.CASCADE)
 
@@ -284,8 +297,10 @@ class Word(models.Model):
 class Alignment(models.Model):
     type = models.CharField(max_length=10)
 
-    original_fragment = models.ForeignKey(Fragment, null=True, related_name='original', on_delete=models.CASCADE)
-    translated_fragment = models.ForeignKey(Fragment, null=True, related_name='translated', on_delete=models.CASCADE)
+    original_fragment = models.ForeignKey(
+        Fragment, null=True, related_name='original', on_delete=models.CASCADE)
+    translated_fragment = models.ForeignKey(
+        Fragment, null=True, related_name='translated', on_delete=models.CASCADE)
 
 
 class Annotation(models.Model):
@@ -309,10 +324,12 @@ class Annotation(models.Model):
     comments = models.TextField(blank=True)
     alignment = models.ForeignKey(Alignment, on_delete=models.CASCADE)
 
-    annotated_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='annotated_by', on_delete=models.SET_NULL)
+    annotated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, related_name='annotated_by', on_delete=models.SET_NULL)
     annotated_at = models.DateTimeField(auto_now_add=True)
 
-    last_modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='last_modified_by', on_delete=models.SET_NULL)
+    last_modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, related_name='last_modified_by', on_delete=models.SET_NULL)
     last_modified_at = models.DateTimeField(auto_now=True)
 
     tense = models.ForeignKey(Tense, null=True, on_delete=models.SET_NULL)
@@ -327,7 +344,8 @@ class Annotation(models.Model):
         Order is based on the xml_id, e.g. w18.1.10 should be after w18.1.9.
         :return: A space-separated string with the selected words.
         """
-        ordered_words = sorted(self.words.all(), key=lambda w: map(int, w.xml_id[1:].split('.')))
+        ordered_words = sorted(self.words.all(), key=lambda w: map(
+            int, w.xml_id[1:].split('.')))
         return ' '.join([word.word for word in ordered_words])
 
     def label(self):
