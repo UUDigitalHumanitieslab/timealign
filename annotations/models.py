@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 
 from core.utils import check_format, CSV, HTML, XLSX
+from lxml import etree
 
 
 class Language(models.Model):
@@ -81,6 +82,10 @@ class Document(models.Model):
 
     class Meta:
         unique_together = ('corpus', 'title', )
+
+    def build_etree(self):
+        tree = etree.parse(self.upload.path)
+        return etree.tostring(tree.getroot(), pretty_print=True)
 
     def __unicode__(self):
         return self.title

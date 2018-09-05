@@ -21,12 +21,13 @@ class TenseAdmin(admin.ModelAdmin):
 
 @admin.register(Corpus)
 class CorpusAdmin(admin.ModelAdmin):
-    list_display = ('title', 'get_languages', 'get_annotators', 'tense_based', 'check_structure', )
+    list_display = ('title', 'get_languages', 'get_annotators',
+                    'tense_based', 'check_structure', )
 
 
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description', )
+    list_display = ('id', 'title', 'description', )
     list_filter = ('corpus', )
 
 
@@ -49,5 +50,6 @@ class AlignmentAdmin(admin.ModelAdmin):
 
 @admin.register(Annotation)
 class AnnotationAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'selected_words', 'label',  'annotated_by', 'annotated_at', )
+    list_display = ('pk', 'selected_words', 'label',
+                    'annotated_by', 'annotated_at', )
     list_filter = ('is_no_target', 'is_translation', 'annotated_by', )

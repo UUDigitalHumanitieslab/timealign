@@ -32,6 +32,7 @@ class IntroductionView(generic.TemplateView):
 
 class InstructionsView(generic.TemplateView):
     """Loads the various steps of the instructions"""
+
     def get_template_names(self):
         return 'annotations/instructions{}.html'.format(self.kwargs['n'])
 
@@ -162,12 +163,14 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
         """Redirects to a random Alignment"""
         l1 = Language.objects.get(iso=self.kwargs['l1'])
         l2 = Language.objects.get(iso=self.kwargs['l2'])
-        corpus = int(self.kwargs['corpus']) if 'corpus' in self.kwargs else None
+        corpus = int(self.kwargs['corpus']
+                     ) if 'corpus' in self.kwargs else None
         new_alignment = get_random_alignment(self.request.user, l1, l2, corpus)
 
         # If no new alignment has been found, redirect to the status overview
         if not new_alignment:
-            messages.success(self.request, 'All work is done for this language pair!')
+            messages.success(
+                self.request, 'All work is done for this language pair!')
             return reverse('annotations:status')
 
         corpus_pk = new_alignment.original_fragment.document.corpus.pk
@@ -261,7 +264,8 @@ class TenseCategoryList(PermissionRequiredMixin, generic.ListView):
             languages.append(language)
 
             for tc in TenseCategory.objects.all():
-                ts = Tense.objects.filter(category=tc, language=language).values_list('title', flat=True)
+                ts = Tense.objects.filter(
+                    category=tc, language=language).values_list('title', flat=True)
                 tenses[tc.title].append(', '.join(ts))
 
         context['tenses'] = sorted(tenses.items())
@@ -300,7 +304,8 @@ class ExportPOSDownload(PermissionRequiredMixin, generic.View):
         with NamedTemporaryFile() as file_:
             corpus = Corpus.objects.get(id=int(corpus_id))
             if document_id == 'all':
-                export_pos_file(file_.name, XLSX, corpus, language, include_non_targets=include_non_targets)
+                export_pos_file(file_.name, XLSX, corpus, language,
+                                include_non_targets=include_non_targets)
                 title = 'all'
             else:
                 document = Document.objects.get(id=int(document_id))
@@ -333,9 +338,15 @@ class ImportLabelsView(LoginRequiredMixin, SuperuserRequiredMixin, generic.View)
         if form.is_valid():
             try:
                 form.save()
-                messages.success(self.request, u'Successfully imported the labels!')
+                messages.success(
+                    self.request, u'Successfully imported the labels!')
             except ValueError as e:
-                messages.error(self.request, u'Error during import: {}'.format(e.message))
+                messages.error(
+                    self.request, u'Error during import: {}'.format(e.message))
             return redirect(reverse('annotations:import-labels'))
         else:
             return render(request, self.template_name, {'form': form})
+
+
+class DocumentDetail(generic.DetailView):
+    model = Document

@@ -1,4 +1,4 @@
-<ul class="list-group" dir="auto">
+<ul class="list-group" dir="auto" style="margin-bottom: 0px">
     {% for sentence in sentences %}
     <li class="list-group-item" data-pk="{{ sentence.pk }}" data-xml-id="{{ sentence.xml_id }}">
         {% for word in sentence.word_set.all %}

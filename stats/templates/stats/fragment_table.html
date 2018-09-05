@@ -1,7 +1,11 @@
 {% extends "base/base.html" %} {% load bootstrap3 %} {% load static %} {% block head %}
 <link href="{%static 'style.css' %}" rel="stylesheet" type="text/css" />
 <script src="https://unpkg.com/floatthead"></script>
+<script src="https://cdn.datatables.net/1.10.18/css/dataTables.bootstrap.min.css"></script>
+<script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap.min.js"></script>
 <script>
+
     $(document).ready(function () {
         $('[data-toggle="tooltip"]').tooltip({
             html: true,
@@ -53,7 +57,10 @@
         <tr>
             <td>{{f.doc_title}}</td>
             <td>{{f.xml_ids}}</td>
-            <td data-toggle="popover" data-content="{{f.full}}" title="Fragment"> {{f.target_words|safe}}
+            <td> 
+                <span data-toggle="popover" data-content="{{f.full}}" title="Fragment">
+                    {{f.target_words|safe}}
+                </span>
             </td>
             <td>
                 <a href="{% url 'annotations:show' f.fragment_id %}" role="button" class="btn btn-primary btn-xs" title="View fragment">
