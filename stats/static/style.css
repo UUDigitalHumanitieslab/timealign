@@ -34,7 +34,11 @@
 th {
     background-color: white;
     color: black;
-} 
+}
+
+td {
+    cursor: default;    
+}
 
 /* Graph */
 #chart > .tooltip {

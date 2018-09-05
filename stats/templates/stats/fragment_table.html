@@ -61,7 +61,10 @@
         <tr>
             <td>{{f.doc_title}}</td>
             <td>{{f.xml_ids}}</td>
-            <td data-toggle="popover" data-content="{{f.full}}" title="Fragment"> {{f.target_words|safe}}
+            <td > 
+                <span data-toggle="popover" data-content="{{f.full}}" title="Fragment">
+                    {{f.target_words|safe}}
+                </span>
             </td>
             <td>
                 <a href="{% url 'annotations:show' f.fragment_id %}" role="button" class="btn btn-primary btn-xs" title="View fragment">
