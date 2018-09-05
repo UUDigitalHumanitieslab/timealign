@@ -1,8 +1,16 @@
 {% extends "base/base.html" %} {% load bootstrap3 %} {% load static %} {% block head %}
 <link href="{%static 'style.css' %}" rel="stylesheet" type="text/css" />
 <script src="https://unpkg.com/floatthead"></script>
+<script src="https://cdn.datatables.net/1.10.18/css/dataTables.bootstrap.min.css"></script>
+<script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap.min.js"></script>
 <script>
     $(document).ready(function () {
+        $('.table').DataTable({
+            searching: false,
+            iDisplayLength: 15,
+            bLengthChange: false,
+            });
         $('[data-toggle="tooltip"]').tooltip({
             html: true,
             placement: "bottom"
