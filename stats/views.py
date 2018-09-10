@@ -1,9 +1,7 @@
-from collections import defaultdict, Counter, OrderedDict
 import json
 import numbers
 import random
-from collections import Counter, defaultdict
-from pprint import pprint
+from collections import Counter, OrderedDict, defaultdict
 from itertools import chain
 
 from braces.views import LoginRequiredMixin
@@ -16,12 +14,10 @@ from django.views import generic
 
 from annotations.models import Fragment, Language, Tense
 from annotations.utils import get_available_corpora
+from core.utils import HTML
 
 from .models import Scenario
 from .utils import get_tense_properties
-from annotations.models import Language, Tense, Fragment
-from annotations.utils import get_available_corpora
-from core.utils import HTML
 
 
 class ScenarioList(LoginRequiredMixin, generic.ListView):
