@@ -36,6 +36,10 @@ th {
     color: black;
 }
 
+td {
+    cursor: defxault;    
+}
+
 /* Graph */
 #chart > .tooltip {
     border-radius: 4px;
