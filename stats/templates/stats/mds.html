@@ -183,7 +183,30 @@
             .attr("width", width + margin.left + margin.right)
             .attr("height", 0 + margin.top + margin.bottom)
             .style("float", "right")
-            .classed("noselect", true)
+            .classed("noselect", true);
+
+        function set_dots(key, opacity, negative_match=false) {
+            if (negative_match) {
+                d3.selectAll(".dot")
+                        .filter(function(e) { return key !== e.key})
+                        .style("opacity", opacity);
+            }
+            else {
+                d3.selectAll(".dot")
+                        .filter(function(e) { return key === e.key})
+                        .style("opacity", opacity); 
+            }
+        }
+        
+        function activate_legend(key) {
+            d3.selectAll(".legend")
+                    .filter(function(e) { key === e.key})
+                    .classed("active");
+            d3.selectAll(".legendCheckbox")
+                    .filter(function(e) { key === e.key})
+                    .attr("class", "legendCheckbox glyphicon glyphicon-check");
+            set_dots(key, 1);
+        }
 
         //add legend entries
         var legend = d3.select("#chartLegend").selectAll(".legend")
@@ -206,32 +229,30 @@
                                     .classed("active", true);
                             d3.selectAll(".legendCheckbox")
                                     .attr("class", "legendCheckbox glyphicon glyphicon-check");
-                            d3.selectAll(".dot")
-                                .style("opacity", 1);
+                            set_dots('all', 1)
                             return;
                         }
                         else {
-                            d3.select(this)
-                                .classed("active", false)
-                            d3.selectAll(".legendCheckbox")
-                                .filter(function (e) { return d.key === e.key; })
-                                .attr("class", "legendCheckbox glyphicon glyphicon-unchecked");
-                            d3.selectAll(".dot")
-                                .filter(function (e) { return d.key === e.key; })
-                                .style("opacity", newOpacity);
+                            activate_legend(d.key);
+                            // d3.select(this)
+                            //     .classed("active", false)
+                            // d3.selectAll(".legendCheckbox")
+                            //     .filter(function (e) { return d.key === e.key; })
+                            //     .attr("class", "legendCheckbox glyphicon glyphicon-unchecked");
+                            // set_dots(d.key, newOpacity);
                         }
                     }
                     else {
+                        // notActive(this, d);
+                        
                         d3.select(this)
                             .classed("active", true);
 
                         d3.selectAll(".legendCheckbox")
                             .filter(function (e) { return d.key === e.key; })
                             .attr("class", "legendCheckbox glyphicon glyphicon-check");
-
-                        d3.selectAll(".dot")
-                            .filter(function (e) { return d.key === e.key; })
-                            .style("opacity", newOpacity);
+                        
+                        set_dots(d.key, newOpacity);
                     }
                     
                 },
@@ -242,9 +263,7 @@
                     d3.selectAll(".legendCheckbox")
                             .filter(function (e) { return d.key === e.key; })
                             .attr("class", "legendCheckbox glyphicon glyphicon-check");
-                            d3.selectAll(".dot")
-                        .filter(function (e) { return d.key === e.key; })
-                        .style("opacity", 1);
+                    set_dots(d.key, 1)
                     
                     d3.selectAll(".legendEntry")
                             .filter(function(e){ return d.key !== e.key; })
@@ -253,9 +272,11 @@
                     d3.selectAll(".legendCheckbox")
                             .filter(function (e) { return d.key !== e.key; })
                             .attr("class", "legendCheckbox glyphicon glyphicon-unchecked");
-                            d3.selectAll(".dot")
-                        .filter(function (e) { return d.key !== e.key; })
-                        .style("opacity", 0);
+
+                    set_dots(d.key, 0, negative_match=true)
+                    // d3.selectAll(".dot")
+                    //     .filter(function (e) { return d.key !== e.key; })
+                    //     .style("opacity", 0);
                 },
                 "mouseover": function (d) {
                     d3.select(this).style("cursor", "pointer");
