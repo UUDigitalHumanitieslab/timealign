@@ -30,7 +30,6 @@
         <span class="label label-primary pull-right">{{ fragment.get_sentence_function_display }}</span>
         {% endif %}
     </h3>
-
     <!-- {{fragment.document.build_etree}} -->
     {% include "annotations/_sentences.html" with sentences=fragment.sentence_set.all tooltips=1 %}
 

@@ -183,10 +183,19 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
 class FragmentDetail(LoginRequiredMixin, generic.DetailView):
     model = Fragment
 
+    def get_context_data(self, **kwargs):
+        context = super(FragmentDetail, self).get_context_data(**kwargs)
+
+        print(self.kwargs)
+        print('hee')
+
+        return context
 
 ############
 # List views
 ############
+
+
 class AnnotationList(PermissionRequiredMixin, FilterView):
     context_object_name = 'annotations'
     filterset_class = AnnotationFilter

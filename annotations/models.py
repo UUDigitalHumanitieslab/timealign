@@ -85,7 +85,16 @@ class Document(models.Model):
 
     def build_etree(self):
         tree = etree.parse(self.upload.path)
-        return etree.tostring(tree.getroot(), pretty_print=True)
+        return tree
+        # return etree.tostring(tree.getroot(), pretty_print=True)
+
+    def build_fragment_list(self):
+        tree = self.build_etree()
+        document_fragments = []
+        for el in tree.iter():
+            if ('id' in el.attrib.keys() and el.tag in ['p', 's']):
+                document_fragments.append({'tag': el.tag, 'id': el.get('id')})
+        return document_fragments
 
     def __unicode__(self):
         return self.title
