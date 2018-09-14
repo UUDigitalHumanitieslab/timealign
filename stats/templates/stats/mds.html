@@ -198,11 +198,28 @@
                     var active = d3.select(this).classed("active");
                     newOpacity = active ? 0 : 1;
                     if (active) {
-                        d3.select(this)
-                            .classed("active", false)
-                        d3.selectAll(".legendCheckbox")
-                            .filter(function (e) { return d.key === e.key; })
-                            .attr("class", "legendCheckbox glyphicon glyphicon-unchecked");
+                        var only_active = d3.selectAll(".legendEntry")
+                                            .filter(".active")
+                                            .size() === 1
+                        if (only_active) {
+                            d3.selectAll(".legendEntry")
+                                    .classed("active", true);
+                            d3.selectAll(".legendCheckbox")
+                                    .attr("class", "legendCheckbox glyphicon glyphicon-check");
+                            d3.selectAll(".dot")
+                                .style("opacity", 1);
+                            return;
+                        }
+                        else {
+                            d3.select(this)
+                                .classed("active", false)
+                            d3.selectAll(".legendCheckbox")
+                                .filter(function (e) { return d.key === e.key; })
+                                .attr("class", "legendCheckbox glyphicon glyphicon-unchecked");
+                            d3.selectAll(".dot")
+                                .filter(function (e) { return d.key === e.key; })
+                                .style("opacity", newOpacity);
+                        }
                     }
                     else {
                         d3.select(this)
@@ -211,10 +228,12 @@
                         d3.selectAll(".legendCheckbox")
                             .filter(function (e) { return d.key === e.key; })
                             .attr("class", "legendCheckbox glyphicon glyphicon-check");
+
+                        d3.selectAll(".dot")
+                            .filter(function (e) { return d.key === e.key; })
+                            .style("opacity", newOpacity);
                     }
-                    d3.selectAll(".dot")
-                        .filter(function (e) { return d.key === e.key; })
-                        .style("opacity", newOpacity);
+                    
                 },
                 // on doubleclick, show only datapoints for this label
                 "dblclick": function (d) {
@@ -226,6 +245,10 @@
                             d3.selectAll(".dot")
                         .filter(function (e) { return d.key === e.key; })
                         .style("opacity", 1);
+                    
+                    d3.selectAll(".legendEntry")
+                            .filter(function(e){ return d.key !== e.key; })
+                            .classed("active", false)
 
                     d3.selectAll(".legendCheckbox")
                             .filter(function (e) { return d.key !== e.key; })
