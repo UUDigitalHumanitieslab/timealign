@@ -1,25 +1,22 @@
-from collections import defaultdict, Counter, OrderedDict
 import json
 import numbers
 import random
-from collections import Counter, defaultdict
+from collections import Counter, OrderedDict, defaultdict
+from itertools import chain
 
 from braces.views import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from django.utils.encoding import iri_to_uri
 from django.views import generic
 
 from annotations.models import Fragment, Language, Tense
 from annotations.utils import get_available_corpora
+from core.utils import HTML
 
 from .models import Scenario
 from .utils import get_tense_properties
-from annotations.models import Language, Tense, Fragment
-from annotations.utils import get_available_corpora
-from core.utils import HTML
 
 
 class ScenarioList(LoginRequiredMixin, generic.ListView):
@@ -160,14 +157,16 @@ class MDSView(ScenarioDetail):
             t = [Tense.objects.get(pk=t).title if isinstance(
                 t, numbers.Number) else t for t in ts]
             # Add all values to the dictionary
-            j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(HTML), 'tenses': t})
+            j[tenses[language][n]].append(
+                {'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(HTML), 'tenses': t})
 
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
         matrix = []
         labels = set()
         for tense, values in j.items():
-            tense_label, tense_color, _ = get_tense_properties(tense, len(labels))
+            tense_label, tense_color, _ = get_tense_properties(
+                tense, len(labels))
             labels.add(tense_label)
 
             d = dict()
@@ -187,11 +186,32 @@ class MDSView(ScenarioDetail):
         context['max_dimensions'] = range(1, len(model[0]) + 1)
         context['stress'] = scenario.mds_stress
 
+        # flat data representation for d3
+        flat_data = []
+        series_list = []
+        for series in matrix:
+            series_list.append(
+                {'key': series['key'], 'color': series['color']}
+            )
+            for fragment in series['values']:
+                s = {'key': series['key'],
+                     'color': series['color']}
+                flat_data.append(
+                    dict(chain(
+                        s.iteritems(),
+                        fragment.iteritems()
+                    ))
+                )
+        context['flat_data'] = json.dumps(flat_data)
+        context['series_list'] = json.dumps(series_list)
+
         return context
 
-    def post(self, request, pk):
+    def post(self, request, pk, *args, **kwargs):
         request.session['fragment_ids'] = json.loads(
             request.POST['fragment_ids'])
+        request.session['tenses'] = json.loads(
+            request.POST['tenses'])
         url = reverse('stats:fragment_table', kwargs={'pk': pk})
         return HttpResponseRedirect(url)
 
@@ -221,7 +241,8 @@ class DescriptiveStatsView(ScenarioDetail):
             n = 0
             labels = set()
             for t in tenses[l.iso]:
-                tense_label, tense_color, tense_category = get_tense_properties(t, len(labels))
+                tense_label, tense_color, tense_category = get_tense_properties(
+                    t, len(labels))
                 labels.add(tense_label)
                 distinct_tensecats.add(tense_category)
 
@@ -246,39 +267,30 @@ class DescriptiveStatsView(ScenarioDetail):
                     tensecat_table[tensecat].append(0)
 
         tensecat_table_ordered = OrderedDict(sorted(tensecat_table.items(),
-                                                    key=lambda item: sum(item[1]) if item[0] else 0,
+                                                    key=lambda item: sum(
+                                                        item[1]) if item[0] else 0,
                                                     reverse=True))
 
         context['counters'] = counters_tenses
-        context['counters_json'] = json.dumps({language.iso: values for language, values in counters_tenses.items()})
+        context['counters_json'] = json.dumps(
+            {language.iso: values for language, values in counters_tenses.items()})
         context['tensecat_table'] = tensecat_table_ordered
         context['tuples'] = Counter(tuples.values()).most_common()
         context['colors_json'] = json.dumps(colors)
         context['languages'] = languages
-        context['languages_json'] = json.dumps({l.iso: l.title for l in languages})
+        context['languages_json'] = json.dumps(
+            {l.iso: l.title for l in languages})
 
         return context
 
 
-class FragmentTableView(MDSView, ScenarioDetail):
+class FragmentTableView(ScenarioDetail):
     model = Scenario
     template_name = 'stats/fragment_table.html'
 
     def get_context_data(self, **kwargs):
         context = super(FragmentTableView, self).get_context_data(**kwargs)
-        fragment_ids = self.request.session['fragment_ids']
 
-        fragments = Fragment.objects.filter(id__in=fragment_ids)
-        context['out'] = []
-        for f in fragments:
-            context['out'].append(
-                {
-                    'fragment_id': f.id,
-                    'doc_title': f.document.title,
-                    'xml_ids': f.xml_ids(),
-                    'target_words': f.target_words(),
-                    'full': f.full(HTML),
-                }
-            )
-
+        context['tenses'] = self.request.session['tenses']
+        context['fragments'] = Fragment.objects.filter(pk__in=self.request.session['fragment_ids'])
         return context
