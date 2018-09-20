@@ -1,4 +1,9 @@
-{% extends "base/base.html" %} {% load bootstrap3 %} {% load static %} {% block head %}
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+{% load static %}
+
+{% block head %}
 <link href="{%static 'style.css' %}" rel="stylesheet" type="text/css" />
 <script src="https://unpkg.com/floatthead"></script>
 <script src="https://cdn.datatables.net/1.10.18/css/dataTables.bootstrap.min.css"></script>
@@ -26,26 +31,40 @@
         }));
     });
     var back_url = "{% url 'stats:mds' scenario.pk %}"
-</script> {% endblock %} {% block content %}
+</script>
+
+<style>
+.popover {
+    max-width: 40em;
+}
+
+.selected {
+    background-color: lightgreen;
+}
+
+.filtered {
+    border: 1px solid black;
+}
+</style>
+{% endblock %}
+
+{% block content %}
 
 <div>
-    <h2 style="display:inline">Fragment overview (scenario
+    <button class="btn btn-primary pull-right" onclick="location.href=back_url">
+        <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+        Back to MDS visualisation
+    </button>
+    <h2>Fragment overview (scenario
         <em>
             <a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a>
         </em>)
     </h2>
-    <button class="btn btn-primary" style="float:right; margin-bottom:10px;" onclick="location.href=back_url">
-        <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
-        Back to MDS visualisation
-    </button>
+    <p>
+        {{fragments|length}} fragment{{fragments|pluralize:"s" }} with labels:
+        {% for tense in tenses %} {{tense|safe|lower}}{%if not forloop.last%},{%endif%} {% endfor %}
+    </p>
 </div>
-
-<h4 style="display:inline-block">
-    {{out|length}} fragment{{out|pluralize:"s" }} with labels:
-</h4>
-{% for tense in tenses %} {{tense|safe|lower}}{%if not forloop.last%},{%endif%} {% endfor %}
-
-
 
 <table class="table table-striped">
     <thead>
@@ -57,17 +76,17 @@
         </tr>
     </thead>
     <tbody>
-        {% for f in out %}
+        {% for f in fragments %}
         <tr>
-            <td>{{f.doc_title}}</td>
-            <td>{{f.xml_ids}}</td>
+            <td>{{ f.document.title }}</td>
+            <td>{{ f.xml_ids }}</td>
             <td > 
-                <span data-toggle="popover" data-content="{{f.full}}" title="Fragment">
-                    {{f.target_words|safe}}
+                <span data-toggle="popover" data-content='{% include "annotations/_sentences.html" with sentences=f.sentence_set.all annotated_words=f.words.all %}' title="Source fragment">
+                    {{ f.target_words|safe }}
                 </span>
             </td>
             <td>
-                <a href="{% url 'annotations:show' f.fragment_id %}" role="button" class="btn btn-primary btn-xs" title="View fragment">
+                <a href="{% url 'annotations:show' f.pk %}" role="button" class="btn btn-primary btn-xs" title="View fragment">
                     <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
                 </a>
             </td>

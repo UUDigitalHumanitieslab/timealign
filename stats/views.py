@@ -284,27 +284,13 @@ class DescriptiveStatsView(ScenarioDetail):
         return context
 
 
-class FragmentTableView(MDSView, ScenarioDetail):
+class FragmentTableView(ScenarioDetail):
     model = Scenario
     template_name = 'stats/fragment_table.html'
 
     def get_context_data(self, **kwargs):
         context = super(FragmentTableView, self).get_context_data(**kwargs)
-        fragment_ids = self.request.session['fragment_ids']
 
         context['tenses'] = self.request.session['tenses']
-
-        fragments = Fragment.objects.filter(id__in=fragment_ids)
-        context['out'] = []
-        for f in fragments:
-            context['out'].append(
-                {
-                    'fragment_id': f.id,
-                    'doc_title': f.document.title,
-                    'xml_ids': f.xml_ids(),
-                    'target_words': f.target_words(),
-                    'full': f.full(HTML),
-                }
-            )
-
+        context['fragments'] = Fragment.objects.filter(pk__in=self.request.session['fragment_ids'])
         return context
