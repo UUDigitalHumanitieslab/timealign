@@ -11,7 +11,7 @@
 <div class="well">
   <form class="form-inline">
     <div class="form-group">
-      <label for="corpus_filter">Filter by Corpus</label>
+      <label for="corpus_filter">Filter by corpus</label>
       <select id="corpus_filter" class="form-control" name="corpus">
         <option value="">Any</option>
         {% for corpus in corpora %}
@@ -40,52 +40,18 @@
     <button class="btn btn-primary">Apply</button>
   </form>
 </div>
+
 <h2>My Scenarios</h2>
 {% for corpus in user_corpus_list %}
 <h3>{{ corpus.grouper }}</h3>
-    <ul>
-        {% for scenario in corpus.list %}
-        <li>
-            {{ scenario.title }}
-            {% if scenario.is_test %}<span class="label label-warning">Test</span>{% endif %}
-            <ul>
-                <li>
-                    <a href="{% url 'stats:mds' scenario.pk %}">Multidimensional scaling</a>
-                </li>
-                <li>
-                    <a href="{% url 'stats:descriptive' scenario.pk %}">Descriptive statistics</a>
-                </li>
-                <li>
-                    <a href="{% url 'stats:show' scenario.pk %}">Details</a>
-                </li>
-            </ul>
-        </li>
-        {% endfor %}
-    </ul>
+{% include "stats/_scenarios.html" %}
 {% endfor %}
 <hr/>
+
 <h2>Scenarios by other users</h2>
 {% for corpus in corpus_list %}
 <h3>{{ corpus.grouper }}</h3>
-    <ul>
-        {% for scenario in corpus.list %}
-        <li>
-            {{ scenario.title }}
-            {% if scenario.is_test %}<span class="label label-warning">Test</span>{% endif %}
-            <ul>
-                <li>
-                    <a href="{% url 'stats:mds' scenario.pk %}">Multidimensional scaling</a>
-                </li>
-                <li>
-                    <a href="{% url 'stats:descriptive' scenario.pk %}">Descriptive statistics</a>
-                </li>
-                <li>
-                    <a href="{% url 'stats:show' scenario.pk %}">Details</a>
-                </li>
-            </ul>
-        </li>
-        {% endfor %}
-    </ul>
+{% include "stats/_scenarios.html" %}
 {% endfor %}
 
 {% endblock %}
