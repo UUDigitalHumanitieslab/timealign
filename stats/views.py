@@ -125,16 +125,15 @@ class MDSView(ScenarioDetail):
 
         # Retrieve kwargs
         scenario = self.object
-        language = self.kwargs.get('language', scenario.languages().order_by(
-            'language__iso').first().language.iso)
+        language = self.kwargs.get('language', scenario.languages().order_by('language__iso').first().language.iso)
         # We choose dimensions to be 1-based
         d1 = int(self.kwargs.get('d1', 1))
         d2 = int(self.kwargs.get('d2', 2))
 
+        # Check whether the languages provided are correct, and included in this Scenario
         language_object = get_object_or_404(Language, iso=language)
         if language_object not in [sl.language for sl in scenario.languages()]:
-            raise Http404('Language {} does not exist in Scenario {}'.format(
-                language_object, scenario.pk))
+            raise Http404('Language {} does not exist in Scenario {}'.format(language_object, scenario.pk))
 
         # Retrieve pickled data
         model = scenario.mds_model
@@ -154,19 +153,16 @@ class MDSView(ScenarioDetail):
             f = fragments[n]
             fragment = Fragment.objects.get(pk=f)
             ts = [tenses[l][n] for l in tenses.keys()]
-            t = [Tense.objects.get(pk=t).title if isinstance(
-                t, numbers.Number) else t for t in ts]
+            t = [Tense.objects.get(pk=t).title if isinstance(t, numbers.Number) else t for t in ts]
             # Add all values to the dictionary
-            j[tenses[language][n]].append(
-                {'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(HTML), 'tenses': t})
+            j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(HTML), 'tenses': t})
 
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
         matrix = []
         labels = set()
         for tense, values in j.items():
-            tense_label, tense_color, _ = get_tense_properties(
-                tense, len(labels))
+            tense_label, tense_color, _ = get_tense_properties(tense, len(labels))
             labels.add(tense_label)
 
             d = dict()
@@ -178,12 +174,10 @@ class MDSView(ScenarioDetail):
         # Add all variables to the context
         context['matrix'] = json.dumps(matrix)
         context['language'] = language
-        context['languages'] = Language.objects.filter(
-            iso__in=tenses.keys()).order_by('iso')
+        context['languages'] = Language.objects.filter(iso__in=tenses.keys()).order_by('iso')
         context['d1'] = d1
         context['d2'] = d2
-        # We choose dimensions to be 1-based
-        context['max_dimensions'] = range(1, len(model[0]) + 1)
+        context['max_dimensions'] = range(1, len(model[0]) + 1)  # We choose dimensions to be 1-based
         context['stress'] = scenario.mds_stress
 
         # flat data representation for d3
@@ -194,8 +188,7 @@ class MDSView(ScenarioDetail):
                 {'key': series['key'], 'color': series['color']}
             )
             for fragment in series['values']:
-                s = {'key': series['key'],
-                     'color': series['color']}
+                s = {'key': series['key'], 'color': series['color']}
                 flat_data.append(
                     dict(chain(
                         s.iteritems(),
@@ -208,12 +201,14 @@ class MDSView(ScenarioDetail):
         return context
 
     def post(self, request, pk, *args, **kwargs):
-        request.session['fragment_ids'] = json.loads(
-            request.POST['fragment_ids'])
-        request.session['tenses'] = json.loads(
-            request.POST['tenses'])
-        url = reverse('stats:fragment_table', kwargs={'pk': pk})
-        return HttpResponseRedirect(url)
+        request.session['fragment_ids'] = json.loads(request.POST['fragment_ids'])
+        request.session['tenses'] = json.loads(request.POST['tenses'])
+        return HttpResponseRedirect(reverse('stats:fragment_table', kwargs={'pk': pk}))
+
+
+class MDSViewOld(MDSView):
+    """Loads the matrix plot view, previous version (for the sake of comparison and nostalgia)"""
+    template_name = 'stats/mds_old.html'
 
 
 class DescriptiveStatsView(ScenarioDetail):
