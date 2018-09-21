@@ -84,11 +84,11 @@ td {
     width: 10px;
     height: 10px;
     display: inline-block;
-    margin-right: 10px;
-    font-size: 18px;
+    margin-right: 3px;
+    font-size: 12px;
 }
 
 .legendText {
     display: inline-block;
-    font-size: 18px;
+    font-size: 12px;
 }
