@@ -20,7 +20,7 @@ urlpatterns = [
     url(r'^mds_old/(?P<pk>\d+)/(?P<language>\w+)/(?P<d1>\d+)/(?P<d2>\d+)/$', MDSViewOld.as_view(), name='mds_old'),
 
     # Fragment Table
-    url(r'^mds/(?P<pk>\d+)/fragment_table/$', FragmentTableView.as_view(), name='fragment_table'),
+    url(r'^mds/fragment_table/(?P<pk>\d+)/$', FragmentTableView.as_view(), name='fragment_table'),
 
     # Descriptive statistics
     url(r'^descriptive/(?P<pk>\d+)/$', DescriptiveStatsView.as_view(), name='descriptive'),
