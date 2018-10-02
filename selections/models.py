@@ -40,6 +40,7 @@ class Selection(models.Model):
     last_modified_at = models.DateTimeField(auto_now=True)
 
     tense = models.CharField('Tense', max_length=200, blank=True)
+    other_label = models.CharField(max_length=200, blank=True)
 
     class Meta:
         unique_together = ('fragment', 'selected_by', 'order')

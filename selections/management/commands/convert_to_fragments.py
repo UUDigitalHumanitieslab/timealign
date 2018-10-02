@@ -65,6 +65,8 @@ class Command(BaseCommand):
 
                     if selection.tense:
                         f.tense = Tense.objects.get(language=f.language, title=selection.tense)
+                    if selection.other_label:
+                        f.other_label = selection.other_label
 
                     f.save()
 
