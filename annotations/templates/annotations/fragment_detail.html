@@ -1,7 +1,7 @@
 {% extends "base/base.html" %}
 
 {% load bootstrap3 %}
-
+(% load custom_tags %}
 {% block content %}
 <style>
 .selected {
@@ -18,11 +18,26 @@
 </style>
 
 <div class="container">
-    <h1>Fragment overview</h1>
-
+    <h1>Fragment overview</h1> 
     <h2>Source</h2>
+
+    <div>
+        {% if fragment.document.get_fragment_list %}
+            <span>
+                <button id='nextFrag' onclick='add_row_after()'>next</button>
+                <button id='prevFrag' onclick='add_row_before()'>previous</button>
+                <button id='resetFrag' onclick='reset_sentences()'>reset</button>
+            </span>
+            <!-- <form role="form" method="POST">
+                    {% csrf_token %}
+                      <input type="submit" class="btn" value="Click" name="mybtn">
+                    </form> -->
+        {% endif %}
+    </div>
+    
     <h3 data-pk="{{ fragment.pk }}">
         {{ fragment.language.title }}
+
         <span class="label label-default pull-right">{{ fragment.document.title }}</span>
         <span class="label label-primary pull-right">{{ fragment.label }}</span>
         {% if fragment.document.corpus.check_structure %}
@@ -30,8 +45,9 @@
         <span class="label label-primary pull-right">{{ fragment.get_sentence_function_display }}</span>
         {% endif %}
     </h3>
-    <!-- {{fragment.document.build_etree}} -->
-    {% include "annotations/_sentences.html" with sentences=fragment.sentence_set.all tooltips=1 %}
+    <!-- {% include "annotations/_sentences.html" with sentences=fragment.sentence_set.all tooltips=1 %} -->
+    {% include "annotations/_sentences.html" with sentences=sentences tooltips=1 %}
+
 
     <h2>Translations</h2>
     {% for language, annotation in fragment.get_annotations %}
@@ -76,5 +92,33 @@ $(function() {
         });
     });
 });
+
+var sentences_before = 0;
+var sentenes_above = 0;
+var limit = 5;
+
+
+
+function add_row_before() {
+    if (limit < 5) {
+        sentences_before += 1;
+    }
+    
+    
+    console.log(sentences_before, sentences_after)
+}
+
+function add_row_after() {
+    sentences_after += 1;
+    console.log(sentences_before, sentences_after)
+}
+
+function reset_sentences() {
+    sentences_before = 0;
+    sentences_after = 0;
+    console.log(sentences_before, sentences_after)
+}
+
+
 </script>
 {% endblock %}

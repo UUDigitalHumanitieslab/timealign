@@ -183,11 +183,39 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
 class FragmentDetail(LoginRequiredMixin, generic.DetailView):
     model = Fragment
 
+    # def post(self, request, pk, *args, **kwargs):
+    #     print('ja')
+    #     redirect_to = reverse('annotations:show', kwargs={'pk': pk})
+    #     return redirect(redirect_to)
+
     def get_context_data(self, **kwargs):
         context = super(FragmentDetail, self).get_context_data(**kwargs)
+        current_fragment = self.get_object()
 
-        print(self.kwargs)
-        print('hee')
+        all_fragments = Fragment.objects.filter(
+            document_id=current_fragment.document_id,
+            language_id=current_fragment.language_id)
+
+        # print([x.id for x in all_fragments])
+
+        all_sentences = []
+        current_index = 0
+        limit = 5
+        for i, f in enumerate(all_fragments):
+            if f.id == current_fragment.id:
+                current_index = i
+            s = f.sentence_set.all().first()
+            all_sentences.append(s)
+
+        try:
+            before = all_sentences[current_index-5:current_index]
+        except:
+            before = all_sentences[0:current_index]
+        try:
+            after = all_sentences[current_index:current_index+6]
+        except:
+            after = all_sentences[current_index:-1]
+        context['sentences'] = before + after
 
         return context
 

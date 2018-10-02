@@ -83,18 +83,15 @@ class Document(models.Model):
     class Meta:
         unique_together = ('corpus', 'title', )
 
-    def build_etree(self):
-        tree = etree.parse(self.upload.path)
-        return tree
-        # return etree.tostring(tree.getroot(), pretty_print=True)
-
-    def build_fragment_list(self):
-        tree = self.build_etree()
-        document_fragments = []
-        for el in tree.iter():
-            if ('id' in el.attrib.keys() and el.tag in ['p', 's']):
-                document_fragments.append({'tag': el.tag, 'id': el.get('id')})
-        return document_fragments
+    def get_fragment_list(self):
+        if self.upload and hasattr(self.upload, 'path'):
+            document_fragments = []
+            tree = etree.parse(self.upload.path)
+            for el in tree.iter():
+                if ('id' in el.attrib.keys() and el.tag in ['p', 's']):
+                    document_fragments.append(
+                        {'tag': el.tag, 'id': el.get('id')})
+            return document_fragments
 
     def __unicode__(self):
         return self.title
