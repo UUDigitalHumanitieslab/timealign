@@ -33,6 +33,16 @@
     outline: none
 }
 
+div.center {
+  			width: 40%;
+  			border: 1px solid grey;
+  			margin-left: 30%; 
+            margin-right: 30%;
+            margin-top: 1px;
+  			display: inline-block;
+  			text-align: center;
+  		}
+
 </style>
 
 <div class="container">
@@ -106,6 +116,8 @@ $(function() {
             }
         });
     });
+
+    toggle_context_arrows();
 });
 
 var sentences_before = 0;
@@ -121,6 +133,7 @@ function add_row_before() {
         }
     }
     highlight_current();
+    toggle_context_arrows();
 }
 
 function add_row_after() {
@@ -128,17 +141,19 @@ function add_row_after() {
         $('.after:hidden:first').css('display', 'block');
         sentences_after += 1;
         if (sentences_after == limit) {
-            $('#nextFrag').hide()
+            $('#nextFrag').hide();
         }
     }
     highlight_current();
+    toggle_context_arrows();
 }
 
 function reset_sentences() {
-    $(".before").hide()
-    $(".after").hide()
+    $(".before").hide();
+    $(".after").hide();
     sentences_before = sentences_after = 0;
-    highlight_current()
+    highlight_current();
+    toggle_context_arrows();
 }
 
 function highlight_current() {
@@ -149,6 +164,17 @@ function highlight_current() {
     else {
         $('.current').removeClass('list-group-item-info');
     }
+}
+
+function toggle_context_arrows() {
+    console.log($('.after:hidden').length)
+    console.log($('.before:hidden').length)
+    if (!$('.after:hidden').length) {
+        $('#nextFrag').hide();
+    }
+    if (!$('.before:hidden').length) {
+        $('#prevFrag').hide();
+    }  
 }
 
 
