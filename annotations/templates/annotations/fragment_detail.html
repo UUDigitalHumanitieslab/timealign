@@ -15,26 +15,29 @@
 .label {
   margin-left: 5px;
 }
+
+.before {
+    display: none;
+}
+
+.after {
+    display: none;
+}
+
+.frag-btn {
+    border: none;
+    width: 1140px;
+}
+
+.frag-btn:focus {
+    outline: none
+}
+
 </style>
 
 <div class="container">
     <h1>Fragment overview</h1> 
     <h2>Source</h2>
-
-    <div>
-        {% if fragment.document.get_fragment_list %}
-            <span>
-                <button id='nextFrag' onclick='add_row_after()'>next</button>
-                <button id='prevFrag' onclick='add_row_before()'>previous</button>
-                <button id='resetFrag' onclick='reset_sentences()'>reset</button>
-            </span>
-            <!-- <form role="form" method="POST">
-                    {% csrf_token %}
-                      <input type="submit" class="btn" value="Click" name="mybtn">
-                    </form> -->
-        {% endif %}
-    </div>
-    
     <h3 data-pk="{{ fragment.pk }}">
         {{ fragment.language.title }}
 
@@ -46,8 +49,20 @@
         {% endif %}
     </h3>
     <!-- {% include "annotations/_sentences.html" with sentences=fragment.sentence_set.all tooltips=1 %} -->
+    <!-- {% if fragment.document.get_fragment_list %}
+        <div class="btn-group-vertical" role="group" aria-label="...">
+            <button #nextFrag class="btn btn-default" onclick='add_row_after()'>next</button>
+            <button #prevFrag class="btn btn-default" onclick='add_row_before()'>previous</button>
+            <button #resetFrag class="btn btn-default" onclick='reset_sentences()'>reset</button>
+        </div>
+    {% endif %} -->
+    <button id="prevFrag" class="frag-btn" onclick='add_row_before()'>
+            <span class="glyphicon glyphicon-chevron-up"></span>
+    </button>
     {% include "annotations/_sentences.html" with sentences=sentences tooltips=1 %}
-
+    <button id="nextFrag" class="frag-btn" onclick='add_row_after()'>
+            <span class="glyphicon glyphicon-chevron-down"></span>
+    </button>
 
     <h2>Translations</h2>
     {% for language, annotation in fragment.get_annotations %}
@@ -94,30 +109,48 @@ $(function() {
 });
 
 var sentences_before = 0;
-var sentenes_above = 0;
-var limit = 5;
-
-
+var sentences_after= 0;
+const limit = 5;
 
 function add_row_before() {
-    if (limit < 5) {
-        sentences_before += 1;
+    if (sentences_before < limit) {
+        $('.before:hidden:last').css('display', 'block');
+        sentences_before +=1 ;
+        if (sentences_before == limit) {
+            $('#prevFrag').hide()
+        }
     }
-    
-    
-    console.log(sentences_before, sentences_after)
+    highlight_current();
 }
 
 function add_row_after() {
-    sentences_after += 1;
-    console.log(sentences_before, sentences_after)
+    if (sentences_after < limit) {
+        $('.after:hidden:first').css('display', 'block');
+        sentences_after += 1;
+        if (sentences_after == limit) {
+            $('#nextFrag').hide()
+        }
+    }
+    highlight_current();
 }
 
 function reset_sentences() {
-    sentences_before = 0;
-    sentences_after = 0;
-    console.log(sentences_before, sentences_after)
+    $(".before").hide()
+    $(".after").hide()
+    sentences_before = sentences_after = 0;
+    highlight_current()
 }
+
+function highlight_current() {
+    //highlights the current fragment if there are additional fragments displayed
+    if ((sentences_before!=0) || (sentences_after!=0)) {
+        $('.current').addClass('list-group-item-info');
+    }
+    else {
+        $('.current').removeClass('list-group-item-info');
+    }
+}
+
 
 
 </script>

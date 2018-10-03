@@ -1,4 +1,5 @@
 from collections import defaultdict
+import json
 from itertools import permutations
 from tempfile import NamedTemporaryFile
 
@@ -199,20 +200,24 @@ class FragmentDetail(LoginRequiredMixin, generic.DetailView):
         # print([x.id for x in all_fragments])
 
         all_sentences = []
-        current_index = 0
+        current_index = None
         limit = 5
         for i, f in enumerate(all_fragments):
             if f.id == current_fragment.id:
                 current_index = i
+                t = "current"
+            elif current_index == None:
+                t = "before"
+            else:
+                t = "after"
             s = f.sentence_set.all().first()
-            all_sentences.append(s)
-
+            all_sentences.append({'type': t, 'content': s})
         try:
-            before = all_sentences[current_index-5:current_index]
+            before = all_sentences[current_index-limit:current_index]
         except:
             before = all_sentences[0:current_index]
         try:
-            after = all_sentences[current_index:current_index+6]
+            after = all_sentences[current_index:current_index+limit+1]
         except:
             after = all_sentences[current_index:-1]
         context['sentences'] = before + after
