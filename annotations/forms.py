@@ -39,8 +39,8 @@ class AnnotationForm(forms.ModelForm):
             del self.fields['is_not_labeled_structure']
             del self.fields['is_not_same_structure']
 
-        # Only allow to edit tense/other_label if the current User is a superuser AND we are editing, not creating
-        if not self.user.is_superuser or self.instance.pk is None:
+        # Only allow to edit tense/other_label if the current User has this permission
+        if not self.user.has_perm('annotations.edit_labels_in_interface'):
             del self.fields['tense']
             del self.fields['other_label']
 

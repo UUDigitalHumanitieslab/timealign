@@ -315,11 +315,12 @@ class Annotation(models.Model):
     last_modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='last_modified_by', on_delete=models.SET_NULL)
     last_modified_at = models.DateTimeField(auto_now=True)
 
-    tense = models.ForeignKey(Tense, null=True, on_delete=models.SET_NULL)
+    tense = models.ForeignKey(Tense, blank=True, null=True, on_delete=models.SET_NULL)
     other_label = models.CharField(max_length=200, blank=True)
 
     class Meta:
         unique_together = ('alignment', 'annotated_by', )
+        permissions = (('edit_labels_in_interface', 'Can edit labels in the interface'),)
 
     def selected_words(self):
         """
