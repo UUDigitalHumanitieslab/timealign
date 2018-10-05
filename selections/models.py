@@ -53,5 +53,7 @@ class Selection(models.Model):
         Order is based on the xml_id, e.g. w18.1.10 should be after w18.1.9.
         :return: A space-separated string with the selected words.
         """
-        ordered_words = sorted(self.words.all(), key=lambda w: map(int, w.xml_id[1:].split('.')))
+        from annotations.utils import sort_key
+
+        ordered_words = sorted(self.words.all(), key=lambda w: sort_key(w.xml_id, w.XML_TAG))
         return ' '.join([word.word for word in ordered_words])

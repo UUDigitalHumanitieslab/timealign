@@ -198,8 +198,14 @@ class Fragment(models.Model):
 
         return result
 
+    def sort_key(self):
+        from .utils import sort_key
+
+        sentence = self.first_sentence()
+        return sort_key(sentence.xml_id, sentence.XML_TAG)
+
     def first_sentence(self):
-        return self.sentence_set.all().order_by('xml_id')[0]
+        return self.sentence_set.first()
 
     def xml_ids(self):
         return ', '.join([s.xml_id for s in self.sentence_set.all()])
@@ -215,6 +221,8 @@ class Fragment(models.Model):
 
 
 class Sentence(models.Model):
+    XML_TAG = 's'
+
     xml_id = models.CharField(max_length=20)
 
     fragment = models.ForeignKey(Fragment, on_delete=models.CASCADE)
@@ -250,6 +258,8 @@ class Sentence(models.Model):
 
 
 class Word(models.Model):
+    XML_TAG = 'w'
+
     xml_id = models.CharField(max_length=20)
     word = models.CharField(max_length=200)
     pos = models.CharField(max_length=50)
@@ -328,7 +338,9 @@ class Annotation(models.Model):
         Order is based on the xml_id, e.g. w18.1.10 should be after w18.1.9.
         :return: A space-separated string with the selected words.
         """
-        ordered_words = sorted(self.words.all(), key=lambda w: map(int, w.xml_id[1:].split('.')))
+        from .utils import sort_key
+
+        ordered_words = sorted(self.words.all(), key=lambda w: sort_key(w.xml_id, w.XML_TAG))
         return ' '.join([word.word for word in ordered_words])
 
     def label(self):

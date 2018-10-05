@@ -34,7 +34,7 @@ def export_pos_file(filename, format_, corpus, language,
 
         # Sort by document and sentence.xml_id
         annotations = sorted(annotations, key=lambda a: (a.alignment.original_fragment.document.title,
-                                                         map(int, a.alignment.original_fragment.first_sentence().xml_id[1:].split('.'))))
+                                                         a.alignment.original_fragment.sort_key()))
 
         if annotations:
             header = ['id', 'tense', 'source/target', 'is correct target?', 'is correct translation?']
@@ -80,8 +80,7 @@ def export_fragments_file(filename, format_, corpus, language,
             fragments = fragments.filter(document__title=document)
 
         # Sort by document and sentence.xml_id
-        fragments = sorted(fragments, key=lambda f: (f.document.title,
-                                                     map(int, f.first_sentence().xml_id[1:].split('.'))))
+        fragments = sorted(fragments, key=lambda f: (f.document.title, f.sort_key()))
 
         if fragments:
             # TODO: see if we can do this query-based

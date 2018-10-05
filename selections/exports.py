@@ -25,8 +25,7 @@ def export_selections(filename, format_, corpus, language,
         max_words = selections.aggregate(Max('annotated_words'))['annotated_words__max']
 
         # Sort by sentence.xml_id and order
-        selections = sorted(selections, key=lambda s: (map(int, s.fragment.first_sentence().xml_id[1:].split('.')),
-                                                       s.order))
+        selections = sorted(selections, key=lambda s: (s.fragment.document.title, s.fragment.sort_key(), s.order))
 
         # Output to csv/xlsx
         if selections:

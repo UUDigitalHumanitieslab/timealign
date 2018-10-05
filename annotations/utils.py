@@ -116,3 +116,14 @@ def is_before(xml_id1, xml_id2):
                 break
 
     return result
+
+
+def sort_key(xml_id, xml_tag):
+    result = [xml_id]
+    if xml_id.isdigit():
+        result = int(xml_id)
+    else:
+        if xml_id[0] == xml_tag and xml_id[1:].split('.'):
+            result = map(int, xml_id[1:].split('.'))
+
+    return result
