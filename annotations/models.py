@@ -84,6 +84,7 @@ class Document(models.Model):
         unique_together = ('corpus', 'title', )
 
     def get_sentences(self, language):
+        print(language)
         doc_fragments = [f.id for f in list(self.fragment_set.all())]
         if self.upload and hasattr(self.upload, 'path'):
             document_sentences = []
@@ -91,13 +92,11 @@ class Document(models.Model):
             for el in tree.iter():
                 if ('id' in el.attrib.keys() and el.tag in ['p', 's']):
                     if el.tag == 's':
-                        ss = Sentence.objects.filter(
+                        sentence_content = Sentence.objects.filter(
                             xml_id=el.get('id'),
                             fragment__document__id=self.id,
                             fragment__language=language
-                        )
-                        sentence_content = Sentence.objects.filter(
-                            xml_id=el.get('id')).first()
+                        ).first()
                     else:
                         sentence_content = None
                     document_sentences.append(

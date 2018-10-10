@@ -1,7 +1,7 @@
 <ul class="list-group" dir="auto" style="margin-bottom: 0px">
     {% for sentence in sentences %}
         {% if sentence.tag == 'p' %}
-            <div class="center {{sentence.position}}">&para</div>
+            <div class="paragraph {{sentence.position}}">&para</div>
         {% else %}
         <li class="list-group-item {{sentence.position}}" data-pk="{{ sentence.pk }}" data-xml-id="{{ sentence.xml_id }}">
             {% if sentence.content %}
@@ -39,6 +39,13 @@
                     {% endfor %}
                     {% endspaceless %}
                     {% endfor %}
+                {% if sentence.position == 'current' %}
+                <span class="fold">
+                    <span class="glyphicon glyphicon-chevron-down" style="float:right;"></span>
+                    <span class="glyphicon glyphicon-chevron-up" style="float:right;"></span>
+                </span>
+                {% endif %}
+
                 {% endwith %}
 
             {% else %}
