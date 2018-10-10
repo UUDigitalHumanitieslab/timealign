@@ -16,6 +16,10 @@
   margin-left: 5px;
 }
 
+.current {
+    cursor: pointer;
+}
+
 .before {
     display: none;
 }
@@ -35,11 +39,12 @@
 
 div.center {
   			width: 40%;
-  			border: 1px solid grey;
+  			border: 1px solid lightgrey;
   			margin-left: 30%; 
             margin-right: 30%;
-            margin-top: 1px;
-  			display: inline-block;
+            border-top: 0px;
+            border-bottom: 0px;
+  			/* display: inline-block; */
   			text-align: center;
   		}
 
@@ -117,19 +122,21 @@ $(function() {
         });
     });
 
+    $(".current").on("click", reset_sentences);
+
     toggle_context_arrows();
 });
 
 var sentences_before = 0;
 var sentences_after= 0;
-const limit = 5;
+const limit = {{limit}};
 
 function add_row_before() {
     if (sentences_before < limit) {
         $('.before:hidden:last').css('display', 'block');
         sentences_before +=1 ;
         if (sentences_before == limit) {
-            $('#prevFrag').hide()
+            $('#prevFrag').hide();
         }
     }
     highlight_current();
@@ -167,8 +174,6 @@ function highlight_current() {
 }
 
 function toggle_context_arrows() {
-    console.log($('.after:hidden').length)
-    console.log($('.before:hidden').length)
     if (!$('.after:hidden').length) {
         $('#nextFrag').hide();
     }

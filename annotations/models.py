@@ -83,15 +83,28 @@ class Document(models.Model):
     class Meta:
         unique_together = ('corpus', 'title', )
 
-    def get_fragment_list(self):
+    def get_sentences(self, language):
+        doc_fragments = [f.id for f in list(self.fragment_set.all())]
         if self.upload and hasattr(self.upload, 'path'):
-            document_fragments = []
+            document_sentences = []
             tree = etree.parse(self.upload.path)
             for el in tree.iter():
                 if ('id' in el.attrib.keys() and el.tag in ['p', 's']):
-                    document_fragments.append(
-                        {'tag': el.tag, 'id': el.get('id')})
-            return document_fragments
+                    if el.tag == 's':
+                        ss = Sentence.objects.filter(
+                            xml_id=el.get('id'),
+                            fragment__document__id=self.id,
+                            fragment__language=language
+                        )
+                        sentence_content = Sentence.objects.filter(
+                            xml_id=el.get('id')).first()
+                    else:
+                        sentence_content = None
+                    document_sentences.append(
+                        {'tag': el.tag,
+                         'id': el.get('id'),
+                         'content': sentence_content})
+            return document_sentences
 
     def __unicode__(self):
         return self.title

@@ -192,35 +192,43 @@ class FragmentDetail(LoginRequiredMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(FragmentDetail, self).get_context_data(**kwargs)
         current_fragment = self.get_object()
+        current_fragment_id = current_fragment.xml_ids() if len(
+            current_fragment.xml_ids()) == 1 else current_fragment.xml_ids()
+        current_document = Document.objects.filter(
+            id=current_fragment.document_id)[0]
 
-        all_fragments = Fragment.objects.filter(
-            document_id=current_fragment.document_id,
-            language_id=current_fragment.language_id)
+        # all_fragments = Fragment.objects.filter(
+        #     document_id=current_fragment.document_id,
+        #     language_id=current_fragment.language_id)
 
-        # print([x.id for x in all_fragments])
+        doc_sentences = current_document.get_sentences(
+            current_fragment.language)
 
         all_sentences = []
         current_index = None
         limit = 5
-        for i, f in enumerate(all_fragments):
-            if f.id == current_fragment.id:
-                current_index = i
-                t = "current"
-            elif current_index == None:
-                t = "before"
+
+        # vind het midden (zin passende bij huidige fragment
+        current_index = [sentence['id']
+                         for sentence in doc_sentences].index(current_fragment_id)
+        before = doc_sentences[:current_index]
+        after = doc_sentences[current_index+1:]
+
+        for i, s in enumerate(doc_sentences):
+            if i == current_index:
+                position = "current"
+            elif i <= current_index:
+                position = "before"
             else:
-                t = "after"
-            s = f.sentence_set.all().first()
-            all_sentences.append({'type': t, 'content': s})
-        try:
-            before = all_sentences[current_index-limit:current_index]
-        except:
-            before = all_sentences[0:current_index]
-        try:
-            after = all_sentences[current_index:current_index+limit+1]
-        except:
-            after = all_sentences[current_index:-1]
-        context['sentences'] = before + after
+                position = "after"
+            all_sentences.append({
+                'tag': s['tag'],
+                'position': position,
+                'content': s['content']
+            })
+
+        context['sentences'] = all_sentences
+        context['limit'] = limit
 
         return context
 
