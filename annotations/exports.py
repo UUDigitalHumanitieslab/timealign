@@ -37,14 +37,16 @@ def export_pos_file(filename, format_, corpus, language,
                                                          a.alignment.original_fragment.sort_key()))
 
         if annotations:
-            header = ['id', 'tense', 'source/target', 'is correct target?', 'is correct translation?']
+            header = ['id', 'tense', 'other label', 'is correct target?', 'is correct translation?']
             header.extend(['w' + str(i + 1) for i in range(max_words)])
             header.extend(['pos' + str(i + 1) for i in range(max_words)])
             if add_lemmata:
                 header.extend(['lemma' + str(i + 1) for i in range(max_words)])
             if add_indices:
                 header.extend(['index' + str(i + 1) for i in range(max_words)])
-            header.extend(['comments', 'full fragment', 'source id', 'source document', 'source sentences', 'source words', 'source fragment'])
+            header.extend(['comments', 'full fragment'])
+            header.extend(list(map(lambda x: 'source ' + x,
+                                   ['id', 'document', 'sentences', 'tense', 'other label', 'words', 'fragment'])))
             writer.writerow(header, is_header=True)
 
             for annotation in annotations:
@@ -55,15 +57,16 @@ def export_pos_file(filename, format_, corpus, language,
                 index = [word.index() for word in words]
                 tf = annotation.alignment.translated_fragment
                 of = annotation.alignment.original_fragment
-                writer.writerow([annotation.pk, annotation.label(), 'target',
+                of_details = [of.pk, of.document.title, of.xml_ids(), of.target_words(), of.tense.title, of.other_label, of.full(format_)]
+                writer.writerow([annotation.pk, annotation.tense.title, annotation.other_label,
                                  'no' if annotation.is_no_target else 'yes',
                                  'yes' if annotation.is_translation else 'no'] +
                                 pad_list(w, max_words) +
                                 pad_list(pos, max_words) +
                                 (pad_list(lemma, max_words) if add_lemmata else []) +
                                 (pad_list(index, max_words) if add_indices else []) +
-                                [annotation.comments, tf.full(format_, annotation),
-                                 of.pk, of.document.title, of.xml_ids(), of.target_words(), of.full(format_)])
+                                [annotation.comments, tf.full(format_, annotation)] +
+                                of_details)
 
 
 def export_fragments_file(filename, format_, corpus, language,
@@ -90,7 +93,7 @@ def export_fragments_file(filename, format_, corpus, language,
                 if len(words) > max_words:
                     max_words = len(words)
 
-            header = ['id', 'label']
+            header = ['id', 'tense', 'other label']
             header.extend(['w' + str(i + 1) for i in range(max_words)])
             header.extend(['pos' + str(i + 1) for i in range(max_words)])
             if add_lemmata:
@@ -108,7 +111,7 @@ def export_fragments_file(filename, format_, corpus, language,
                     lemma = [word.lemma for word in words]
                     index = [word.index() for word in words]
                     f = fragment.full(format_)
-                    writer.writerow([fragment.pk, fragment.label()] +
+                    writer.writerow([fragment.pk, fragment.tense.title, fragment.other_label] +
                                     pad_list(w, max_words) +
                                     pad_list(pos, max_words) +
                                     (pad_list(lemma, max_words) if add_lemmata else []) +
