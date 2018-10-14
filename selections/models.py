@@ -5,6 +5,8 @@ from annotations.models import Fragment, Word
 
 
 class PreProcessFragment(Fragment):
+    resulting_fragment = models.ForeignKey(Fragment, related_name='fragment_preprocess', null=True, on_delete=models.SET_NULL)
+
     def selected_words(self, user=None):
         result = dict()
 

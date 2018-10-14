@@ -25,6 +25,7 @@ class Command(BaseCommand):
 
         parser.add_argument('--create', action='store_true', dest='create', default=False,
                             help='Create Fragments from PreProcessFragments (instead of looking them up)')
+        parser.add_argument('--document', type=str)
 
     def handle(self, *args, **options):
         # Retrieve the Corpus from the database
@@ -43,13 +44,24 @@ class Command(BaseCommand):
         if len(options['filenames']) == 0:
             raise CommandError('No documents specified')
 
+        document = None
+        if options['document']:
+            try:
+                document = Document.objects.get(corpus=corpus, title=options['document'])
+            except Document.DoesNotExist:
+                raise CommandError('Document with title {} does not exist'.format(options['document']))
+
         fragment_cache = defaultdict(list)
 
         if options['create']:
             selections = Selection.objects \
                 .filter(is_no_target=False) \
                 .filter(fragment__document__corpus=corpus) \
-                .filter(fragment__language=language)
+                .filter(fragment__language=language) \
+                .filter(fragment__resulting_fragment__isnull=True)
+
+            if document:
+                selections = selections.filter(fragment__document=document)
 
             for selection in selections:
                 selected_words = []
@@ -58,6 +70,7 @@ class Command(BaseCommand):
 
                 with transaction.atomic():
                     f = selection.fragment
+                    f_selection_pk = f.pk
                     sentences = f.sentence_set.all()
 
                     f.__class__ = Fragment
@@ -69,6 +82,11 @@ class Command(BaseCommand):
                         f.other_label = selection.other_label
 
                     f.save()
+
+                    # Save the fragment as resulting fragment
+                    f_selection = PreProcessFragment.objects.get(pk=f_selection_pk)
+                    f_selection.resulting_fragment = f
+                    f_selection.save()
 
                     for sentence in sentences:
                         s = sentence
@@ -109,6 +127,9 @@ class Command(BaseCommand):
 
                     with transaction.atomic():
                         doc, _ = Document.objects.get_or_create(corpus=corpus, title=row[COLUMN_DOCUMENT])
+
+                        if document and document != doc:
+                            continue
 
                         for s in etree.fromstring(row[COLUMN_XML]).xpath('.//s'):
                             fragments = fragment_cache.get((doc.pk, s.get('id')))
