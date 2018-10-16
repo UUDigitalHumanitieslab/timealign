@@ -33,7 +33,7 @@ class Tense(models.Model):
         unique_together = ('language', 'title', )
 
     def __unicode__(self):
-        return u'{} ({})'.format(self.title, self.language.iso)
+        return self.title
 
 
 class Corpus(models.Model):
