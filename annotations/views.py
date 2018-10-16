@@ -4,6 +4,7 @@ from tempfile import NamedTemporaryFile
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import Count
 from django.urls import reverse
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
@@ -51,22 +52,29 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
         else:
             corpora = get_available_corpora(self.request.user)
 
-        languages = set()
-        for corpus in corpora:
-            for language in corpus.languages.all():
-                languages.add(language)
+        # Retrieve the totals per language pair
+        alignments = Alignment.objects.filter(original_fragment__document__corpus__in=corpora)
+        totals = alignments \
+            .values('original_fragment__language', 'translated_fragment__language') \
+            .order_by('original_fragment__language', 'translated_fragment__language') \
+            .annotate(count=Count('pk'))
+        completed = totals.exclude(annotation=None)
 
+        # Convert the QuerySets into a list of tuples
         language_totals = []
-        for l1, l2 in permutations(languages, 2):
-            alignments = Alignment.objects.filter(original_fragment__language=l1,
-                                                  translated_fragment__language=l2,
-                                                  original_fragment__document__corpus__in=corpora)
+        for total in totals:
+            l1 = Language.objects.get(pk=total['original_fragment__language'])
+            l2 = Language.objects.get(pk=total['translated_fragment__language'])
+            available = total['count']
 
-            total = alignments.count()
-            completed = alignments.exclude(annotation=None).count()
+            # TODO: can we do this more elegantly, e.g. without a database call?
+            complete = completed.filter(original_fragment__language=l1, translated_fragment__language=l2)
+            if complete:
+                complete = complete[0]['count']
+            else:
+                complete = 0
 
-            if total:
-                language_totals.append((l1, l2, completed, total))
+            language_totals.append((l1, l2, complete, available))
 
         context['languages'] = language_totals
         context['corpus_pk'] = corpus_pk
