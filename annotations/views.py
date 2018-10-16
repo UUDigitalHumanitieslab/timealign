@@ -1,5 +1,4 @@
 from collections import defaultdict
-from itertools import permutations
 from tempfile import NamedTemporaryFile
 
 from django.contrib import messages
@@ -144,8 +143,15 @@ class AnnotationCreate(AnnotationMixin, generic.CreateView):
         return super(AnnotationCreate, self).form_valid(form)
 
     def get_alignment(self):
-        """Retrieves the Alignment by the pk in the kwargs"""
-        return get_object_or_404(Alignment, pk=self.kwargs['pk'])
+        """Retrieves the Alignment by the pk in the kwargs, and also some related fields to speed up processing"""
+        alignments = Alignment.objects.select_related('original_fragment',
+                                                      'original_fragment__tense',
+                                                      'original_fragment__language',
+                                                      'original_fragment__document__corpus',
+                                                      'translated_fragment',
+                                                      'translated_fragment__language',
+                                                      'translated_fragment__document')
+        return get_object_or_404(alignments, pk=self.kwargs['pk'])
 
 
 class AnnotationUpdate(AnnotationUpdateMixin, generic.UpdateView):
