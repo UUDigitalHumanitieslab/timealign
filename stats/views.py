@@ -114,7 +114,7 @@ class MDSView(ScenarioDetail):
                 labels.append(label)
 
             # Add all values to the dictionary
-            j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(HTML), 'tenses': t})
+            j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(HTML), 'tenses': labels})
 
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
