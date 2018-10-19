@@ -209,9 +209,15 @@ class AnnotationList(PermissionRequiredMixin, FilterView):
         Retrieves all Annotations for the given source (l1) and target (l2) language.
         :return: A QuerySet of Annotations.
         """
-        return Annotation.objects.filter(alignment__original_fragment__language__iso=self.kwargs['l1'],
-                                         alignment__translated_fragment__language__iso=self.kwargs['l2']) \
+        return Annotation.objects \
+            .filter(alignment__original_fragment__language__iso=self.kwargs['l1']) \
+            .filter(alignment__translated_fragment__language__iso=self.kwargs['l2']) \
             .filter(alignment__original_fragment__document__corpus__in=get_available_corpora(self.request.user)) \
+            .select_related('annotated_by',
+                            'tense',
+                            'alignment__original_fragment',
+                            'alignment__original_fragment__document',
+                            'alignment__translated_fragment') \
             .order_by('-annotated_at')
 
 
