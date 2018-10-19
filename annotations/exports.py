@@ -29,8 +29,15 @@ def export_pos_file(filename, format_, corpus, language,
             if formal_structure == 'dialogue':
                 annotations = annotations.filter(alignment__original_fragment__formal_structure=Fragment.FS_DIALOGUE)
 
-        annotations = annotations.select_related().annotate(selected_words=Count('words'))
-        max_words = annotations.aggregate(Max('selected_words'))['selected_words__max']
+        max_words = annotations.annotate(selected_words=Count('words')).aggregate(Max('selected_words'))['selected_words__max']
+
+        annotations = annotations. \
+            select_related('alignment__original_fragment',
+                           'alignment__original_fragment__document',
+                           'alignment__original_fragment__tense',
+                           'alignment__translated_fragment',
+                           'tense'). \
+            prefetch_related('words')
 
         # Sort by document and sentence.xml_id
         annotations = sorted(annotations, key=lambda a: (a.alignment.original_fragment.document.title,
@@ -53,18 +60,17 @@ def export_pos_file(filename, format_, corpus, language,
                 words = annotation.words.all()
                 w = [word.word for word in words]
                 pos = [word.pos for word in words]
-                lemma = [word.lemma for word in words]
-                index = [word.index() for word in words]
                 tf = annotation.alignment.translated_fragment
                 of = annotation.alignment.original_fragment
-                of_details = [of.pk, of.document.title, of.xml_ids(), of.target_words(), of.tense.title, of.other_label, of.full(format_)]
-                writer.writerow([annotation.pk, annotation.tense.title, annotation.other_label,
+                of_details = [of.pk, of.document.title, of.xml_ids(), of.target_words(),
+                              of.tense.title if of.tense else '', of.other_label, of.full(format_)]
+                writer.writerow([annotation.pk, annotation.tense.title if annotation.tense else '', annotation.other_label,
                                  'no' if annotation.is_no_target else 'yes',
                                  'yes' if annotation.is_translation else 'no'] +
                                 pad_list(w, max_words) +
                                 pad_list(pos, max_words) +
-                                (pad_list(lemma, max_words) if add_lemmata else []) +
-                                (pad_list(index, max_words) if add_indices else []) +
+                                (pad_list([word.lemma for word in words], max_words) if add_lemmata else []) +
+                                (pad_list([word.index() for word in words], max_words) if add_indices else []) +
                                 [annotation.comments, tf.full(format_, annotation)] +
                                 of_details)
 
@@ -108,12 +114,10 @@ def export_fragments_file(filename, format_, corpus, language,
                 if words:
                     w = [word.word for word in words]
                     pos = [word.pos for word in words]
-                    lemma = [word.lemma for word in words]
-                    index = [word.index() for word in words]
                     f = fragment.full(format_)
-                    writer.writerow([fragment.pk, fragment.tense.title, fragment.other_label] +
+                    writer.writerow([fragment.pk, fragment.tense.title if fragment.tense else '', fragment.other_label] +
                                     pad_list(w, max_words) +
                                     pad_list(pos, max_words) +
-                                    (pad_list(lemma, max_words) if add_lemmata else []) +
-                                    (pad_list(index, max_words) if add_indices else []) +
+                                    (pad_list([word.lemma for word in words], max_words) if add_lemmata else []) +
+                                    (pad_list([word.index() for word in words], max_words) if add_indices else []) +
                                     [fragment.document.title, fragment.first_sentence().xml_id, fragment.target_words(), f])
