@@ -49,7 +49,7 @@ class Scenario(models.Model):
         return ', '.join([sl.language.title for sl in self.languages(as_to=True)])
 
     def languages(self, **kwargs):
-        return ScenarioLanguage.objects.filter(scenario=self, **kwargs)
+        return self.scenariolanguage_set.filter(**kwargs).select_related('language')
 
     def __unicode__(self):
         return self.title

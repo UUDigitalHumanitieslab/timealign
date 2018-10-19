@@ -1,14 +1,18 @@
 <table class="table table-striped">
     <thead>
         <tr>
-            <th width="40%">Scenario</th>
-            <th width="40%">Languages</th>
-            <th width="20%">Actions</th>
+            <th width="15%">Corpus</th>
+            <th width="35%">Scenario</th>
+            <th width="35%">Languages</th>
+            <th width="15%">Actions</th>
         </tr>
     </thead>
     <tbody>
-        {% for scenario in corpus.list %}
+        {% for scenario in scenarios %}
         <tr>
+            <td>
+                {{ scenario.corpus.title }}
+            </td>
             <td>
                 {{ scenario.title }}
                 {% if scenario.is_test %}<span class="label label-warning">Test</span>{% endif %}
