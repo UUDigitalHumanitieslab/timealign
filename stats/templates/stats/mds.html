@@ -64,7 +64,8 @@
     </div>
     <button type="submit" class="btn btn-success">
         {% bootstrap_icon "ok" %} Go!
-    </button </div>
+    </button>
+</div>
 
     <!-- Form for posting data to server -->
     <form name="fragmentform" action="." method="post">
@@ -75,7 +76,7 @@
 
     <div class="loading-overlay" style="display:none">
         <div id="spinner" class="spinner">
-            <img id="img-spinner" src="{%static 'images/spinner.gif'%}" alt="Loading" />
+            <img id="img-spinner" src="{% static 'stats/images/spinner.gif' %}" alt="Loading" />
         </div>
     </div>
 
