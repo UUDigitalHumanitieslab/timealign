@@ -143,6 +143,7 @@ class MDSView(ScenarioDetail):
         # Turn the pickled model into a scatterplot dictionary
         random.seed(scenario.pk)  # Fixed seed for random jitter
         j = defaultdict(list)
+        tense_cache = dict()
         for n, l in enumerate(model):
             # Retrieve x/y dimensions, add some jitter
             x = l[d1 - 1] + random.uniform(-.5, .5) / 100
@@ -153,7 +154,18 @@ class MDSView(ScenarioDetail):
             f = fragments[n]
             fragment = Fragment.objects.get(pk=f)
             ts = [tenses[l][n] for l in tenses.keys()]
-            t = [Tense.objects.get(pk=t).title if isinstance(t, numbers.Number) else t for t in ts]
+
+            labels = []
+            for t in ts:
+                label = t
+                if isinstance(t, numbers.Number):
+                    if t in tense_cache:
+                        label = tense_cache[t]
+                    else:
+                        label = Tense.objects.get(pk=t).title
+                        tense_cache[t] = label
+                labels.append(label)
+
             # Add all values to the dictionary
             j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(HTML), 'tenses': t})
 
