@@ -1,6 +1,6 @@
 from django.conf.urls import url
 
-from .views import ScenarioList, ScenarioDetail, MDSView, MDSViewOld, DescriptiveStatsView, FragmentTableView
+from .views import ScenarioList, ScenarioDetail, MDSView, MDSViewOld, DescriptiveStatsView, FragmentTableView, UpsetView
 
 urlpatterns = [
 
@@ -21,6 +21,9 @@ urlpatterns = [
 
     # Fragment Table
     url(r'^mds/fragment_table/(?P<pk>\d+)/$', FragmentTableView.as_view(), name='fragment_table'),
+
+    # Upset
+    url(r'upset/(?P<pk>\d+)/$', UpsetView.as_view(), name='upset'),
 
     # Descriptive statistics
     url(r'^descriptive/(?P<pk>\d+)/$', DescriptiveStatsView.as_view(), name='descriptive'),

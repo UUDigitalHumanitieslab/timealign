@@ -289,3 +289,40 @@ class FragmentTableView(ScenarioDetail):
         context['tenses'] = self.request.session['tenses']
         context['fragments'] = Fragment.objects.filter(pk__in=self.request.session['fragment_ids'])
         return context
+
+
+class UpsetView(ScenarioDetail):
+    model = Scenario
+    template_name = 'stats/upset.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(UpsetView, self).get_context_data(**kwargs)
+
+        scenario = self.object
+        tenses = scenario.mds_labels
+        fragments = scenario.mds_fragments
+
+        results = []
+        languages = set()
+        tense_cache = dict()
+        for n, fragment_pk in enumerate(fragments):
+            d = {'fragment_pk': fragment_pk}
+            for language, t in tenses.items():
+                t = t[n]
+
+                if isinstance(t, numbers.Number):
+                    if t in tense_cache:
+                        tense = tense_cache[t]
+                    else:
+                        tense = Tense.objects.select_related('category').get(pk=t)
+                        tense_cache[t] = tense
+
+                    d[str(language)] = int(tense.category.title == 'Present Perfect')
+                    languages.add(language)
+
+            results.append(d)
+
+        context['data'] = json.dumps(results)
+        context['languages'] = json.dumps(list(languages))
+
+        return context

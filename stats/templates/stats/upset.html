@@ -1,0 +1,27 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+{% load static %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block content %}
+<div id="vis"></div>
+
+<script src="https://unpkg.com/candela/dist/candela.min.js"></script>
+<script>
+
+var data = {{ data | safe }};
+
+var el = document.getElementById('vis');
+var vis = new candela.components.UpSet(el, {
+    data: data,
+    id: 'fragment_pk',
+    sets: {{ languages | safe }}
+});
+vis.render();
+
+</script>
+{% endblock %}
