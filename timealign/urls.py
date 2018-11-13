@@ -15,12 +15,14 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordChangeDoneView
 from django.contrib.flatpages import views
 
 urlpatterns = [
     url(r'^accounts/login/$', LoginView.as_view(), name='login'),
     url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
+    url(r'^accounts/password/change/$', PasswordChangeView.as_view(), name='password_change'),
+    url(r'^accounts/password/change/done/$', PasswordChangeDoneView.as_view(), name='password_change_done'),
 
     url(r'^timealign/', include('annotations.urls', namespace='annotations')),
     url(r'^preselect/', include('selections.urls', namespace='selections')),

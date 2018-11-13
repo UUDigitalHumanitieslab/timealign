@@ -3,7 +3,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
 <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
     crossorigin="anonymous"></script>
-<link href="{%static 'style.css' %}" rel="stylesheet" type="text/css" /> {% endblock %} {% block content %}
+<link href="{%static 'stats/style.css' %}" rel="stylesheet" type="text/css" /> {% endblock %} {% block content %}
 
 <h2>MDS visualization (scenario
     <em>
@@ -64,7 +64,8 @@
     </div>
     <button type="submit" class="btn btn-success">
         {% bootstrap_icon "ok" %} Go!
-    </button </div>
+    </button>
+</div>
 
     <!-- Form for posting data to server -->
     <form name="fragmentform" action="." method="post">
@@ -75,10 +76,11 @@
 
     <div class="loading-overlay" style="display:none">
         <div id="spinner" class="spinner">
-            <img id="img-spinner" src="{%static 'images/spinner.gif'%}" alt="Loading" />
+            <img id="img-spinner" src="{% static 'stats/images/spinner.gif' %}" alt="Loading" />
         </div>
     </div>
 
+    
 
     <script>
         var flat_data = {{ flat_data | safe}};
@@ -183,9 +185,43 @@
             .attr("width", width + margin.left + margin.right)
             .attr("height", 0 + margin.top + margin.bottom)
             .style("float", "right")
-            .classed("noselect", true)
+            .classed("noselect", true);
 
+        function set_dots(key, opacity, negative_match=false) {
+            if (negative_match) {
+                d3.selectAll(".dot")
+                        .filter(function(e) { return key !== e.key})
+                        .style("opacity", opacity);
+            }
+            else {
+                d3.selectAll(".dot")
+                        .filter(function(e) { return key === e.key})
+                        .style("opacity", opacity); 
+            }
+        }
+        
+        function activate_legend(key) {
+            d3.selectAll(".legendEntry")
+                    .filter(function (e) { return key === e.key; })
+                    .classed("active", true);
+            d3.selectAll(".legendCheckbox")
+                    .filter(function (e) { return key === e.key })
+                    .attr("class", "legendCheckbox glyphicon glyphicon-check");
+            set_dots(key, 1);
+        }
+
+        function deactivate_legend(key) {
+            d3.selectAll(".legendEntry")
+                    .filter(function (e) { return key === e.key; })
+                    .classed("active", false);
+            d3.selectAll(".legendCheckbox")
+                    .filter(function (e) { return key === e.key })
+                    .attr("class", "legendCheckbox glyphicon glyphicon-unchecked");
+            set_dots(key, 0);
+        }
+        
         //add legend entries
+        var keys = _.chain(series_list).map(function(item) { return item.key }).uniq().value()
         var legend = d3.select("#chartLegend").selectAll(".legend")
             .data(series_list)
             .enter()
@@ -193,46 +229,36 @@
             .classed("legendEntry", true)
             .classed("active", true)
             .on({
-                // on click: show/hide datapoints for this label
+                //on click: show/hide datapoints for this label
                 "click": function (d) {
                     var active = d3.select(this).classed("active");
-                    newOpacity = active ? 0 : 1;
                     if (active) {
-                        d3.select(this)
-                            .classed("active", false)
-                        d3.selectAll(".legendCheckbox")
-                            .filter(function (e) { return d.key === e.key; })
-                            .attr("class", "legendCheckbox glyphicon glyphicon-unchecked");
+                        var only_active = d3.selectAll(".legendEntry")
+                                            .filter(".active")
+                                            .size() === 1
+                        //if the clicked legend is the only active: activate all legends
+                        if (only_active) {
+                            _.each(keys, activate_legend)
+                            return;
+                        }
+                        //if the clicked legend is active, deactivate it
+                        else {
+                            deactivate_legend(d.key);
+                        }
                     }
+                    //if the clicked legend is inactive, activate it
                     else {
-                        d3.select(this)
-                            .classed("active", true);
-
-                        d3.selectAll(".legendCheckbox")
-                            .filter(function (e) { return d.key === e.key; })
-                            .attr("class", "legendCheckbox glyphicon glyphicon-check");
+                        activate_legend(d.key);
                     }
-                    d3.selectAll(".dot")
-                        .filter(function (e) { return d.key === e.key; })
-                        .style("opacity", newOpacity);
+                    
                 },
                 // on doubleclick, show only datapoints for this label
                 "dblclick": function (d) {
-                    d3.select(this)
-                            .classed("active", true);
-                    d3.selectAll(".legendCheckbox")
-                            .filter(function (e) { return d.key === e.key; })
-                            .attr("class", "legendCheckbox glyphicon glyphicon-check");
-                            d3.selectAll(".dot")
-                        .filter(function (e) { return d.key === e.key; })
-                        .style("opacity", 1);
-
-                    d3.selectAll(".legendCheckbox")
-                            .filter(function (e) { return d.key !== e.key; })
-                            .attr("class", "legendCheckbox glyphicon glyphicon-unchecked");
-                            d3.selectAll(".dot")
-                        .filter(function (e) { return d.key !== e.key; })
-                        .style("opacity", 0);
+                    activate_legend(d.key);
+                    _.each(
+                        _.filter(keys, function (f) { return d.key !== f; }),
+                        deactivate_legend
+                    );
                 },
                 "mouseover": function (d) {
                     d3.select(this).style("cursor", "pointer");

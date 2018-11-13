@@ -1,5 +1,5 @@
 from .models import Corpus, Annotation, Tense
-from .utils import get_random_alignment, get_available_corpora, get_tenses, is_before
+from .utils import get_random_alignment, get_available_corpora, get_tenses, get_most_frequent_tenses, is_before, sort_key
 from .test_models import BaseTestCase
 
 
@@ -36,10 +36,12 @@ class UtilsTestCase(BaseTestCase):
 
     def test_get_tenses(self):
         a = Annotation.objects.create(alignment=self.alignment, annotated_by=self.u1)
-        a.tense = Tense.objects.get(language=self.nl, title='vtt')
+        t = Tense.objects.get(language=self.nl, title='vtt')
+        a.tense = t
         a.save()
 
-        self.assertEqual(get_tenses(self.nl), ['vtt'])
+        self.assertEqual(get_tenses(self.nl), ['infinitief', 'ott', 'ottt', 'ovt', 'ovtt', 'vtt', 'vvt'])
+        self.assertEqual(get_most_frequent_tenses(self.nl)[0], t)
 
     def test_is_before(self):
         xml_id1 = '13'
@@ -63,3 +65,8 @@ class UtilsTestCase(BaseTestCase):
 
         xml_id2 = 'w13.13.13'
         self.assertTrue(is_before(xml_id1, xml_id2))
+
+    def test_sort_key(self):
+        self.assertEqual(sort_key('123', 'w'), 123)
+        self.assertListEqual(sort_key('w1.2.3', 'w'), [1, 2, 3])
+        self.assertListEqual(sort_key('s11.22.33', 's'), [11, 22, 33])

@@ -29,41 +29,50 @@ def export_pos_file(filename, format_, corpus, language,
             if formal_structure == 'dialogue':
                 annotations = annotations.filter(alignment__original_fragment__formal_structure=Fragment.FS_DIALOGUE)
 
-        annotations = annotations.select_related().annotate(selected_words=Count('words'))
-        max_words = annotations.aggregate(Max('selected_words'))['selected_words__max']
+        max_words = annotations.annotate(selected_words=Count('words')).aggregate(Max('selected_words'))['selected_words__max']
+
+        annotations = annotations. \
+            select_related('alignment__original_fragment',
+                           'alignment__original_fragment__document',
+                           'alignment__original_fragment__tense',
+                           'alignment__translated_fragment',
+                           'tense'). \
+            prefetch_related('words')
 
         # Sort by document and sentence.xml_id
         annotations = sorted(annotations, key=lambda a: (a.alignment.original_fragment.document.title,
-                                                         map(int, a.alignment.original_fragment.first_sentence().xml_id[1:].split('.'))))
+                                                         a.alignment.original_fragment.sort_key()))
 
         if annotations:
-            header = ['id', 'tense', 'source/target', 'is correct target?', 'is correct translation?']
+            header = ['id', 'tense', 'other label', 'is correct target?', 'is correct translation?']
             header.extend(['w' + str(i + 1) for i in range(max_words)])
             header.extend(['pos' + str(i + 1) for i in range(max_words)])
             if add_lemmata:
                 header.extend(['lemma' + str(i + 1) for i in range(max_words)])
             if add_indices:
                 header.extend(['index' + str(i + 1) for i in range(max_words)])
-            header.extend(['comments', 'full fragment', 'source id', 'source document', 'source sentences', 'source words', 'source fragment'])
+            header.extend(['comments', 'full fragment'])
+            header.extend(list(map(lambda x: 'source ' + x,
+                                   ['id', 'document', 'sentences', 'tense', 'other label', 'words', 'fragment'])))
             writer.writerow(header, is_header=True)
 
             for annotation in annotations:
                 words = annotation.words.all()
                 w = [word.word for word in words]
                 pos = [word.pos for word in words]
-                lemma = [word.lemma for word in words]
-                index = [word.index() for word in words]
                 tf = annotation.alignment.translated_fragment
                 of = annotation.alignment.original_fragment
-                writer.writerow([annotation.pk, annotation.label(), 'target',
+                of_details = [of.pk, of.document.title, of.xml_ids(), of.target_words(),
+                              of.tense.title if of.tense else '', of.other_label, of.full(format_)]
+                writer.writerow([annotation.pk, annotation.tense.title if annotation.tense else '', annotation.other_label,
                                  'no' if annotation.is_no_target else 'yes',
                                  'yes' if annotation.is_translation else 'no'] +
                                 pad_list(w, max_words) +
                                 pad_list(pos, max_words) +
-                                (pad_list(lemma, max_words) if add_lemmata else []) +
-                                (pad_list(index, max_words) if add_indices else []) +
-                                [annotation.comments, tf.full(format_, annotation),
-                                 of.pk, of.document.title, of.xml_ids(), of.target_words(), of.full(format_)])
+                                (pad_list([word.lemma for word in words], max_words) if add_lemmata else []) +
+                                (pad_list([word.index() for word in words], max_words) if add_indices else []) +
+                                [annotation.comments, tf.full(format_, annotation)] +
+                                of_details)
 
 
 def export_fragments_file(filename, format_, corpus, language,
@@ -80,8 +89,7 @@ def export_fragments_file(filename, format_, corpus, language,
             fragments = fragments.filter(document__title=document)
 
         # Sort by document and sentence.xml_id
-        fragments = sorted(fragments, key=lambda f: (f.document.title,
-                                                     map(int, f.first_sentence().xml_id[1:].split('.'))))
+        fragments = sorted(fragments, key=lambda f: (f.document.title, f.sort_key()))
 
         if fragments:
             # TODO: see if we can do this query-based
@@ -91,7 +99,7 @@ def export_fragments_file(filename, format_, corpus, language,
                 if len(words) > max_words:
                     max_words = len(words)
 
-            header = ['id', 'label']
+            header = ['id', 'tense', 'other label']
             header.extend(['w' + str(i + 1) for i in range(max_words)])
             header.extend(['pos' + str(i + 1) for i in range(max_words)])
             if add_lemmata:
@@ -106,12 +114,10 @@ def export_fragments_file(filename, format_, corpus, language,
                 if words:
                     w = [word.word for word in words]
                     pos = [word.pos for word in words]
-                    lemma = [word.lemma for word in words]
-                    index = [word.index() for word in words]
                     f = fragment.full(format_)
-                    writer.writerow([fragment.pk, fragment.label()] +
+                    writer.writerow([fragment.pk, fragment.tense.title if fragment.tense else '', fragment.other_label] +
                                     pad_list(w, max_words) +
                                     pad_list(pos, max_words) +
-                                    (pad_list(lemma, max_words) if add_lemmata else []) +
-                                    (pad_list(index, max_words) if add_indices else []) +
+                                    (pad_list([word.lemma for word in words], max_words) if add_lemmata else []) +
+                                    (pad_list([word.index() for word in words], max_words) if add_indices else []) +
                                     [fragment.document.title, fragment.first_sentence().xml_id, fragment.target_words(), f])

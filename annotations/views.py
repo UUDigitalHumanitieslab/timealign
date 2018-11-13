@@ -1,10 +1,9 @@
 from collections import defaultdict
-import json
-from itertools import permutations
 from tempfile import NamedTemporaryFile
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import Count
 from django.urls import reverse
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
@@ -53,22 +52,29 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
         else:
             corpora = get_available_corpora(self.request.user)
 
-        languages = set()
-        for corpus in corpora:
-            for language in corpus.languages.all():
-                languages.add(language)
+        # Retrieve the totals per language pair
+        alignments = Alignment.objects.filter(original_fragment__document__corpus__in=corpora)
+        totals = alignments \
+            .values('original_fragment__language', 'translated_fragment__language') \
+            .order_by('original_fragment__language', 'translated_fragment__language') \
+            .annotate(count=Count('pk'))
+        completed = totals.exclude(annotation=None)
 
+        # Convert the QuerySets into a list of tuples
         language_totals = []
-        for l1, l2 in permutations(languages, 2):
-            alignments = Alignment.objects.filter(original_fragment__language=l1,
-                                                  translated_fragment__language=l2,
-                                                  original_fragment__document__corpus__in=corpora)
+        for total in totals:
+            l1 = Language.objects.get(pk=total['original_fragment__language'])
+            l2 = Language.objects.get(pk=total['translated_fragment__language'])
+            available = total['count']
 
-            total = alignments.count()
-            completed = alignments.exclude(annotation=None).count()
+            # TODO: can we do this more elegantly, e.g. without a database call?
+            complete = completed.filter(original_fragment__language=l1, translated_fragment__language=l2)
+            if complete:
+                complete = complete[0]['count']
+            else:
+                complete = 0
 
-            if total:
-                language_totals.append((l1, l2, completed, total))
+            language_totals.append((l1, l2, complete, available))
 
         context['languages'] = language_totals
         context['corpus_pk'] = corpus_pk
@@ -138,8 +144,15 @@ class AnnotationCreate(AnnotationMixin, generic.CreateView):
         return super(AnnotationCreate, self).form_valid(form)
 
     def get_alignment(self):
-        """Retrieves the Alignment by the pk in the kwargs"""
-        return get_object_or_404(Alignment, pk=self.kwargs['pk'])
+        """Retrieves the Alignment by the pk in the kwargs, and also some related fields to speed up processing"""
+        alignments = Alignment.objects.select_related('original_fragment',
+                                                      'original_fragment__tense',
+                                                      'original_fragment__language',
+                                                      'original_fragment__document__corpus',
+                                                      'translated_fragment',
+                                                      'translated_fragment__language',
+                                                      'translated_fragment__document')
+        return get_object_or_404(alignments, pk=self.kwargs['pk'])
 
 
 class AnnotationUpdate(AnnotationUpdateMixin, generic.UpdateView):
@@ -248,9 +261,15 @@ class AnnotationList(PermissionRequiredMixin, FilterView):
         Retrieves all Annotations for the given source (l1) and target (l2) language.
         :return: A QuerySet of Annotations.
         """
-        return Annotation.objects.filter(alignment__original_fragment__language__iso=self.kwargs['l1'],
-                                         alignment__translated_fragment__language__iso=self.kwargs['l2']) \
+        return Annotation.objects \
+            .filter(alignment__original_fragment__language__iso=self.kwargs['l1']) \
+            .filter(alignment__translated_fragment__language__iso=self.kwargs['l2']) \
             .filter(alignment__original_fragment__document__corpus__in=get_available_corpora(self.request.user)) \
+            .select_related('annotated_by',
+                            'tense',
+                            'alignment__original_fragment',
+                            'alignment__original_fragment__document',
+                            'alignment__translated_fragment') \
             .order_by('-annotated_at')
 
 

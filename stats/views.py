@@ -11,38 +11,25 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views import generic
 
+from django_filters.views import FilterView
+
 from annotations.models import Fragment, Language, Tense
 from annotations.utils import get_available_corpora
 from core.utils import HTML
 
+from .filters import ScenarioFilter
 from .models import Scenario
 from .utils import get_tense_properties
 
 
-class ScenarioList(LoginRequiredMixin, generic.ListView):
+class ScenarioList(LoginRequiredMixin, FilterView):
     """
     Shows a list of scenarios
     """
     model = Scenario
     context_object_name = 'scenarios'
-
-    def filter_scenarios(self, scenarios, corpus=None, language=None,
-                         show_test=False):
-        """filter scenarios"""
-        if not show_test:
-            scenarios = scenarios.exclude(is_test=True)
-        if corpus:
-            scenarios = scenarios.filter(corpus__id=corpus)
-        if language:
-            scenarios = scenarios.filter(
-                scenariolanguage__language__iso=language)
-
-        # exclude scenarios that belong to corpora that the user is not allowed
-        # to annotate
-        scenarios = scenarios.filter(
-            corpus__in=get_available_corpora(self.request.user))
-
-        return scenarios
+    filterset_class = ScenarioFilter
+    paginate_by = 10
 
     def get_queryset(self):
         """
@@ -50,51 +37,11 @@ class ScenarioList(LoginRequiredMixin, generic.ListView):
         and if show_test is False, don't show test Scenarios either.
         Order the Scenarios by Corpus title.
         """
-        show_test = self.request.GET.get('test')
-        scenarios = Scenario.objects.exclude(last_run__isnull=True)
-        corpus = self.request.GET.get('corpus')
-        language = self.request.GET.get('language')
-        scenarios = self.filter_scenarios(
-            scenarios, corpus, language, show_test)
-
-        scenarios = scenarios.exclude(owner=self.request.user)
-
-        return scenarios.order_by('corpus__title')
-
-    def get_context_data(self, **kwargs):
-        context = super(ScenarioList, self).get_context_data(**kwargs)
-
-        # get filters if set
-        corpus = self.request.GET.get('corpus')
-        language = self.request.GET.get('language')
-        show_test = self.request.GET.get('test')
-
-        corpora = get_available_corpora(self.request.user)
-        # only show languages that are found in the available corpora
-        languages = set(sum([list(c.languages.all()) for c in corpora], []))
-        # sort by language name
-        languages = sorted(languages, key=lambda x: x.title)
-
-        # possible filter values
-        context['corpora'] = corpora
-        context['languages'] = languages
-        context['show_test'] = show_test
-
-        # preserve filter selection
-        if corpus:
-            context['selected_corpus'] = int(corpus)
-        if language:
-            context['selected_language'] = language
-
-        # scenarios that belong to the current user are displayed seperately.
-        # they need to be queried separately
-        # because we should include test scenarios.
-        user_scenarios = self.filter_scenarios(
-            self.request.user.scenarios,
-            corpus, language, show_test=True)
-        context['user_scenarios'] = user_scenarios.all()
-
-        return context
+        return Scenario.objects \
+            .filter(corpus__in=get_available_corpora(self.request.user)) \
+            .exclude(last_run__isnull=True) \
+            .prefetch_related('scenariolanguage_set') \
+            .order_by('corpus__title')
 
 
 class ScenarioDetail(LoginRequiredMixin, generic.DetailView):
@@ -125,16 +72,15 @@ class MDSView(ScenarioDetail):
 
         # Retrieve kwargs
         scenario = self.object
-        language = self.kwargs.get('language', scenario.languages().order_by(
-            'language__iso').first().language.iso)
+        language = self.kwargs.get('language', scenario.languages().order_by('language__iso').first().language.iso)
         # We choose dimensions to be 1-based
         d1 = int(self.kwargs.get('d1', 1))
         d2 = int(self.kwargs.get('d2', 2))
 
+        # Check whether the languages provided are correct, and included in this Scenario
         language_object = get_object_or_404(Language, iso=language)
         if language_object not in [sl.language for sl in scenario.languages()]:
-            raise Http404('Language {} does not exist in Scenario {}'.format(
-                language_object, scenario.pk))
+            raise Http404('Language {} does not exist in Scenario {}'.format(language_object, scenario.pk))
 
         # Retrieve pickled data
         model = scenario.mds_model
@@ -144,6 +90,7 @@ class MDSView(ScenarioDetail):
         # Turn the pickled model into a scatterplot dictionary
         random.seed(scenario.pk)  # Fixed seed for random jitter
         j = defaultdict(list)
+        tense_cache = dict()
         for n, l in enumerate(model):
             # Retrieve x/y dimensions, add some jitter
             x = l[d1 - 1] + random.uniform(-.5, .5) / 100
@@ -154,19 +101,27 @@ class MDSView(ScenarioDetail):
             f = fragments[n]
             fragment = Fragment.objects.get(pk=f)
             ts = [tenses[l][n] for l in tenses.keys()]
-            t = [Tense.objects.get(pk=t).title if isinstance(
-                t, numbers.Number) else t for t in ts]
+
+            labels = []
+            for t in ts:
+                label = t
+                if isinstance(t, numbers.Number):
+                    if t in tense_cache:
+                        label = tense_cache[t]
+                    else:
+                        label = Tense.objects.get(pk=t).title
+                        tense_cache[t] = label
+                labels.append(label)
+
             # Add all values to the dictionary
-            j[tenses[language][n]].append(
-                {'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(HTML), 'tenses': t})
+            j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(HTML), 'tenses': labels})
 
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
         matrix = []
         labels = set()
         for tense, values in j.items():
-            tense_label, tense_color, _ = get_tense_properties(
-                tense, len(labels))
+            tense_label, tense_color, _ = get_tense_properties(tense, len(labels))
             labels.add(tense_label)
 
             d = dict()
@@ -178,12 +133,10 @@ class MDSView(ScenarioDetail):
         # Add all variables to the context
         context['matrix'] = json.dumps(matrix)
         context['language'] = language
-        context['languages'] = Language.objects.filter(
-            iso__in=tenses.keys()).order_by('iso')
+        context['languages'] = Language.objects.filter(iso__in=tenses.keys()).order_by('iso')
         context['d1'] = d1
         context['d2'] = d2
-        # We choose dimensions to be 1-based
-        context['max_dimensions'] = range(1, len(model[0]) + 1)
+        context['max_dimensions'] = range(1, len(model[0]) + 1)  # We choose dimensions to be 1-based
         context['stress'] = scenario.mds_stress
 
         # flat data representation for d3
@@ -194,8 +147,7 @@ class MDSView(ScenarioDetail):
                 {'key': series['key'], 'color': series['color']}
             )
             for fragment in series['values']:
-                s = {'key': series['key'],
-                     'color': series['color']}
+                s = {'key': series['key'], 'color': series['color']}
                 flat_data.append(
                     dict(chain(
                         s.iteritems(),
@@ -208,12 +160,14 @@ class MDSView(ScenarioDetail):
         return context
 
     def post(self, request, pk, *args, **kwargs):
-        request.session['fragment_ids'] = json.loads(
-            request.POST['fragment_ids'])
-        request.session['tenses'] = json.loads(
-            request.POST['tenses'])
-        url = reverse('stats:fragment_table', kwargs={'pk': pk})
-        return HttpResponseRedirect(url)
+        request.session['fragment_ids'] = json.loads(request.POST['fragment_ids'])
+        request.session['tenses'] = json.loads(request.POST['tenses'])
+        return HttpResponseRedirect(reverse('stats:fragment_table', kwargs={'pk': pk}))
+
+
+class MDSViewOld(MDSView):
+    """Loads the matrix plot view, previous version (for the sake of comparison and nostalgia)"""
+    template_name = 'stats/mds_old.html'
 
 
 class DescriptiveStatsView(ScenarioDetail):
@@ -284,27 +238,13 @@ class DescriptiveStatsView(ScenarioDetail):
         return context
 
 
-class FragmentTableView(MDSView, ScenarioDetail):
+class FragmentTableView(ScenarioDetail):
     model = Scenario
     template_name = 'stats/fragment_table.html'
 
     def get_context_data(self, **kwargs):
         context = super(FragmentTableView, self).get_context_data(**kwargs)
-        fragment_ids = self.request.session['fragment_ids']
 
         context['tenses'] = self.request.session['tenses']
-
-        fragments = Fragment.objects.filter(id__in=fragment_ids)
-        context['out'] = []
-        for f in fragments:
-            context['out'].append(
-                {
-                    'fragment_id': f.id,
-                    'doc_title': f.document.title,
-                    'xml_ids': f.xml_ids(),
-                    'target_words': f.target_words(),
-                    'full': f.full(HTML),
-                }
-            )
-
+        context['fragments'] = Fragment.objects.filter(pk__in=self.request.session['fragment_ids'])
         return context
