@@ -214,31 +214,31 @@ class FragmentDetail(LoginRequiredMixin, generic.DetailView):
         #     document_id=current_fragment.document_id,
         #     language_id=current_fragment.language_id)
 
-        doc_sentences = current_document.get_sentences(
-            current_fragment.language)
+        doc_sentences = current_document.get_sentences(current_fragment.language)
 
         all_sentences = []
-        current_index = None
         limit = 5
 
-        # vind het midden (zin passende bij huidige fragment
-        current_index = [sentence['id']
-                         for sentence in doc_sentences].index(current_fragment_id)
-        before = doc_sentences[:current_index]
-        after = doc_sentences[current_index+1:]
+        if doc_sentences:
+            # vind het midden (zin passende bij huidige fragment
+            current_index = [sentence['id'] for sentence in doc_sentences].index(current_fragment_id)
+            before = doc_sentences[:current_index]
+            after = doc_sentences[current_index+1:]
 
-        for i, s in enumerate(doc_sentences):
-            if i == current_index:
-                position = "current"
-            elif i <= current_index:
-                position = "before"
-            else:
-                position = "after"
-            all_sentences.append({
-                'tag': s['tag'],
-                'position': position,
-                'content': s['content']
-            })
+            for i, s in enumerate(doc_sentences):
+                if i == current_index:
+                    position = "current"
+                elif i <= current_index:
+                    position = "before"
+                else:
+                    position = "after"
+                all_sentences.append({
+                    'tag': s['tag'],
+                    'position': position,
+                    'content': s['content']
+                })
+        else:
+            all_sentences = current_fragment.sentence_set.all()
 
         context['sentences'] = all_sentences
         context['limit'] = limit

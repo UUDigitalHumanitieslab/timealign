@@ -84,10 +84,11 @@ class Document(models.Model):
         unique_together = ('corpus', 'title', )
 
     def get_sentences(self, language):
+        document_sentences = []
         print(language)
         doc_fragments = [f.id for f in list(self.fragment_set.all())]
+
         if self.upload and hasattr(self.upload, 'path'):
-            document_sentences = []
             tree = etree.parse(self.upload.path)
             for el in tree.iter():
                 if ('id' in el.attrib.keys() and el.tag in ['p', 's']):
@@ -103,7 +104,8 @@ class Document(models.Model):
                         {'tag': el.tag,
                          'id': el.get('id'),
                          'content': sentence_content})
-            return document_sentences
+
+        return document_sentences
 
     def __unicode__(self):
         return self.title
