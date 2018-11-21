@@ -1,6 +1,8 @@
 from django.contrib import admin
 
-from .models import Language, TenseCategory, Tense, Corpus, Document, Fragment, Sentence, Alignment, Annotation
+from .forms import FocusSentenceFormSet, FocusSentenceForm
+from .models import Language, TenseCategory, Tense, Corpus, Document, Fragment, \
+    Sentence, Alignment, Annotation, FocusSet, FocusSentence
 
 
 @admin.register(Language)
@@ -51,3 +53,24 @@ class AlignmentAdmin(admin.ModelAdmin):
 class AnnotationAdmin(admin.ModelAdmin):
     list_display = ('pk', 'selected_words', 'label',  'annotated_by', 'annotated_at', )
     list_filter = ('is_no_target', 'is_translation', 'annotated_by', )
+
+
+class FocusSentenceInline(admin.TabularInline):
+    model = FocusSentence
+    form = FocusSentenceForm
+    formset = FocusSentenceFormSet
+
+
+@admin.register(FocusSet)
+class FocusSetAdmin(admin.ModelAdmin):
+    list_display = ('title', 'language', 'corpus', )
+    list_filter = ('corpus', )
+
+    inlines = [
+        FocusSentenceInline,
+    ]
+
+
+@admin.register(FocusSentence)
+class FocusSentenceAdmin(admin.ModelAdmin):
+    list_display = ('xml_id', 'focus_set', )

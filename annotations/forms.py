@@ -78,3 +78,20 @@ class LabelImportForm(forms.Form):
         data = self.cleaned_data
 
         process_file(data['label_file'], data['language'], data['use_other_label'], data['model'])
+
+
+class FocusSentenceFormSet(forms.BaseInlineFormSet):
+    def get_form_kwargs(self, index):
+        kwargs = super(FocusSentenceFormSet, self).get_form_kwargs(index)
+        kwargs['focus_set'] = self.instance
+        return kwargs
+
+
+class FocusSentenceForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.focus_set = kwargs.pop('focus_set', None)
+        super(FocusSentenceForm, self).__init__(*args, **kwargs)
+
+        # If the Corpus has been set, filter the Documents based on the Corpus
+        if self.focus_set:
+            self.fields['document'].queryset = self.fields['document'].queryset.filter(corpus=self.focus_set.corpus)

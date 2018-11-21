@@ -40,6 +40,8 @@ class Corpus(models.Model):
     title = models.CharField(max_length=200, unique=True)
     languages = models.ManyToManyField(Language)
     annotators = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
+    current_focus_set = models.ForeignKey(
+        'FocusSet', blank=True, null=True, related_name='current_focus_set', on_delete=models.SET_NULL)
 
     tense_based = models.BooleanField(
         'Whether this Corpus is annotated for tense/aspect, or something else',
@@ -227,6 +229,11 @@ class Sentence(models.Model):
 
     fragment = models.ForeignKey(Fragment, on_delete=models.CASCADE)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['xml_id']),
+        ]
+
     def to_html(self):
         result = '<li>'
         for word in self.word_set.all():
@@ -271,6 +278,11 @@ class Word(models.Model):
     is_in_dialogue_prob = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
 
     sentence = models.ForeignKey(Sentence, on_delete=models.CASCADE)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['xml_id']),
+        ]
 
     def to_html(self):
         return u'<strong>{}</strong>'.format(self.word) if self.is_target else self.word
@@ -345,3 +357,50 @@ class Annotation(models.Model):
 
     def label(self):
         return self.tense.title if self.tense else self.other_label
+
+
+class FocusSet(models.Model):
+    title = models.CharField(max_length=200)
+
+    language = models.ForeignKey(Language, on_delete=models.CASCADE)
+    corpus = models.ForeignKey(Corpus, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('corpus', 'title', )
+
+    def get_fragments(self):
+        # TODO: can we do this in one query?
+        result = Fragment.objects.none()
+
+        for focus_sentence in self.focussentence_set.all():
+            result |= focus_sentence.get_fragments()
+
+        return result
+
+    def __unicode__(self):
+        return self.title
+
+
+class FocusSentence(models.Model):
+    xml_id = models.CharField(max_length=20)
+
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    focus_set = models.ForeignKey(FocusSet, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('document', 'focus_set', 'xml_id', )
+
+    def get_sentences(self):
+        return Sentence.objects.filter(
+            fragment__language=self.focus_set.language,
+            fragment__document=self.document,
+            xml_id=self.xml_id)
+
+    def get_fragments(self):
+        return Fragment.objects.filter(
+            language=self.focus_set.language,
+            document=self.document,
+            sentence__xml_id=self.xml_id)
+
+    def __unicode__(self):
+        return self.xml_id
