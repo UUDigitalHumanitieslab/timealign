@@ -14,7 +14,17 @@
       <label for="corpus">Corpus:</label>
       <select id="corpus" class="form-control" name="corpus">
         {% for corpus in corpora %}
-        <option value="{{corpus.id}}" {% if corpus.id == selected_corpus.id %}selected="selected"{% endif %}>{{corpus.title}}</option>
+        <option value="{{corpus.pk}}" {% if corpus.pk == selected_corpus.pk %}selected="selected"{% endif %}>{{corpus.title}}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="subcorpus">Subcorpus:</label>
+      <select id="subcorpus" class="form-control" name="subcorpus">
+        <option value="all" selected="selected">All</option>
+        {% for subcorpus in selected_corpus.subcorpus_set.all %}
+        <option value="{{subcorpus.pk}}">{{subcorpus.title}}</option>
         {% endfor %}
       </select>
     </div>
@@ -24,9 +34,12 @@
       <select id="document" class="form-control" name="document">
         <option value="all" selected="selected">All</option>
         {% for document in selected_corpus.documents.all %}
-        <option value="{{document.id}}">{{document.title}}</option>
+        <option value="{{document.pk}}">{{document.title}}</option>
         {% endfor %}
       </select>
+    </div>
+
+    <div class="form-group">
       <div class="checkbox">
         <label>
           <input type="checkbox" name="include_non_targets"> Include non-targets and incorrect translations
