@@ -26,8 +26,8 @@ def get_random_alignment(user, language_from, language_to, corpus=None):
     alignments = alignments.filter(original_fragment__document__corpus__in=corpora)
 
     for corpus in corpora:
-        if corpus.current_focus_set:
-            alignments = alignments.filter(original_fragment__in=corpus.current_focus_set.get_fragments())
+        if corpus.current_subcorpus:
+            alignments = alignments.filter(original_fragment__in=corpus.current_subcorpus.get_fragments())
 
     return alignments.order_by('?').first()
 

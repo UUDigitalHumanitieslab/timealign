@@ -1,8 +1,8 @@
 from django.contrib import admin
 
-from .forms import FocusSentenceFormSet, FocusSentenceForm
+from .forms import SubSentenceFormSet, SubSentenceForm
 from .models import Language, TenseCategory, Tense, Corpus, Document, Fragment, \
-    Sentence, Alignment, Annotation, FocusSet, FocusSentence
+    Sentence, Alignment, Annotation, SubCorpus, SubSentence
 
 
 @admin.register(Language)
@@ -55,22 +55,24 @@ class AnnotationAdmin(admin.ModelAdmin):
     list_filter = ('is_no_target', 'is_translation', 'annotated_by', )
 
 
-class FocusSentenceInline(admin.TabularInline):
-    model = FocusSentence
-    form = FocusSentenceForm
-    formset = FocusSentenceFormSet
+class SubSentenceInline(admin.TabularInline):
+    model = SubSentence
+    form = SubSentenceForm
+    formset = SubSentenceFormSet
+    max_num = 3
 
 
-@admin.register(FocusSet)
-class FocusSetAdmin(admin.ModelAdmin):
+@admin.register(SubCorpus)
+class SubCorpusAdmin(admin.ModelAdmin):
     list_display = ('title', 'language', 'corpus', )
     list_filter = ('corpus', )
 
     inlines = [
-        FocusSentenceInline,
+        SubSentenceInline,
     ]
 
 
-@admin.register(FocusSentence)
-class FocusSentenceAdmin(admin.ModelAdmin):
-    list_display = ('xml_id', 'focus_set', )
+@admin.register(SubSentence)
+class SubSentenceAdmin(admin.ModelAdmin):
+    list_display = ('subcorpus', 'document', 'xml_id', )
+    list_filter = ('subcorpus__corpus', )

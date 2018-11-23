@@ -40,8 +40,8 @@ class Corpus(models.Model):
     title = models.CharField(max_length=200, unique=True)
     languages = models.ManyToManyField(Language)
     annotators = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
-    current_focus_set = models.ForeignKey(
-        'FocusSet', blank=True, null=True, related_name='current_focus_set', on_delete=models.SET_NULL)
+    current_subcorpus = models.ForeignKey(
+        'SubCorpus', blank=True, null=True, related_name='current_subcorpus', on_delete=models.SET_NULL)
 
     tense_based = models.BooleanField(
         'Whether this Corpus is annotated for tense/aspect, or something else',
@@ -359,7 +359,7 @@ class Annotation(models.Model):
         return self.tense.title if self.tense else self.other_label
 
 
-class FocusSet(models.Model):
+class SubCorpus(models.Model):
     title = models.CharField(max_length=200)
 
     language = models.ForeignKey(Language, on_delete=models.CASCADE)
@@ -367,38 +367,43 @@ class FocusSet(models.Model):
 
     class Meta:
         unique_together = ('corpus', 'title', )
+        verbose_name_plural = 'SubCorpora'
 
     def get_fragments(self):
-        # TODO: can we do this in one query?
-        result = Fragment.objects.none()
+        fragments = Fragment.objects.none()
 
-        for focus_sentence in self.focussentence_set.all():
-            result |= focus_sentence.get_fragments()
+        for document in Document.objects.filter(corpus=self.corpus):
+            xml_ids = SubSentence.objects.filter(document=document, subcorpus=self).values_list('xml_id', flat=True)
+            fragments |= Fragment.objects.filter(
+                language=self.language,
+                document=document,
+                sentence__xml_id__in=xml_ids)
 
-        return result
+        return fragments
 
     def __unicode__(self):
         return self.title
 
 
-class FocusSentence(models.Model):
+class SubSentence(models.Model):
     xml_id = models.CharField(max_length=20)
 
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
-    focus_set = models.ForeignKey(FocusSet, on_delete=models.CASCADE)
+    subcorpus = models.ForeignKey(SubCorpus, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('document', 'focus_set', 'xml_id', )
+        unique_together = ('document', 'subcorpus', 'xml_id', )
+        verbose_name_plural = 'SubSentences'
 
     def get_sentences(self):
         return Sentence.objects.filter(
-            fragment__language=self.focus_set.language,
+            fragment__language=self.subcorpus.language,
             fragment__document=self.document,
             xml_id=self.xml_id)
 
     def get_fragments(self):
         return Fragment.objects.filter(
-            language=self.focus_set.language,
+            language=self.subcorpus.language,
             document=self.document,
             sentence__xml_id=self.xml_id)
 

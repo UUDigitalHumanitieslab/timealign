@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
 
 from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 
-from annotations.models import Language, Corpus, Document, FocusSet, FocusSentence
+from annotations.models import Language, Corpus, Document, SubCorpus, SubSentence
 
 
 class Command(BaseCommand):
-    help = 'Adds a FocusSet programmatically from a tab-separated file'
+    help = 'Adds a SubCorpus programmatically from a tab-separated file'
 
     def add_arguments(self, parser):
         parser.add_argument('corpus', type=str)
         parser.add_argument('language', type=str)
-        parser.add_argument('focusset', type=str)
+        parser.add_argument('subcorpus', type=str)
         parser.add_argument('filename', type=str)
         parser.add_argument('--delete', action='store_true', dest='delete', default=False,
-                            help='Delete existing FocusSentences for this FocusSet')
+                            help='Delete existing SubSentences for this SubCorpus')
 
     def handle(self, *args, **options):
         try:
@@ -25,33 +26,34 @@ class Command(BaseCommand):
         except Corpus.DoesNotExist:
             raise CommandError('Corpus with title {} does not exist'.format(options['corpus']))
 
-        focus_set, _ = FocusSet.objects.get_or_create(title=options['focusset'], corpus=corpus, language=language)
+        subcorpus, _ = SubCorpus.objects.get_or_create(title=options['subcorpus'], corpus=corpus, language=language)
 
         if options['delete']:
-            FocusSentence.objects.filter(focus_set=focus_set).delete()
+            SubSentence.objects.filter(subcorpus=subcorpus).delete()
 
         with open(options['filename'], 'rb') as f:
             try:
-                process_file(corpus, focus_set, f)
-                self.stdout.write('Successfully created a FocusSet')
+                process_file(corpus, subcorpus, f)
+                self.stdout.write('Successfully created a SubCorpus')
             except ValueError as e:
                 raise CommandError(e.message)
 
 
-def process_file(corpus, focus_set, f):
-    for n, row in enumerate(f):
-        if n == 0:
-            continue
+def process_file(corpus, subcorpus, f):
+    with transaction.atomic():
+        for n, row in enumerate(f):
+            if n == 0:
+                continue
 
-        row = row.strip()
-        if row:
-            encoded = [c.decode('utf-8') for c in row.split('\t')]
-            create_focus_sentence(corpus, focus_set, encoded)
+            row = row.strip()
+            if row:
+                encoded = [c.decode('utf-8') for c in row.split('\t')]
+                create_subsentence(corpus, subcorpus, encoded)
 
 
-def create_focus_sentence(corpus, focus_set, row):
+def create_subsentence(corpus, subcorpus, row):
     try:
         document = Document.objects.get(corpus=corpus, title=row[0])
-        FocusSentence.objects.create(focus_set=focus_set, document=document, xml_id=row[1])
+        SubSentence.objects.create(subcorpus=subcorpus, document=document, xml_id=row[1])
     except Document.DoesNotExist:
         raise ValueError(u'Document with title {} not found.'.format(row[0]))

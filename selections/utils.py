@@ -13,8 +13,8 @@ def get_random_fragment(user, language):
     fragments = get_open_fragments(user, language).order_by('?').first()
 
     for corpus in get_available_corpora(user):
-        if corpus.current_focus_set:
-            fragments = fragments.filter(pk__in=corpus.current_focus_set.get_fragments())
+        if corpus.current_subcorpus:
+            fragments = fragments.filter(pk__in=corpus.current_subcorpus.get_fragments())
 
     return fragments
 
