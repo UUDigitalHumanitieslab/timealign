@@ -19,6 +19,18 @@ class Publication(models.Model):
         blank=True,
         help_text='If the author is not a registered User, please supply an author name here')
 
+    url = models.URLField(
+        'Link to publication in archive',
+        blank=True)
+    document = models.FileField(
+        blank=True,
+        validators=[FileExtensionValidator(['pdf'])],
+        help_text='Use this only if there is no archived version available')
+    appendix = models.FileField(
+        blank=True,
+        validators=[FileExtensionValidator(['pdf'])],
+        help_text='Use this only if there is no archived version available')
+
     class Meta:
         abstract = True
         ordering = ['-date']
@@ -29,6 +41,45 @@ class Publication(models.Model):
         else:
             return ' and '.join([author.get_full_name() for author in self.authors.order_by('last_name')])
     get_authors.short_description = 'Authors'
+
+
+class Paper(Publication):
+    journal = models.CharField(max_length=200, blank=True)
+    volume = models.IntegerField(blank=True, null=True)
+    issue = models.IntegerField(blank=True, null=True)
+    pages = models.CharField(max_length=200, blank=True)
+
+    def __unicode__(self):
+        return self.title
+
+
+class Conference(models.Model):
+    title = models.CharField(max_length=200)
+    abbreviation = models.CharField(max_length=20)
+    year = models.IntegerField(default=datetime.datetime.now().year)
+    city = models.CharField(max_length=200)
+    country = models.CharField(max_length=200)
+
+    def __unicode__(self):
+        return self.title
+
+
+class Talk(Publication):
+    TT_POSTER = 'post'
+    TT_PRESENTATION = 'pres'
+    TALK_TYPES = (
+        (TT_POSTER, 'Poster'),
+        (TT_PRESENTATION, 'Presentation'),
+    )
+
+    conference = models.ForeignKey(Conference)
+    talk_type = models.CharField(
+        max_length=4,
+        choices=TALK_TYPES,
+        default=TT_POSTER)
+
+    def __unicode__(self):
+        return self.title
 
 
 class Programme(models.Model):
@@ -57,18 +108,6 @@ class Thesis(Publication):
         max_length=2,
         choices=THESIS_LEVELS,
         default=TL_BA)
-
-    url = models.URLField(
-        'Link to thesis in thesis archive',
-        blank=True)
-    document = models.FileField(
-        blank=True,
-        validators=[FileExtensionValidator(['pdf'])],
-        help_text='Use this only if there is no archived version available')
-    appendix = models.FileField(
-        blank=True,
-        validators=[FileExtensionValidator(['pdf'])],
-        help_text='Use this only if there is no archived version available')
 
     class Meta(Publication.Meta):
         verbose_name_plural = 'Theses'
