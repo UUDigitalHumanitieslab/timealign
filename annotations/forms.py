@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Annotation, Word, Language
+from .models import Annotation, Word, Language, Tense
 from .management.commands.import_tenses import process_file
 
 
@@ -8,7 +8,10 @@ class AnnotationForm(forms.ModelForm):
     class Meta:
         model = Annotation
         fields = [
-            'is_no_target', 'is_translation', 'is_not_labeled_structure', 'is_not_same_structure', 'comments', 'words',
+            'is_no_target', 'is_translation',
+            'is_not_labeled_structure', 'is_not_same_structure',
+            'tense', 'other_label',
+            'comments', 'words',
         ]
         widgets = {
             'comments': forms.Textarea(attrs={'rows': 2}),
@@ -24,14 +27,22 @@ class AnnotationForm(forms.ModelForm):
         label = self.alignment.original_fragment.label()
         structure = self.alignment.original_fragment.get_formal_structure_display()
 
+        self.user = kwargs.pop('user', None)
+
         super(AnnotationForm, self).__init__(*args, **kwargs)
         self.fields['words'].queryset = Word.objects.filter(sentence__in=translated_sentences)
         self.fields['is_no_target'].label = self.fields['is_no_target'].label.format(label)
         self.fields['is_not_labeled_structure'].label = self.fields['is_not_labeled_structure'].label.format(structure)
+        self.fields['tense'].queryset = Tense.objects.filter(language=self.alignment.translated_fragment.language)
 
         if not corpus.check_structure:
             del self.fields['is_not_labeled_structure']
             del self.fields['is_not_same_structure']
+
+        # Only allow to edit tense/other_label if the current User has this permission
+        if not self.user.has_perm('annotations.edit_labels_in_interface'):
+            del self.fields['tense']
+            del self.fields['other_label']
 
     def clean(self):
         """
@@ -67,3 +78,20 @@ class LabelImportForm(forms.Form):
         data = self.cleaned_data
 
         process_file(data['label_file'], data['language'], data['use_other_label'], data['model'])
+
+
+class SubSentenceFormSet(forms.BaseInlineFormSet):
+    def get_form_kwargs(self, index):
+        kwargs = super(SubSentenceFormSet, self).get_form_kwargs(index)
+        kwargs['subcorpus'] = self.instance
+        return kwargs
+
+
+class SubSentenceForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.subcorpus = kwargs.pop('subcorpus', None)
+        super(SubSentenceForm, self).__init__(*args, **kwargs)
+
+        # If the Corpus has been set, filter the Documents based on the Corpus
+        if self.subcorpus:
+            self.fields['document'].queryset = self.fields['document'].queryset.filter(corpus=self.subcorpus.corpus)

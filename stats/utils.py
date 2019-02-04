@@ -32,6 +32,11 @@ def run_mds(scenario):
         if scenario.documents.exists():
             fragments = fragments.filter(document__in=scenario.documents.all())
 
+        # Filter on SubCorpora (if selected)
+        if scenario.subcorpora.exists():
+            for subcorpus in scenario.subcorpora.all():
+                fragments = fragments.filter(pk__in=subcorpus.get_fragments())
+
         # Filter on formal structure (if selected)
         if scenario.formal_structure != Fragment.FS_NONE:
             fragments = fragments.filter(formal_structure=scenario.formal_structure)

@@ -11,7 +11,7 @@ class SelectionForm(forms.ModelForm):
     class Meta:
         model = Selection
         fields = [
-            'is_no_target', 'already_complete', 'tense', 'comments', 'words',
+            'is_no_target', 'already_complete', 'tense', 'other_label', 'comments', 'words',
         ]
         widgets = {
             'tense': forms.Select(),
@@ -31,12 +31,13 @@ class SelectionForm(forms.ModelForm):
         super(SelectionForm, self).__init__(*args, **kwargs)
         self.fields['words'].queryset = Word.objects.filter(sentence__in=sentences)
 
-        # Allow to select for tense is the Corpus is tense/aspect-based.
+        # Allow to select for tense if the Corpus is tense/aspect-based.
         if self.fragment.document.corpus.tense_based:
             tenses = get_tenses(self.fragment.language)
             self.fields['tense'].widget.choices = tuple(zip(tenses, tenses))
         else:
             del self.fields['tense']
+            del self.fields['other_label']
 
         if not selected_words:
             del self.fields['already_complete']

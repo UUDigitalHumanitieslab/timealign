@@ -17,12 +17,14 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordChangeDoneView
 from django.contrib.flatpages import views
 
 urlpatterns = [
     url(r'^accounts/login/$', LoginView.as_view(), name='login'),
     url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
+    url(r'^accounts/password/change/$', PasswordChangeView.as_view(), name='password_change'),
+    url(r'^accounts/password/change/done/$', PasswordChangeDoneView.as_view(), name='password_change_done'),
 
     url(r'^timealign/', include('annotations.urls', namespace='annotations')),
     url(r'^preselect/', include('selections.urls', namespace='selections')),
@@ -43,4 +45,6 @@ urlpatterns = [
     url(r'^perfectextractor/$', views.flatpage, {'url': '/perfectextractor/'}, name='perfectextractor'),
     url(r'^translation-mining/$', views.flatpage, {'url': '/translation-mining/'}, name='translation-mining'),
     url(r'^contact/$', views.flatpage, {'url': '/contact/'}, name='contact'),
+
+    url(r'^ckeditor/', include('ckeditor_uploader.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

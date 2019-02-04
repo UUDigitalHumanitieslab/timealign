@@ -73,8 +73,13 @@
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 {% if user.is_authenticated %}
-                <li><p class="navbar-text">Signed in as <em>{{ user.username }}</em></p></li>
-                <li><a href="{% url 'logout' %}?next={% url 'home' %}">Log out</a></li>
+                <li>
+                    <a href="#">Signed in as <em>{{ user.username }}</em> <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="{% url 'logout' %}?next={% url 'home' %}">Log out</a></li>
+                        <li><a href="{% url 'password_change' %}">Change password</a></li>
+                    </ul>
+                </li>
                 {% else %}
                 <li><a href="{% url 'login' %}">Log in</a></li>
                 {% endif %}

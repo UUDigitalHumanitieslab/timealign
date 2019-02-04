@@ -1,9 +1,9 @@
 from collections import defaultdict
-from itertools import permutations
 from tempfile import NamedTemporaryFile
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db.models import Count
 from django.urls import reverse
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
@@ -16,7 +16,7 @@ from django_filters.views import FilterView
 from .exports import export_pos_file
 from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm
-from .models import Corpus, Document, Language, Fragment, Alignment, Annotation, TenseCategory, Tense
+from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, TenseCategory, Tense
 from .utils import get_random_alignment, get_available_corpora
 
 from core.utils import XLSX
@@ -51,22 +51,29 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
         else:
             corpora = get_available_corpora(self.request.user)
 
-        languages = set()
-        for corpus in corpora:
-            for language in corpus.languages.all():
-                languages.add(language)
+        # Retrieve the totals per language pair
+        alignments = Alignment.objects.filter(original_fragment__document__corpus__in=corpora)
+        totals = alignments \
+            .values('original_fragment__language', 'translated_fragment__language') \
+            .order_by('original_fragment__language', 'translated_fragment__language') \
+            .annotate(count=Count('pk'))
+        completed = totals.exclude(annotation=None)
 
+        # Convert the QuerySets into a list of tuples
         language_totals = []
-        for l1, l2 in permutations(languages, 2):
-            alignments = Alignment.objects.filter(original_fragment__language=l1,
-                                                  translated_fragment__language=l2,
-                                                  original_fragment__document__corpus__in=corpora)
+        for total in totals:
+            l1 = Language.objects.get(pk=total['original_fragment__language'])
+            l2 = Language.objects.get(pk=total['translated_fragment__language'])
+            available = total['count']
 
-            total = alignments.count()
-            completed = alignments.exclude(annotation=None).count()
+            # TODO: can we do this more elegantly, e.g. without a database call?
+            complete = completed.filter(original_fragment__language=l1, translated_fragment__language=l2)
+            if complete:
+                complete = complete[0]['count']
+            else:
+                complete = 0
 
-            if total:
-                language_totals.append((l1, l2, completed, total))
+            language_totals.append((l1, l2, complete, available))
 
         context['languages'] = language_totals
         context['corpus_pk'] = corpus_pk
@@ -84,8 +91,9 @@ class AnnotationMixin(SuccessMessageMixin, PermissionRequiredMixin):
     permission_required = 'annotations.change_annotation'
 
     def get_form_kwargs(self):
-        """Sets the Alignment as a form kwarg"""
+        """Sets the User and the Alignment as a form kwarg"""
         kwargs = super(AnnotationMixin, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
         kwargs['alignment'] = self.get_alignment()
         return kwargs
 
@@ -135,8 +143,15 @@ class AnnotationCreate(AnnotationMixin, generic.CreateView):
         return super(AnnotationCreate, self).form_valid(form)
 
     def get_alignment(self):
-        """Retrieves the Alignment by the pk in the kwargs"""
-        return get_object_or_404(Alignment, pk=self.kwargs['pk'])
+        """Retrieves the Alignment by the pk in the kwargs, and also some related fields to speed up processing"""
+        alignments = Alignment.objects.select_related('original_fragment',
+                                                      'original_fragment__tense',
+                                                      'original_fragment__language',
+                                                      'original_fragment__document__corpus',
+                                                      'translated_fragment',
+                                                      'translated_fragment__language',
+                                                      'translated_fragment__document')
+        return get_object_or_404(alignments, pk=self.kwargs['pk'])
 
 
 class AnnotationUpdate(AnnotationUpdateMixin, generic.UpdateView):
@@ -161,7 +176,7 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
         """Redirects to a random Alignment"""
         l1 = Language.objects.get(iso=self.kwargs['l1'])
         l2 = Language.objects.get(iso=self.kwargs['l2'])
-        corpus = int(self.kwargs['corpus']) if 'corpus' in self.kwargs else None
+        corpus = Corpus.objects.get(pk=int(self.kwargs['corpus'])) if 'corpus' in self.kwargs else None
         new_alignment = get_random_alignment(self.request.user, l1, l2, corpus)
 
         # If no new alignment has been found, redirect to the status overview
@@ -194,9 +209,15 @@ class AnnotationList(PermissionRequiredMixin, FilterView):
         Retrieves all Annotations for the given source (l1) and target (l2) language.
         :return: A QuerySet of Annotations.
         """
-        return Annotation.objects.filter(alignment__original_fragment__language__iso=self.kwargs['l1'],
-                                         alignment__translated_fragment__language__iso=self.kwargs['l2']) \
+        return Annotation.objects \
+            .filter(alignment__original_fragment__language__iso=self.kwargs['l1']) \
+            .filter(alignment__translated_fragment__language__iso=self.kwargs['l2']) \
             .filter(alignment__original_fragment__document__corpus__in=get_available_corpora(self.request.user)) \
+            .select_related('annotated_by',
+                            'tense',
+                            'alignment__original_fragment',
+                            'alignment__original_fragment__document',
+                            'alignment__translated_fragment') \
             .order_by('-annotated_at')
 
 
@@ -275,13 +296,12 @@ class PrepareDownload(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super(PrepareDownload, self).get_context_data(**kwargs)
 
-        language = kwargs['language']
         corpora = get_available_corpora(self.request.user)
-        selected_corpus = corpora[0]
+        selected_corpus = corpora.first()
         if kwargs.get('corpus'):
-            selected_corpus = Corpus.objects.get(id=int(kwargs['corpus']))
+            selected_corpus = Corpus.objects.get(pk=int(kwargs['corpus']))
 
-        context['language_to'] = Language.objects.get(iso=language)
+        context['language_to'] = Language.objects.get(iso=kwargs['language'])
         context['corpora'] = corpora
         context['selected_corpus'] = selected_corpus
         return context
@@ -293,26 +313,21 @@ class ExportPOSDownload(PermissionRequiredMixin, generic.View):
     def get(self, request, *args, **kwargs):
         language = self.request.GET['language']
         corpus_id = self.request.GET['corpus']
+        subcorpus_id = self.request.GET['subcorpus']
         document_id = self.request.GET['document']
         include_non_targets = 'include_non_targets' in self.request.GET
 
         with NamedTemporaryFile() as file_:
-            corpus = Corpus.objects.get(id=int(corpus_id))
-            if document_id == 'all':
-                export_pos_file(file_.name, XLSX, corpus, language, include_non_targets=include_non_targets)
-                title = 'all'
-            else:
-                document = Document.objects.get(id=int(document_id))
-                export_pos_file(file_.name, XLSX, corpus, language, include_non_targets=include_non_targets,
-                                document=document)
-                title = document.title
+            corpus = Corpus.objects.get(pk=int(corpus_id))
+            subcorpus = SubCorpus.objects.get(pk=int(subcorpus_id)) if subcorpus_id != 'all' else None
+            document = Document.objects.get(pk=int(document_id)) if document_id != 'all' else None
+            document_title = document.title if document_id != 'all' else 'all'
+            export_pos_file(file_.name, XLSX, corpus, language, include_non_targets=include_non_targets,
+                            subcorpus=subcorpus, document=document)
 
+            filename = '{}-{}-{}.xlsx'.format(urlquote(corpus.title), urlquote(document_title), language)
             response = HttpResponse(file_, content_type='application/xlsx')
-            filename = '{}-{}-{}.xlsx'.format(urlquote(corpus.title),
-                                              urlquote(title),
-                                              language)
-            response['Content-Disposition'] = \
-                'attachment; filename={}'.format(filename)
+            response['Content-Disposition'] = 'attachment; filename={}'.format(filename)
             return response
 
 

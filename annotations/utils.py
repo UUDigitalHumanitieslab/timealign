@@ -22,10 +22,12 @@ def get_random_alignment(user, language_from, language_to, corpus=None):
         .filter(translated_fragment__language=language_to) \
         .filter(annotation=None)
 
-    if corpus:
-        alignments = alignments.filter(original_fragment__document__corpus=corpus)
-    else:
-        alignments = alignments.filter(original_fragment__document__corpus__in=get_available_corpora(user))
+    corpora = [corpus] if corpus else get_available_corpora(user)
+    alignments = alignments.filter(original_fragment__document__corpus__in=corpora)
+
+    for corpus in corpora:
+        if corpus.current_subcorpus:
+            alignments = alignments.filter(original_fragment__in=corpus.current_subcorpus.get_fragments())
 
     return alignments.order_by('?').first()
 
@@ -43,9 +45,9 @@ def get_available_corpora(user):
         return user.corpus_set.all()
 
 
-def get_distinct_tenses(language):
+def get_most_frequent_tenses(language):
     """
-    Returns distinct tenses for a language, sorting them by most frequent.
+    Returns the most frequently annotated tenses for a language.
     :param language: The given Language
     :return: A list of tenses
     """
@@ -63,7 +65,7 @@ def get_tenses(language):
     :param language: The given Language
     :return: A list of tenses
     """
-    return [t.title for t in get_distinct_tenses(language)]
+    return [t.title for t in Tense.objects.filter(language=language).order_by('title')]
 
 
 def update_dialogue(in_dialogue, fragment=None, sentence=None, word_range=None):
@@ -114,5 +116,16 @@ def is_before(xml_id1, xml_id2):
             if p1 < p2:
                 result = True
                 break
+
+    return result
+
+
+def sort_key(xml_id, xml_tag):
+    result = [xml_id]
+    if xml_id.isdigit():
+        result = int(xml_id)
+    else:
+        if xml_id[0] == xml_tag and xml_id[1:].split('.'):
+            result = map(int, xml_id[1:].split('.'))
 
     return result
