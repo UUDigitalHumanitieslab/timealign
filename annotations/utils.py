@@ -22,10 +22,12 @@ def get_random_alignment(user, language_from, language_to, corpus=None):
         .filter(translated_fragment__language=language_to) \
         .filter(annotation=None)
 
-    if corpus:
-        alignments = alignments.filter(original_fragment__document__corpus=corpus)
-    else:
-        alignments = alignments.filter(original_fragment__document__corpus__in=get_available_corpora(user))
+    corpora = [corpus] if corpus else get_available_corpora(user)
+    alignments = alignments.filter(original_fragment__document__corpus__in=corpora)
+
+    for corpus in corpora:
+        if corpus.current_subcorpus:
+            alignments = alignments.filter(original_fragment__in=corpus.current_subcorpus.get_fragments())
 
     return alignments.order_by('?').first()
 
@@ -114,5 +116,16 @@ def is_before(xml_id1, xml_id2):
             if p1 < p2:
                 result = True
                 break
+
+    return result
+
+
+def sort_key(xml_id, xml_tag):
+    result = [xml_id]
+    if xml_id.isdigit():
+        result = int(xml_id)
+    else:
+        if xml_id[0] == xml_tag and xml_id[1:].split('.'):
+            result = map(int, xml_id[1:].split('.'))
 
     return result

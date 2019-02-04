@@ -22,13 +22,14 @@ class ScenarioAdmin(DjangoObjectActions, admin.ModelAdmin):
     form = ScenarioForm
     list_display = ('title', 'corpus', 'is_test', 'from_languages', 'to_languages', 'last_run', )
     list_filter = ('corpus', 'scenariolanguage__language', 'owner')
+    list_per_page = 25
 
     fieldsets = (
         (None, {
             'fields': ('title', 'description', 'is_test', )
         }),
         ('Filters', {
-            'fields': ('corpus', 'documents', ('formal_structure', 'formal_structure_strict', ), 'sentence_function', )
+            'fields': ('corpus', 'documents', 'subcorpora', ('formal_structure', 'formal_structure_strict', ), 'sentence_function', )
         }),
         ('Multidimensional Scaling', {
             'classes': ('collapse',),

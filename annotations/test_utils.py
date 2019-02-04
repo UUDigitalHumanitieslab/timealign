@@ -1,5 +1,5 @@
 from .models import Corpus, Annotation, Tense
-from .utils import get_random_alignment, get_available_corpora, get_tenses, get_most_frequent_tenses, is_before
+from .utils import get_random_alignment, get_available_corpora, get_tenses, get_most_frequent_tenses, is_before, sort_key
 from .test_models import BaseTestCase
 
 
@@ -65,3 +65,8 @@ class UtilsTestCase(BaseTestCase):
 
         xml_id2 = 'w13.13.13'
         self.assertTrue(is_before(xml_id1, xml_id2))
+
+    def test_sort_key(self):
+        self.assertEqual(sort_key('123', 'w'), 123)
+        self.assertListEqual(sort_key('w1.2.3', 'w'), [1, 2, 3])
+        self.assertListEqual(sort_key('s11.22.33', 's'), [11, 22, 33])

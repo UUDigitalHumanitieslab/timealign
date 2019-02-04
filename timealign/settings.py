@@ -39,6 +39,7 @@ INSTALLED_APPS = [
 
     'bootstrap3',
     'ckeditor',
+    'ckeditor_uploader',
     'django_filters',
     'django_object_actions',
 
@@ -143,3 +144,6 @@ SITE_ID = 1
 # File handling
 MEDIA_ROOT = 'media'
 MEDIA_URL = '/media/'
+
+CKEDITOR_UPLOAD_PATH = 'news'
+CKEDITOR_IMAGE_BACKEND = 'pillow'

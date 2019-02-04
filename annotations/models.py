@@ -33,13 +33,15 @@ class Tense(models.Model):
         unique_together = ('language', 'title', )
 
     def __unicode__(self):
-        return u'{} ({})'.format(self.title, self.language.iso)
+        return self.title
 
 
 class Corpus(models.Model):
     title = models.CharField(max_length=200, unique=True)
     languages = models.ManyToManyField(Language)
     annotators = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
+    current_subcorpus = models.ForeignKey(
+        'SubCorpus', blank=True, null=True, related_name='current_subcorpus', on_delete=models.SET_NULL)
 
     tense_based = models.BooleanField(
         'Whether this Corpus is annotated for tense/aspect, or something else',
@@ -198,8 +200,14 @@ class Fragment(models.Model):
 
         return result
 
+    def sort_key(self):
+        from .utils import sort_key
+
+        sentence = self.first_sentence()
+        return sort_key(sentence.xml_id, sentence.XML_TAG)
+
     def first_sentence(self):
-        return self.sentence_set.all().order_by('xml_id')[0]
+        return self.sentence_set.first()
 
     def xml_ids(self):
         return ', '.join([s.xml_id for s in self.sentence_set.all()])
@@ -215,9 +223,16 @@ class Fragment(models.Model):
 
 
 class Sentence(models.Model):
+    XML_TAG = 's'
+
     xml_id = models.CharField(max_length=20)
 
     fragment = models.ForeignKey(Fragment, on_delete=models.CASCADE)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['xml_id']),
+        ]
 
     def to_html(self):
         result = '<li>'
@@ -250,6 +265,8 @@ class Sentence(models.Model):
 
 
 class Word(models.Model):
+    XML_TAG = 'w'
+
     xml_id = models.CharField(max_length=20)
     word = models.CharField(max_length=200)
     pos = models.CharField(max_length=50)
@@ -261,6 +278,11 @@ class Word(models.Model):
     is_in_dialogue_prob = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
 
     sentence = models.ForeignKey(Sentence, on_delete=models.CASCADE)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['xml_id']),
+        ]
 
     def to_html(self):
         return u'<strong>{}</strong>'.format(self.word) if self.is_target else self.word
@@ -328,8 +350,62 @@ class Annotation(models.Model):
         Order is based on the xml_id, e.g. w18.1.10 should be after w18.1.9.
         :return: A space-separated string with the selected words.
         """
-        ordered_words = sorted(self.words.all(), key=lambda w: map(int, w.xml_id[1:].split('.')))
+        from .utils import sort_key
+
+        ordered_words = sorted(self.words.all(), key=lambda w: sort_key(w.xml_id, w.XML_TAG))
         return ' '.join([word.word for word in ordered_words])
 
     def label(self):
         return self.tense.title if self.tense else self.other_label
+
+
+class SubCorpus(models.Model):
+    title = models.CharField(max_length=200)
+
+    language = models.ForeignKey(Language, on_delete=models.CASCADE)
+    corpus = models.ForeignKey(Corpus, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('corpus', 'title', )
+        verbose_name_plural = 'SubCorpora'
+
+    def get_fragments(self):
+        fragments = Fragment.objects.none()
+
+        for document in Document.objects.filter(corpus=self.corpus):
+            xml_ids = SubSentence.objects.filter(document=document, subcorpus=self).values_list('xml_id', flat=True)
+            fragments |= Fragment.objects.filter(
+                language=self.language,
+                document=document,
+                sentence__xml_id__in=xml_ids)
+
+        return fragments
+
+    def __unicode__(self):
+        return self.title
+
+
+class SubSentence(models.Model):
+    xml_id = models.CharField(max_length=20)
+
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    subcorpus = models.ForeignKey(SubCorpus, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('document', 'subcorpus', 'xml_id', )
+        verbose_name_plural = 'SubSentences'
+
+    def get_sentences(self):
+        return Sentence.objects.filter(
+            fragment__language=self.subcorpus.language,
+            fragment__document=self.document,
+            xml_id=self.xml_id)
+
+    def get_fragments(self):
+        return Fragment.objects.filter(
+            language=self.subcorpus.language,
+            document=self.document,
+            sentence__xml_id=self.xml_id)
+
+    def __unicode__(self):
+        return self.xml_id
