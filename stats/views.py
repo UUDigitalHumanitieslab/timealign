@@ -245,8 +245,15 @@ class FragmentTableView(ScenarioDetail):
     def get_context_data(self, **kwargs):
         context = super(FragmentTableView, self).get_context_data(**kwargs)
 
-        context['tenses'] = self.request.session['tenses']
-        context['fragments'] = Fragment.objects.filter(pk__in=self.request.session['fragment_ids'])
+        fragments = Fragment.objects.filter(pk__in=self.request.session['fragment_ids'])
+        tenses = self.request.session['tenses']
+
+        if not any(tenses):
+            tenses = []
+
+        context['fragments'] = fragments
+        context['tenses'] = tenses
+
         return context
 
 
@@ -285,3 +292,7 @@ class UpsetView(ScenarioDetail):
         context['languages'] = json.dumps(list(languages))
 
         return context
+
+    def post(self, request, pk, *args, **kwargs):
+        request.session['fragment_ids'] = json.loads(request.POST['fragment_ids'])
+        return HttpResponseRedirect(reverse('stats:fragment_table', kwargs={'pk': pk}))

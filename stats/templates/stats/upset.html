@@ -8,6 +8,12 @@
 {% endblock %}
 
 {% block content %}
+<!-- Form for posting data to server -->
+<form name="fragmentform" action="." method="post">
+    {% csrf_token %}
+    <input type="hidden" name="fragment_ids">
+</form>
+
 <div id="vis"></div>
 
 <script src="https://unpkg.com/candela/dist/candela.min.js"></script>
@@ -22,6 +28,22 @@ var vis = new candela.components.UpSet(el, {
     sets: {{ languages | safe }}
 });
 vis.render();
+
+$(document).ready(function() {
+    link = $('<a>Show fragments</a>');
+    link.insertBefore($('#item-table-container'));
+    link.click(function() {
+        fragment_pks = [];
+        $('#item-table table tbody tr td:nth-child(1)').each(function() {
+           fragment_pks.push($(this).text());
+        });
+
+        if (fragment_pks.length > 0) {
+            $('input[name="fragment_ids"]').val(JSON.stringify(fragment_pks));
+            $('form[name="fragmentform"]').submit();
+        }
+    });
+});
 
 </script>
 {% endblock %}
