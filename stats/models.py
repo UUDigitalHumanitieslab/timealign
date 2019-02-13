@@ -30,10 +30,10 @@ class Scenario(models.Model):
         validators=[MinValueValidator(2), MaxValueValidator(5)],
         help_text='Number of dimensions to use in Multidimensional Scaling. Should be between 2 and 5.'
     )
-    mds_model = PickledObjectField('MDS model', blank=True)
-    mds_matrix = PickledObjectField('MDS matrix', blank=True)
-    mds_fragments = PickledObjectField('MDS fragments', blank=True)
-    mds_labels = PickledObjectField('MDS labels', blank=True)
+    mds_model = PickledObjectField('MDS model', null=True)
+    mds_matrix = PickledObjectField('MDS matrix', null=True)
+    mds_fragments = PickledObjectField('MDS fragments', null=True)
+    mds_labels = PickledObjectField('MDS labels', null=True)
     mds_stress = models.FloatField('MDS stress', null=True)
     mds_allow_partial = models.BooleanField(
         'Allow partial tuples in model', default=False,
