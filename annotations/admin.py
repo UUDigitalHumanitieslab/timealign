@@ -1,6 +1,8 @@
 from django.contrib import admin
 
-from .models import Language, TenseCategory, Tense, Corpus, Document, Fragment, Sentence, Alignment, Annotation
+from .forms import SubSentenceFormSet, SubSentenceForm
+from .models import Language, TenseCategory, Tense, Corpus, Document, Fragment, \
+    Sentence, Alignment, Annotation, SubCorpus, SubSentence
 
 
 @admin.register(Language)
@@ -53,3 +55,26 @@ class AnnotationAdmin(admin.ModelAdmin):
     list_display = ('pk', 'selected_words', 'label',
                     'annotated_by', 'annotated_at', )
     list_filter = ('is_no_target', 'is_translation', 'annotated_by', )
+
+
+class SubSentenceInline(admin.TabularInline):
+    model = SubSentence
+    form = SubSentenceForm
+    formset = SubSentenceFormSet
+    max_num = 3
+
+
+@admin.register(SubCorpus)
+class SubCorpusAdmin(admin.ModelAdmin):
+    list_display = ('title', 'language', 'corpus', )
+    list_filter = ('corpus', )
+
+    inlines = [
+        SubSentenceInline,
+    ]
+
+
+@admin.register(SubSentence)
+class SubSentenceAdmin(admin.ModelAdmin):
+    list_display = ('subcorpus', 'document', 'xml_id', )
+    list_filter = ('subcorpus__corpus', )

@@ -8,6 +8,7 @@ django-picklefield
 lxml
 mysql-python
 numpy
+Pillow
 rpy2>=2.8,<2.9
 scipy
 scikit-learn

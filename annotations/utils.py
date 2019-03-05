@@ -22,10 +22,12 @@ def get_random_alignment(user, language_from, language_to, corpus=None):
         .filter(translated_fragment__language=language_to) \
         .filter(annotation=None)
 
-    if corpus:
-        alignments = alignments.filter(original_fragment__document__corpus=corpus)
-    else:
-        alignments = alignments.filter(original_fragment__document__corpus__in=get_available_corpora(user))
+    corpora = [corpus] if corpus else get_available_corpora(user)
+    alignments = alignments.filter(original_fragment__document__corpus__in=corpora)
+
+    for corpus in corpora:
+        if corpus.current_subcorpus:
+            alignments = alignments.filter(original_fragment__in=corpus.current_subcorpus.get_fragments())
 
     return alignments.order_by('?').first()
 

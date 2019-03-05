@@ -5,7 +5,7 @@ from .management.commands.utils import open_csv, open_xlsx, pad_list
 from core.utils import XLSX
 
 
-def export_pos_file(filename, format_, corpus, language,
+def export_pos_file(filename, format_, corpus, language, subcorpus=None,
                     document=None, include_non_targets=False, add_lemmata=False, add_indices=False, formal_structure=None):
     if format_ == XLSX:
         opener = open_xlsx
@@ -20,10 +20,13 @@ def export_pos_file(filename, format_, corpus, language,
         if not include_non_targets:
             annotations = annotations.filter(is_no_target=False, is_translation=True)
 
-        if document is not None:
-            annotations = annotations.filter(alignment__translated_fragment__document__title=document)
+        if subcorpus:
+            annotations = annotations.filter(alignment__original_fragment__in=subcorpus.get_fragments())
 
-        if formal_structure is not None:
+        if document:
+            annotations = annotations.filter(alignment__translated_fragment__document=document)
+
+        if formal_structure:
             if formal_structure == 'narration':
                 annotations = annotations.filter(alignment__original_fragment__formal_structure=Fragment.FS_NARRATION)
             if formal_structure == 'dialogue':
@@ -53,7 +56,7 @@ def export_pos_file(filename, format_, corpus, language,
                 header.extend(['index' + str(i + 1) for i in range(max_words)])
             header.extend(['comments', 'full fragment'])
             header.extend(list(map(lambda x: 'source ' + x,
-                                   ['id', 'document', 'sentences', 'tense', 'other label', 'words', 'fragment'])))
+                                   ['id', 'document', 'sentences', 'words', 'tense', 'other label', 'fragment'])))
             writer.writerow(header, is_header=True)
 
             for annotation in annotations:

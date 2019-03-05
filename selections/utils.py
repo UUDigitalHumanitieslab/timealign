@@ -10,7 +10,13 @@ def get_random_fragment(user, language):
     :param language: The current Language
     :return: A random PreProcessFragment object
     """
-    return get_open_fragments(user, language).order_by('?').first()
+    fragments = get_open_fragments(user, language)
+
+    for corpus in get_available_corpora(user):
+        if corpus.current_subcorpus:
+            fragments = fragments.filter(pk__in=corpus.current_subcorpus.get_fragments())
+
+    return fragments.order_by('?').first()
 
 
 def get_open_fragments(user, language):

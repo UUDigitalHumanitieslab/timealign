@@ -16,7 +16,7 @@ from django_filters.views import FilterView
 from .exports import export_pos_file
 from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm
-from .models import Corpus, Document, Language, Fragment, Alignment, Annotation, TenseCategory, Tense
+from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, TenseCategory, Tense
 from .utils import get_random_alignment, get_available_corpora
 
 from core.utils import XLSX
@@ -177,8 +177,7 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
         """Redirects to a random Alignment"""
         l1 = Language.objects.get(iso=self.kwargs['l1'])
         l2 = Language.objects.get(iso=self.kwargs['l2'])
-        corpus = int(self.kwargs['corpus']
-                     ) if 'corpus' in self.kwargs else None
+        corpus = Corpus.objects.get(pk=int(self.kwargs['corpus'])) if 'corpus' in self.kwargs else None
         new_alignment = get_random_alignment(self.request.user, l1, l2, corpus)
 
         # If no new alignment has been found, redirect to the status overview
@@ -349,13 +348,12 @@ class PrepareDownload(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super(PrepareDownload, self).get_context_data(**kwargs)
 
-        language = kwargs['language']
         corpora = get_available_corpora(self.request.user)
-        selected_corpus = corpora[0]
+        selected_corpus = corpora.first()
         if kwargs.get('corpus'):
-            selected_corpus = Corpus.objects.get(id=int(kwargs['corpus']))
+            selected_corpus = Corpus.objects.get(pk=int(kwargs['corpus']))
 
-        context['language_to'] = Language.objects.get(iso=language)
+        context['language_to'] = Language.objects.get(iso=kwargs['language'])
         context['corpora'] = corpora
         context['selected_corpus'] = selected_corpus
         return context
@@ -367,27 +365,21 @@ class ExportPOSDownload(PermissionRequiredMixin, generic.View):
     def get(self, request, *args, **kwargs):
         language = self.request.GET['language']
         corpus_id = self.request.GET['corpus']
+        subcorpus_id = self.request.GET['subcorpus']
         document_id = self.request.GET['document']
         include_non_targets = 'include_non_targets' in self.request.GET
 
         with NamedTemporaryFile() as file_:
-            corpus = Corpus.objects.get(id=int(corpus_id))
-            if document_id == 'all':
-                export_pos_file(file_.name, XLSX, corpus, language,
-                                include_non_targets=include_non_targets)
-                title = 'all'
-            else:
-                document = Document.objects.get(id=int(document_id))
-                export_pos_file(file_.name, XLSX, corpus, language, include_non_targets=include_non_targets,
-                                document=document)
-                title = document.title
+            corpus = Corpus.objects.get(pk=int(corpus_id))
+            subcorpus = SubCorpus.objects.get(pk=int(subcorpus_id)) if subcorpus_id != 'all' else None
+            document = Document.objects.get(pk=int(document_id)) if document_id != 'all' else None
+            document_title = document.title if document_id != 'all' else 'all'
+            export_pos_file(file_.name, XLSX, corpus, language, include_non_targets=include_non_targets,
+                            subcorpus=subcorpus, document=document)
 
+            filename = '{}-{}-{}.xlsx'.format(urlquote(corpus.title), urlquote(document_title), language)
             response = HttpResponse(file_, content_type='application/xlsx')
-            filename = '{}-{}-{}.xlsx'.format(urlquote(corpus.title),
-                                              urlquote(title),
-                                              language)
-            response['Content-Disposition'] = \
-                'attachment; filename={}'.format(filename)
+            response['Content-Disposition'] = 'attachment; filename={}'.format(filename)
             return response
 
 

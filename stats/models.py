@@ -4,7 +4,7 @@ from django.db import models
 
 from picklefield.fields import PickledObjectField
 
-from annotations.models import Language, Tense, Corpus, Document, Fragment
+from annotations.models import Language, Tense, Corpus, Document, SubCorpus, Fragment
 
 
 class Scenario(models.Model):
@@ -17,6 +17,7 @@ class Scenario(models.Model):
 
     corpus = models.ForeignKey(Corpus, on_delete=models.CASCADE)
     documents = models.ManyToManyField(Document, blank=True)
+    subcorpora = models.ManyToManyField(SubCorpus, blank=True)
 
     formal_structure = models.PositiveIntegerField('Formal structure', choices=Fragment.FORMAL_STRUCTURES, default=Fragment.FS_NONE)
     formal_structure_strict = models.BooleanField('Require translations to be in the same formal structure', default=True)
@@ -29,10 +30,10 @@ class Scenario(models.Model):
         validators=[MinValueValidator(2), MaxValueValidator(5)],
         help_text='Number of dimensions to use in Multidimensional Scaling. Should be between 2 and 5.'
     )
-    mds_model = PickledObjectField('MDS model', blank=True)
-    mds_matrix = PickledObjectField('MDS matrix', blank=True)
-    mds_fragments = PickledObjectField('MDS fragments', blank=True)
-    mds_labels = PickledObjectField('MDS labels', blank=True)
+    mds_model = PickledObjectField('MDS model', null=True)
+    mds_matrix = PickledObjectField('MDS matrix', null=True)
+    mds_fragments = PickledObjectField('MDS fragments', null=True)
+    mds_labels = PickledObjectField('MDS labels', null=True)
     mds_stress = models.FloatField('MDS stress', null=True)
     mds_allow_partial = models.BooleanField(
         'Allow partial tuples in model', default=False,

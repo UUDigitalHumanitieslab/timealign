@@ -41,6 +41,8 @@ class Corpus(models.Model):
     title = models.CharField(max_length=200, unique=True)
     languages = models.ManyToManyField(Language)
     annotators = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
+    current_subcorpus = models.ForeignKey(
+        'SubCorpus', blank=True, null=True, related_name='current_subcorpus', on_delete=models.SET_NULL)
 
     tense_based = models.BooleanField(
         'Whether this Corpus is annotated for tense/aspect, or something else',
@@ -263,6 +265,11 @@ class Sentence(models.Model):
 
     fragment = models.ForeignKey(Fragment, on_delete=models.CASCADE)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['xml_id']),
+        ]
+
     def to_html(self):
         result = '<li>'
         for word in self.word_set.all():
@@ -309,6 +316,11 @@ class Word(models.Model):
         max_digits=3, decimal_places=2, default=0.00)
 
     sentence = models.ForeignKey(Sentence, on_delete=models.CASCADE)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['xml_id']),
+        ]
 
     def to_html(self):
         return u'<strong>{}</strong>'.format(self.word) if self.is_target else self.word
@@ -387,3 +399,55 @@ class Annotation(models.Model):
 
     def label(self):
         return self.tense.title if self.tense else self.other_label
+
+
+class SubCorpus(models.Model):
+    title = models.CharField(max_length=200)
+
+    language = models.ForeignKey(Language, on_delete=models.CASCADE)
+    corpus = models.ForeignKey(Corpus, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('corpus', 'title', )
+        verbose_name_plural = 'SubCorpora'
+
+    def get_fragments(self):
+        fragments = Fragment.objects.none()
+
+        for document in Document.objects.filter(corpus=self.corpus):
+            xml_ids = SubSentence.objects.filter(document=document, subcorpus=self).values_list('xml_id', flat=True)
+            fragments |= Fragment.objects.filter(
+                language=self.language,
+                document=document,
+                sentence__xml_id__in=xml_ids)
+
+        return fragments
+
+    def __unicode__(self):
+        return self.title
+
+
+class SubSentence(models.Model):
+    xml_id = models.CharField(max_length=20)
+
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
+    subcorpus = models.ForeignKey(SubCorpus, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('document', 'subcorpus', 'xml_id', )
+        verbose_name_plural = 'SubSentences'
+
+    def get_sentences(self):
+        return Sentence.objects.filter(
+            fragment__language=self.subcorpus.language,
+            fragment__document=self.document,
+            xml_id=self.xml_id)
+
+    def get_fragments(self):
+        return Fragment.objects.filter(
+            language=self.subcorpus.language,
+            document=self.document,
+            sentence__xml_id=self.xml_id)
+
+    def __unicode__(self):
+        return self.xml_id

@@ -78,3 +78,20 @@ class LabelImportForm(forms.Form):
         data = self.cleaned_data
 
         process_file(data['label_file'], data['language'], data['use_other_label'], data['model'])
+
+
+class SubSentenceFormSet(forms.BaseInlineFormSet):
+    def get_form_kwargs(self, index):
+        kwargs = super(SubSentenceFormSet, self).get_form_kwargs(index)
+        kwargs['subcorpus'] = self.instance
+        return kwargs
+
+
+class SubSentenceForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.subcorpus = kwargs.pop('subcorpus', None)
+        super(SubSentenceForm, self).__init__(*args, **kwargs)
+
+        # If the Corpus has been set, filter the Documents based on the Corpus
+        if self.subcorpus:
+            self.fields['document'].queryset = self.fields['document'].queryset.filter(corpus=self.subcorpus.corpus)

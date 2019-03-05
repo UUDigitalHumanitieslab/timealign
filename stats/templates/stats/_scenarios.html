@@ -2,9 +2,9 @@
     <thead>
         <tr>
             <th width="15%">Corpus</th>
-            <th width="35%">Scenario</th>
+            <th width="30%">Scenario</th>
             <th width="35%">Languages</th>
-            <th width="15%">Actions</th>
+            <th width="20%">Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -21,8 +21,15 @@
                 {{ scenario.from_languages }} <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> {{ scenario.to_languages }}
             </td>
             <td>
-                <a href="{% url 'stats:mds' scenario.pk %}">MDS</a>
-                (<a href="{% url 'stats:mds_old' scenario.pk %}">old</a>)
+                <a href="{% url 'stats:mds' scenario.pk %}" role="button" class="btn btn-primary btn-xs" title="MDS">
+                    MDS
+                </a>
+                <a href="{% url 'stats:mds_old' scenario.pk %}" role="button" class="btn btn-primary btn-xs" title="MDS (old)">
+                    (old)
+                </a>
+                <a href="{% url 'stats:upset' scenario.pk %}" role="button" class="btn btn-primary btn-xs" title="Upset">
+                    Upset
+                </a>
                 <a href="{% url 'stats:descriptive' scenario.pk %}" role="button" class="btn btn-primary btn-xs" title="Descriptive statistics">
                     <span class="glyphicon glyphicon-stats" aria-hidden="true"></span>
                 </a>

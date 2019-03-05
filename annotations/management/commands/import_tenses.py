@@ -17,7 +17,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         try:
             language = Language.objects.get(iso=options['language'])
-        except Language.DoestNotExist:
+        except Language.DoesNotExist:
             raise CommandError('Language {} does not exist'.format(options['language']))
 
         for filename in options['filenames']:
