@@ -196,50 +196,17 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
 class FragmentDetail(LoginRequiredMixin, generic.DetailView):
     model = Fragment
 
-    # def post(self, request, pk, *args, **kwargs):
-    #     print('ja')
-    #     redirect_to = reverse('annotations:show', kwargs={'pk': pk})
-    #     return redirect(redirect_to)
-
     def get_context_data(self, **kwargs):
         context = super(FragmentDetail, self).get_context_data(**kwargs)
+
         current_fragment = self.get_object()
-        current_fragment_id = current_fragment.xml_ids() if len(
-            current_fragment.xml_ids()) == 1 else current_fragment.xml_ids()
-        current_document = Document.objects.filter(
-            id=current_fragment.document_id)[0]
+        current_fragment_xml_id = current_fragment.xml_ids()  # TODO: this works, as source Fragments have only one Sentence
+        current_document = current_fragment.document
 
-        # all_fragments = Fragment.objects.filter(
-        #     document_id=current_fragment.document_id,
-        #     language_id=current_fragment.language_id)
+        limit = 5  # TODO: magic number
+        doc_sentences = current_document.get_xml_sentences(current_fragment.language, current_fragment_xml_id, limit)
 
-        doc_sentences = current_document.get_sentences(current_fragment.language)
-
-        all_sentences = []
-        limit = 5
-
-        if doc_sentences:
-            # vind het midden (zin passende bij huidige fragment
-            current_index = [sentence['id'] for sentence in doc_sentences].index(current_fragment_id)
-            before = doc_sentences[:current_index]
-            after = doc_sentences[current_index+1:]
-
-            for i, s in enumerate(doc_sentences):
-                if i == current_index:
-                    position = "current"
-                elif i <= current_index:
-                    position = "before"
-                else:
-                    position = "after"
-                all_sentences.append({
-                    'tag': s['tag'],
-                    'position': position,
-                    'content': s['content']
-                })
-        else:
-            all_sentences = current_fragment.sentence_set.all()
-
-        context['sentences'] = all_sentences
+        context['sentences'] = doc_sentences or current_fragment.sentence_set.all()
         context['limit'] = limit
 
         return context
@@ -407,7 +374,3 @@ class ImportLabelsView(LoginRequiredMixin, SuperuserRequiredMixin, generic.View)
             return redirect(reverse('annotations:import-labels'))
         else:
             return render(request, self.template_name, {'form': form})
-
-
-class DocumentDetail(generic.DetailView):
-    model = Document

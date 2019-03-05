@@ -8,10 +8,6 @@
   margin-left: 5px;
 }
 
-/* .current {
-    cursor: pointer;
-} */
-
 .before {
     display: none;
 }
@@ -35,16 +31,15 @@
     margin-bottom: 0px;
 }
 
-div.paragraph {
-  			width: 40%;
-  			border: 1px solid lightgrey;
-  			margin-left: 30%; 
-            margin-right: 30%;
-            border-top: 0px;
-            border-bottom: 0px;
-  			/* display: inline-block; */
-  			text-align: center;
-  		}
+li.paragraph {
+    width: 40%;
+    border: 1px solid lightgrey;
+    margin-left: 30%;
+    margin-right: 30%;
+    border-top: 0px;
+    border-bottom: 0px;
+    text-align: center;
+}
 
 </style>
 
@@ -63,11 +58,11 @@ div.paragraph {
     </h3>
 
     <button id="prevFrag" class="frag-btn" onclick='add_row_before()'>
-            <span class="glyphicon glyphicon-chevron-up"></span>
+        <span class="glyphicon glyphicon-chevron-up"></span>
     </button>
     {% include "annotations/_sentences.html" with sentences=sentences tooltips=1 %}
     <button id="nextFrag" class="frag-btn" onclick='add_row_after()'>
-            <span class="glyphicon glyphicon-chevron-down"></span>
+        <span class="glyphicon glyphicon-chevron-down"></span>
     </button>
 
     <h2>Translations</h2>
@@ -105,7 +100,7 @@ div.paragraph {
 $(function() {
     $(".tooltiptext").hide();
 
-    $(".alignment span").each(function() {
+    $(".list-group-item span").each(function() {
         $(this).qtip({
             content: {
                 text: $(this).next(".tooltiptext")
@@ -120,7 +115,7 @@ $(function() {
 
 var sentences_before = 0;
 var sentences_after= 0;
-const limit = {{limit}};
+const limit = {{ limit }};
 
 function add_row_before() {
     var target = $('.before:hidden:last');
@@ -136,6 +131,8 @@ function add_row_before() {
             $('#prevFrag').hide();
         }
     }
+
+    toggle_context_arrows();
 }
 
 function add_row_after() {
@@ -144,7 +141,6 @@ function add_row_after() {
     highlight_current();
 
     if (target.hasClass('paragraph')) {
-        console.log('paragraph')
         add_row_after();
     }
     else {
@@ -153,6 +149,8 @@ function add_row_after() {
             $('#nextFrag').hide();
         }
     }
+
+    toggle_context_arrows();
 }
 
 function reset_sentences() {
@@ -166,11 +164,9 @@ function reset_sentences() {
 function highlight_current() {
     //highlights the current fragment if there are additional fragments displayed
     if ((sentences_before!=0) || (sentences_after!=0)) {
-        // $('.current').addClass('list-group-item-info');
         $('.current').addClass('highlight');
     }
     else {
-        // $('.current').removeClass('list-group-item-info');
         $('.current').removeClass('highlight');
     }
 }
@@ -183,8 +179,6 @@ function toggle_context_arrows() {
         $('#prevFrag').hide();
     }  
 }
-
-
 
 </script>
 {% endblock %}

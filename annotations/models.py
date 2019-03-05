@@ -73,41 +73,68 @@ class Corpus(models.Model):
     get_annotators.short_description = 'Annotators'
 
 
+def corpus_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/<corpus>/<filename>
+    return 'documents/{0}/{1}'.format(instance.corpus.pk, filename)
+
+
 class Document(models.Model):
     title = models.CharField(max_length=200)
     description = models.CharField(max_length=200, blank=True)
+    xml_file = models.FileField(upload_to=corpus_path, blank=True)
 
-    upload = models.FileField(upload_to='uploads/', blank=True)
-
-    corpus = models.ForeignKey(
-        Corpus, related_name='documents', on_delete=models.CASCADE)
+    corpus = models.ForeignKey(Corpus, related_name='documents', on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ('corpus', 'title', )
 
-    def get_sentences(self, language):
-        document_sentences = []
-        print(language)
-        doc_fragments = [f.id for f in list(self.fragment_set.all())]
+    def get_xml_sentences(self, language, xml_id, limit):
+        """
+        Retrieves sentences in the XML in the vicinity of the given xml_id
+        """
 
-        if self.upload and hasattr(self.upload, 'path'):
-            tree = etree.parse(self.upload.path)
-            for el in tree.iter():
-                if ('id' in el.attrib.keys() and el.tag in ['p', 's']):
-                    if el.tag == 's':
-                        sentence_content = Sentence.objects.filter(
-                            xml_id=el.get('id'),
-                            fragment__document__id=self.id,
-                            fragment__language=language
-                        ).first()
+        def add_element(el, language, position):
+            # For s elements, look up the Sentence in the database (if any)
+            sentence_content = None
+            if el.tag == 's':
+                sentence_content = Sentence.objects.filter(
+                    xml_id=el.get('id'),
+                    fragment__document=self,
+                    fragment__language=language
+                ).first()
+
+            return {'tag': el.tag,
+                    'id': el.get('id'),
+                    'position': position,
+                    'content': sentence_content}
+
+        results = []
+
+        if self.xml_file and hasattr(self.xml_file, 'path'):
+            prev_el = []
+            found = False
+            added = 0
+
+            # Loop over p/s elements
+            for _, el in etree.iterparse(self.xml_file.path, tag=['p', 's']):
+                if el.get('id') == xml_id:
+                    found = True
+
+                if found:
+                    if added <= limit:
+                        position = 'current' if added == 0 else 'after'
+                        results.append(add_element(el, language, position))
+                        added += 1
                     else:
-                        sentence_content = None
-                    document_sentences.append(
-                        {'tag': el.tag,
-                         'id': el.get('id'),
-                         'content': sentence_content})
+                        break
+                else:
+                    prev_el.append(el)
 
-        return document_sentences
+            # Inserts previous elements before the results
+            for el in list(reversed(prev_el))[:limit]:
+                results.insert(0, add_element(el, language, 'before'))
+
+        return results
 
     def __unicode__(self):
         return self.title
