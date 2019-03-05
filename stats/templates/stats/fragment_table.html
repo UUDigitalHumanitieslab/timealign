@@ -30,25 +30,33 @@
             zIndex: 0
         }));
     });
-    var back_url = "{% url 'stats:mds' scenario.pk %}"
 </script>
 {% endblock %}
 
 {% block content %}
 
 <div>
-    <button class="btn btn-primary pull-right" onclick="location.href=back_url">
-        <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
-        Back to MDS visualisation
-    </button>
+    <div class="pull-right">
+        <a href="{% url 'stats:mds' scenario.pk %}" class="btn btn-primary" role="button">
+            <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+            Back to MDS
+        </a>
+        <a href="{% url 'stats:upset' scenario.pk %}" class="btn btn-primary" role="button">
+            <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+            Back to Upset
+        </a>
+    </div>
     <h2>Fragment overview (scenario
         <em>
             <a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a>
         </em>)
     </h2>
     <p>
-        {{fragments|length}} fragment{{fragments|pluralize:"s" }} with labels:
+        {{fragments|length}} fragment{{fragments|pluralize:"s" }}
+        {% if tenses %}
+        with labels:
         {% for tense in tenses %} {{tense|safe|lower}}{%if not forloop.last%},{%endif%} {% endfor %}
+        {% endif %}
     </p>
 </div>
 
