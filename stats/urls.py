@@ -24,6 +24,7 @@ urlpatterns = [
 
     # Upset
     url(r'upset/(?P<pk>\d+)/$', UpsetView.as_view(), name='upset'),
+    url(r'upset/(?P<pk>\d+)/(?P<tc>\d+)/$', UpsetView.as_view(), name='upset'),
 
     # Descriptive statistics
     url(r'^descriptive/(?P<pk>\d+)/$', DescriptiveStatsView.as_view(), name='descriptive'),

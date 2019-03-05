@@ -8,7 +8,21 @@
 {% endblock %}
 
 {% block content %}
-<!-- Form for posting data to server -->
+<!-- Form for changing the tense category -->
+<form action="{% url 'annotations:download' %}" target="_blank">
+    <div class="form-group">
+        <label for="tc">Tense category:</label>
+        <select id="tc" class="form-control" name="tc">
+        {% for tc in tense_categories %}
+            <option value="{{ tc.pk }}" {% if tc.pk == selected_tc.pk %}selected="selected"{% endif %}>
+                {{ tc.title }}
+            </option>
+        {% endfor %}
+        </select>
+    </div>
+</form>
+
+<!-- Form for posting fragment_ids to server -->
 <form name="fragmentform" action="." method="post">
     {% csrf_token %}
     <input type="hidden" name="fragment_ids">
@@ -42,6 +56,13 @@ $(document).ready(function() {
             $('input[name="fragment_ids"]').val(JSON.stringify(fragment_pks));
             $('form[name="fragmentform"]').submit();
         }
+    });
+
+    $("#tc").change(function() {
+        var tc = $(this).children("option:selected").val();
+        console.log(tc);
+        var url = "{% url 'stats:upset' scenario.pk 123 %}";
+        window.location = url.replace("123", tc);
     });
 });
 

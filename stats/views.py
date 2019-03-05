@@ -13,7 +13,7 @@ from django.views import generic
 
 from django_filters.views import FilterView
 
-from annotations.models import Fragment, Language, Tense
+from annotations.models import Fragment, Language, Tense, TenseCategory
 from annotations.utils import get_available_corpora
 from core.utils import HTML
 
@@ -245,11 +245,8 @@ class FragmentTableView(ScenarioDetail):
     def get_context_data(self, **kwargs):
         context = super(FragmentTableView, self).get_context_data(**kwargs)
 
-        fragments = Fragment.objects.filter(pk__in=self.request.session['fragment_ids'])
-        tenses = self.request.session['tenses']
-
-        if not any(tenses):
-            tenses = []
+        fragments = Fragment.objects.filter(pk__in=self.request.session.get('fragment_ids', []))
+        tenses = self.request.session.get('tenses', [])
 
         context['fragments'] = fragments
         context['tenses'] = tenses
@@ -268,6 +265,11 @@ class UpsetView(ScenarioDetail):
         tenses = scenario.mds_labels
         fragments = scenario.mds_fragments
 
+        # Get the currently selected TenseCategory. We pick "Present Perfect" as the default here.
+        # TODO: we might want to change this magic number into a setting?
+        tc_pk = int(self.kwargs.get('tc', TenseCategory.objects.get(title='Present Perfect').pk))
+        print tc_pk
+
         results = []
         languages = set()
         tense_cache = dict()
@@ -283,11 +285,13 @@ class UpsetView(ScenarioDetail):
                         tense = Tense.objects.select_related('category').get(pk=t)
                         tense_cache[t] = tense
 
-                    d[str(language)] = int(tense.category.title == 'Present Perfect')
+                    d[str(language)] = int(tense.category.pk == tc_pk)
                     languages.add(language)
 
             results.append(d)
 
+        context['tense_categories'] = TenseCategory.objects.all()
+        context['selected_tc'] = TenseCategory.objects.get(pk=tc_pk)
         context['data'] = json.dumps(results)
         context['languages'] = json.dumps(list(languages))
 
