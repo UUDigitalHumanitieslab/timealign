@@ -5,8 +5,13 @@
         {% else %}
         <li class="list-group-item {{sentence.position}}" data-pk="{{ sentence.pk }}" data-xml-id="{{ sentence.xml_id }}">
             {% if sentence.content %}
+                {% if sentence.position == "current" %}
+                <a href="" role="button" class="reset-btn btn btn-primary btn-xs pull-right" title="Reset context">
+                    <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                </a>
+                {% endif %}
                 {% with sentence.content as sentence %}
-                    <a href="{% url 'annotations:show' sentence.fragment.pk %}" class="label label-primary" title="View fragment">
+                    <a href="{% url 'annotations:show' sentence.fragment.pk %}" class="btn btn-info btn-xs" title="View fragment">
                         {{ sentence.xml_id }}
                     </a>
                     {% for word in sentence.word_set.all %}
@@ -41,15 +46,7 @@
                     {% endfor %}
                     {% endspaceless %}
                     {% endfor %}
-                {% if sentence.position == 'current' %}
-                <span class="fold">
-                    <span class="glyphicon glyphicon-chevron-down" style="float:right;"></span>
-                    <span class="glyphicon glyphicon-chevron-up" style="float:right;"></span>
-                </span>
-                {% endif %}
-
                 {% endwith %}
-
             {% else %}
                 {% for word in sentence.word_set.all %}
                 {% spaceless %}

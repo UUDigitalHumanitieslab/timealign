@@ -3,6 +3,7 @@
 {% load bootstrap3 %}
 (% load custom_tags %}
 {% block content %}
+
 <style>
 .label {
   margin-left: 5px;
@@ -40,7 +41,6 @@ li.paragraph {
     border-bottom: 0px;
     text-align: center;
 }
-
 </style>
 
 <div class="container">
@@ -100,7 +100,7 @@ li.paragraph {
 $(function() {
     $(".tooltiptext").hide();
 
-    $(".list-group-item span").each(function() {
+    $(".list-group-item span:not(.glyphicon)").each(function() {
         $(this).qtip({
             content: {
                 text: $(this).next(".tooltiptext")
@@ -108,7 +108,7 @@ $(function() {
         });
     });
 
-    $(".current").on("click", reset_sentences);
+    $(".reset-btn").on("click", reset_sentences);
 
     toggle_context_arrows();
 });
@@ -120,7 +120,6 @@ const limit = {{ limit }};
 function add_row_before() {
     var target = $('.before:hidden:last');
     target.css('display', 'block');
-    highlight_current();
 
     if (target.hasClass('paragraph')) {
         add_row_before();
@@ -132,13 +131,13 @@ function add_row_before() {
         }
     }
 
+    highlight_current();
     toggle_context_arrows();
 }
 
 function add_row_after() {
     var target = $('.after:hidden:first');
     target.css('display', 'block');
-    highlight_current();
 
     if (target.hasClass('paragraph')) {
         add_row_after();
@@ -150,6 +149,7 @@ function add_row_after() {
         }
     }
 
+    highlight_current();
     toggle_context_arrows();
 }
 
