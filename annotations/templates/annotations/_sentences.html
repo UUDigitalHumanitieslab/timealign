@@ -1,7 +1,9 @@
 <ul class="list-group" dir="auto" style="margin-bottom: 0px">
     {% for sentence in sentences %}
         {% if sentence.tag == 'p' %}
-        <li class="paragraph {{sentence.position}}">&para</li>
+        <li class="paragraph {{sentence.position}}">
+            &para
+        </li>
         {% else %}
         <li class="list-group-item {{sentence.position}}" data-pk="{{ sentence.pk }}" data-xml-id="{{ sentence.xml_id }}">
             {% if sentence.content %}
@@ -14,72 +16,17 @@
                     <a href="{% url 'annotations:show' sentence.fragment.pk %}" class="btn btn-info btn-xs" title="View fragment">
                         {{ sentence.xml_id }}
                     </a>
-                    {% for word in sentence.word_set.all %}
-                    {% spaceless %}
-                    <span data-pk="{{ word.pk }}" data-xml-id="{{ word.xml_id }}"
-                        class="
-                        word
-
-                        {% if word.is_target or word in annotated_words %}
-                        selected
-                        {% endif %}
-
-                        {% if word.word == filtered %}
-                        filtered
-                        {% endif %}
-
-                        {% if word.is_in_dialogue %}
-                        in-dialogue
-                        {% endif %}">{{ word.word }}</span>
-
-                    {% if tooltips %}
-                    <div class="tooltiptext">
-                        Part-of-speech: <em>{{ word.pos }}</em><br/>
-                        Lemma: <em>{{ word.lemma }}</em>
-                    </div>
-                    {% endif %}
-
-                    {% for k, v in selected_words.items %}
-                    {% if word.xml_id in v %}
-                    <sup class="prev">{{ k }}</sup>
-                    {% endif %}
-                    {% endfor %}
-                    {% endspaceless %}
-                    {% endfor %}
+                    {% include "annotations/_sentence.html" with words=sentence.word_set.all %}
+                {% endwith %}
+            {% elif sentence.content_xml %}
+                {% with sentence.content_xml as sentence %}
+                    <button type="button" class="btn btn-info btn-xs" disabled="disabled">
+                        {{ sentence.xml_id }}
+                    </button>
+                    {% include "annotations/_sentence.html" with words=sentence.words %}
                 {% endwith %}
             {% else %}
-                {% for word in sentence.word_set.all %}
-                {% spaceless %}
-                <span data-pk="{{ word.pk }}" data-xml-id="{{ word.xml_id }}"
-                    class="
-                    word
-
-                    {% if word.is_target or word in annotated_words %}
-                    selected
-                    {% endif %}
-
-                    {% if word.word == filtered %}
-                    filtered
-                    {% endif %}
-
-                    {% if word.is_in_dialogue %}
-                    in-dialogue
-                    {% endif %}">{{ word.word }}</span>
-
-                {% if tooltips %}
-                <div class="tooltiptext">
-                    Part-of-speech: <em>{{ word.pos }}</em><br/>
-                    Lemma: <em>{{ word.lemma }}</em>
-                </div>
-                {% endif %}
-
-                {% for k, v in selected_words.items %}
-                {% if word.xml_id in v %}
-                <sup class="prev">{{ k }}</sup>
-                {% endif %}
-                {% endfor %}
-                {% endspaceless %}
-                {% endfor %}
+                {% include "annotations/_sentence.html" with words=sentence.word_set.all %}
             {% endif %}
         </li>
         {% endif %}

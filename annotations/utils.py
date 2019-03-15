@@ -139,6 +139,7 @@ def get_xml_sentences(fragment, limit):
     """
     document = fragment.document
     xml_id = fragment.xml_ids()  # TODO: this works, as source Fragments have only one Sentence
+    # TODO: limit to Fragments that are the source of an Alignment
     related_fragments = Fragment.objects.filter(
         document=fragment.document,
         language=fragment.language,
@@ -176,16 +177,35 @@ def get_xml_sentences(fragment, limit):
 
 def add_element(el, fragments, position):
     sentence_content = None
+    sentence_content_xml = None
     if el.tag == 's':
         # For s elements, look up the Sentence in the same Corpus as the current Fragment
+        # TODO Deal with multiple Sentences here
         sentence_content = Sentence.objects.filter(
             xml_id=el.get('id'),
             fragment__in=fragments
         ).first()
-        # TODO Deal with multiple Sentences here
-        # TODO If the Sentence is not there, create a mock Sentence from the XML
+
+        # If the Sentence is not there, create a mock Sentence from the XML
+        if not sentence_content:
+            words = []
+            for w in el.xpath('./w'):
+                word = {
+                    'word': w.text,
+                    'xml_id': w.get('id'),
+                    'lemma': w.get('lem'),
+                    'pos': w.get('tree') or w.get('pos') or w.get('hun') or '?',
+                }
+                words.append(word)
+
+            sentence_content_xml = {
+                'xml_id': el.get('id'),
+                'words': words
+            }
 
     return {'tag': el.tag,
             'id': el.get('id'),
             'position': position,
-            'content': sentence_content}
+            'content': sentence_content,
+            'content_xml': sentence_content_xml,
+            }
