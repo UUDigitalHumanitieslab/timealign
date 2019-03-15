@@ -17,7 +17,7 @@ from .exports import export_pos_file
 from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm
 from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, TenseCategory, Tense
-from .utils import get_random_alignment, get_available_corpora
+from .utils import get_random_alignment, get_available_corpora, get_xml_sentences
 
 from core.utils import XLSX
 
@@ -199,14 +199,11 @@ class FragmentDetail(LoginRequiredMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(FragmentDetail, self).get_context_data(**kwargs)
 
-        current_fragment = self.get_object()
-        current_fragment_xml_id = current_fragment.xml_ids()  # TODO: this works, as source Fragments have only one Sentence
-        current_document = current_fragment.document
-
+        fragment = self.get_object()
         limit = 5  # TODO: magic number
-        doc_sentences = current_document.get_xml_sentences(current_fragment.language, current_fragment_xml_id, limit)
+        doc_sentences = get_xml_sentences(fragment, limit)
 
-        context['sentences'] = doc_sentences or current_fragment.sentence_set.all()
+        context['sentences'] = doc_sentences or fragment.sentence_set.all()
         context['limit'] = limit
 
         return context

@@ -2,7 +2,6 @@ from django.conf import settings
 from django.db import models
 
 from core.utils import check_format, CSV, HTML, XLSX
-from lxml import etree
 
 
 class Language(models.Model):
@@ -87,54 +86,6 @@ class Document(models.Model):
 
     class Meta:
         unique_together = ('corpus', 'title', )
-
-    def get_xml_sentences(self, language, xml_id, limit):
-        """
-        Retrieves sentences in the XML in the vicinity of the given xml_id
-        """
-
-        def add_element(el, language, position):
-            # For s elements, look up the Sentence in the database (if any)
-            sentence_content = None
-            if el.tag == 's':
-                sentence_content = Sentence.objects.filter(
-                    xml_id=el.get('id'),
-                    fragment__document=self,
-                    fragment__language=language
-                ).first()
-
-            return {'tag': el.tag,
-                    'id': el.get('id'),
-                    'position': position,
-                    'content': sentence_content}
-
-        results = []
-
-        if self.xml_file and hasattr(self.xml_file, 'path'):
-            prev_el = []
-            found = False
-            added = 0
-
-            # Loop over p/s elements
-            for _, el in etree.iterparse(self.xml_file.path, tag=['p', 's']):
-                if el.get('id') == xml_id:
-                    found = True
-
-                if found:
-                    if added <= limit:
-                        position = 'current' if added == 0 else 'after'
-                        results.append(add_element(el, language, position))
-                        added += 1
-                    else:
-                        break
-                else:
-                    prev_el.append(el)
-
-            # Inserts previous elements before the results
-            for el in list(reversed(prev_el))[:limit]:
-                results.insert(0, add_element(el, language, 'before'))
-
-        return results
 
     def __unicode__(self):
         return self.title

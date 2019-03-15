@@ -2,9 +2,11 @@
 
 import re
 
+from lxml import etree
+
 from django.db.models import Count
 
-from .models import Corpus, Tense, Alignment, Annotation, Word
+from .models import Corpus, Tense, Alignment, Annotation, Fragment, Sentence, Word
 
 
 def get_random_alignment(user, language_from, language_to, corpus=None):
@@ -129,3 +131,61 @@ def sort_key(xml_id, xml_tag):
             result = map(int, xml_id[1:].split('.'))
 
     return result
+
+
+def get_xml_sentences(fragment, limit):
+    """
+    Retrieves sentences in the XML in the vicinity of the given xml_id
+    """
+    document = fragment.document
+    xml_id = fragment.xml_ids()  # TODO: this works, as source Fragments have only one Sentence
+    related_fragments = Fragment.objects.filter(
+        document=fragment.document,
+        language=fragment.language,
+        preprocessfragment=None
+    )
+
+    results = []
+
+    if document.xml_file and hasattr(document.xml_file, 'path'):
+        prev_el = []
+        found = False
+        added = 0
+
+        # Loop over p/s elements
+        for _, el in etree.iterparse(document.xml_file.path, tag=['p', 's']):
+            if el.get('id') == xml_id:
+                found = True
+
+            if found:
+                if added <= limit:
+                    position = 'current' if added == 0 else 'after'
+                    results.append(add_element(el, related_fragments, position))
+                    added += 1
+                else:
+                    break
+            else:
+                prev_el.append(el)
+
+        # Inserts previous elements before the results
+        for el in list(reversed(prev_el))[:limit]:
+            results.insert(0, add_element(el, related_fragments, 'before'))
+
+    return results
+
+
+def add_element(el, fragments, position):
+    sentence_content = None
+    if el.tag == 's':
+        # For s elements, look up the Sentence in the same Corpus as the current Fragment
+        sentence_content = Sentence.objects.filter(
+            xml_id=el.get('id'),
+            fragment__in=fragments
+        ).first()
+        # TODO Deal with multiple Sentences here
+        # TODO If the Sentence is not there, create a mock Sentence from the XML
+
+    return {'tag': el.tag,
+            'id': el.get('id'),
+            'position': position,
+            'content': sentence_content}
