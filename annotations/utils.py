@@ -7,7 +7,7 @@ from lxml import etree
 
 from django.db.models import Count
 
-from .models import Corpus, Tense, Alignment, Annotation, Fragment, Sentence, Word
+from .models import Corpus, Tense, Alignment, Source, Annotation, Fragment, Sentence, Word
 
 
 def get_random_alignment(user, language_from, language_to, corpus=None):
@@ -138,24 +138,28 @@ def get_xml_sentences(fragment, limit):
     """
     Retrieves sentences in the XML in the vicinity of the given xml_id
     """
-    document = fragment.document
-    xml_id = fragment.xml_ids()  # TODO: this works, as source Fragments have only one Sentence
-    # TODO: limit to Fragments that are the source of an Alignment
-    related_fragments = Fragment.objects.filter(
-        document=fragment.document,
-        language=fragment.language,
-        preprocessfragment=None
-    )
+    try:
+        source = Source.objects.get(document=fragment.document, language=fragment.language)
+    except Source.DoesNotExist:
+        source = None
 
     results = []
 
-    if document.xml_file and hasattr(document.xml_file, 'path'):
+    if source and source.xml_file:
+        xml_id = fragment.xml_ids()  # TODO: this works, as source Fragments have only one Sentence
+        # TODO: limit to Fragments that are the source of an Alignment
+        related_fragments = Fragment.objects.filter(
+            document=fragment.document,
+            language=fragment.language,
+            preprocessfragment=None,
+        )
+        related_fragments = related_fragments.exclude(original=None)
+
+        # Loop over p/s elements
         prev_el = []
         found = False
         added = 0
-
-        # Loop over p/s elements
-        for _, el in etree.iterparse(document.xml_file.path, tag=['p', 's']):
+        for _, el in etree.iterparse(source.xml_file.path, tag=['p', 's']):
             if el.get('id') == xml_id:
                 found = True
 
@@ -227,7 +231,7 @@ def add_element(el, current_fragment, related_fragments, position):
         # If the Sentence is not there, create a mock Sentence from the XML
         else:
             words = []
-            for w in el.xpath('./w'):
+            for w in el.xpath('.//w'):
                 word = {
                     'word': w.text,
                     'xml_id': w.get('id'),

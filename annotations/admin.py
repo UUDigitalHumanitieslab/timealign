@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .forms import SubSentenceFormSet, SubSentenceForm
-from .models import Language, TenseCategory, Tense, Corpus, Document, Fragment, \
+from .models import Language, TenseCategory, Tense, Corpus, Document, Source, Fragment, \
     Sentence, Alignment, Annotation, SubCorpus, SubSentence
 
 
@@ -27,10 +27,24 @@ class CorpusAdmin(admin.ModelAdmin):
                     'tense_based', 'check_structure', )
 
 
+class SourceInline(admin.TabularInline):
+    model = Source
+
+
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'description', )
+    list_display = ('title', 'description', )
     list_filter = ('corpus', )
+
+    inlines = [
+        SourceInline,
+    ]
+
+
+@admin.register(Source)
+class SourceAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'language', 'document', )
+    list_filter = ('document__corpus', 'language', )
 
 
 @admin.register(Fragment)

@@ -72,15 +72,9 @@ class Corpus(models.Model):
     get_annotators.short_description = 'Annotators'
 
 
-def corpus_path(instance, filename):
-    # file will be uploaded to MEDIA_ROOT/<corpus>/<filename>
-    return 'documents/{0}/{1}'.format(instance.corpus.pk, filename)
-
-
 class Document(models.Model):
     title = models.CharField(max_length=200)
     description = models.CharField(max_length=200, blank=True)
-    xml_file = models.FileField(upload_to=corpus_path, blank=True)
 
     corpus = models.ForeignKey(Corpus, related_name='documents', on_delete=models.CASCADE)
 
@@ -88,7 +82,19 @@ class Document(models.Model):
         unique_together = ('corpus', 'title', )
 
     def __unicode__(self):
-        return self.title
+        return '{} - {}'.format(self.corpus.title, self.title)
+
+
+def corpus_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/<corpus>/<language>/<filename>
+    return 'documents/{0}/{1}/{2}'.format(instance.document.corpus.pk, instance.language.iso, filename)
+
+
+class Source(models.Model):
+    xml_file = models.FileField(upload_to=corpus_path, blank=True)
+
+    language = models.ForeignKey(Language, on_delete=models.CASCADE)
+    document = models.ForeignKey(Document, on_delete=models.CASCADE)
 
 
 class Fragment(models.Model):
