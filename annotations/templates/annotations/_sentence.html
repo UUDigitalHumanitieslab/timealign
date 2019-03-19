@@ -8,6 +8,10 @@
         selected
         {% endif %}
 
+        {% if word.is_other_target %}
+        other
+        {% endif %}
+
         {% if word.word == filtered %}
         filtered
         {% endif %}

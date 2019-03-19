@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from collections import OrderedDict
 import re
 
 from lxml import etree
@@ -161,40 +162,77 @@ def get_xml_sentences(fragment, limit):
             if found:
                 if added <= limit:
                     position = 'current' if added == 0 else 'after'
-                    results.append(add_element(el, related_fragments, position))
-                    added += 1
+                    results.append(add_element(el, fragment, related_fragments, position))
+                    if el.tag == 's':
+                        added += 1
                 else:
                     break
             else:
                 prev_el.append(el)
 
         # Inserts previous elements before the results
-        for el in list(reversed(prev_el))[:limit]:
-            results.insert(0, add_element(el, related_fragments, 'before'))
+        added = 0
+        for el in list(reversed(prev_el)):
+            results.insert(0, add_element(el, fragment, related_fragments, 'before'))
+            if el.tag == 's':
+                added += 1
+            if added == limit:
+                break
 
     return results
 
 
-def add_element(el, fragments, position):
-    sentence_content = None
+def add_element(el, current_fragment, related_fragments, position):
+    sentence = None
     sentence_content_xml = None
     if el.tag == 's':
         # For s elements, look up the Sentence in the same Corpus as the current Fragment
-        # TODO Deal with multiple Sentences here
-        sentence_content = Sentence.objects.filter(
+        sentences = Sentence.objects.filter(
             xml_id=el.get('id'),
-            fragment__in=fragments
-        ).first()
+            fragment__in=related_fragments
+        )
+
+        if sentences:
+            xml_id = None
+            fragment_pks = []
+            words = OrderedDict()
+            for s in sentences:
+                xml_id = s.xml_id
+                fragment_pks.append(s.fragment.pk)
+                is_current = current_fragment == s.fragment
+
+                for w in s.word_set.all():
+                    if w.xml_id in words:
+                        words[w.xml_id]['is_target'] |= w.is_target and is_current
+                        words[w.xml_id]['is_other_target'] |= w.is_target and not is_current
+                    else:
+                        word = {
+                            'word': w.word,
+                            'xml_id': w.xml_id,
+                            'pos': w.pos,
+                            'lemma': w.lemma,
+                            'is_target': w.is_target and is_current,
+                            'is_other_target': w.is_target and not is_current,
+                            'is_in_dialogue': w.is_in_dialogue,
+                        }
+                        words[w.xml_id] = word
+
+            fragment_pks.sort(reverse=True)
+            sentence = {
+                'xml_id': xml_id,
+                'fragment_pks': fragment_pks,
+                'words': words.values(),
+            }
 
         # If the Sentence is not there, create a mock Sentence from the XML
-        if not sentence_content:
+        else:
             words = []
             for w in el.xpath('./w'):
                 word = {
                     'word': w.text,
                     'xml_id': w.get('id'),
-                    'lemma': w.get('lem'),
                     'pos': w.get('tree') or w.get('pos') or w.get('hun') or '?',
+                    'lemma': w.get('lem'),
                 }
                 words.append(word)
 
@@ -206,6 +244,6 @@ def add_element(el, fragments, position):
     return {'tag': el.tag,
             'id': el.get('id'),
             'position': position,
-            'content': sentence_content,
+            'content': sentence,
             'content_xml': sentence_content_xml,
             }

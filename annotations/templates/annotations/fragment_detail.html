@@ -158,7 +158,8 @@ function reset_sentences() {
     $(".after").hide();
     sentences_before = sentences_after = 0;
     highlight_current();
-    toggle_context_arrows();
+    $('#nextFrag').show();
+    $('#prevFrag').show();
 }
 
 function highlight_current() {
@@ -177,7 +178,7 @@ function toggle_context_arrows() {
     }
     if (!$('.before:hidden').length) {
         $('#prevFrag').hide();
-    }  
+    }
 }
 
 </script>

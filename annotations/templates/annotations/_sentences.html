@@ -8,22 +8,29 @@
         <li class="list-group-item {{sentence.position}}" data-pk="{{ sentence.pk }}" data-xml-id="{{ sentence.xml_id }}">
             {% if sentence.content %}
                 {% if sentence.position == "current" %}
-                <a href="" role="button" class="reset-btn btn btn-primary btn-xs pull-right" title="Reset context">
+                <button role="button" class="reset-btn btn btn-primary btn-xs" title="Reset context">
                     <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
-                </a>
+                </button>
                 {% endif %}
                 {% with sentence.content as sentence %}
-                    <a href="{% url 'annotations:show' sentence.fragment.pk %}" class="btn btn-info btn-xs" title="View fragment">
-                        {{ sentence.xml_id }}
+                <button type="button" class="btn btn-info btn-xs" disabled="disabled">
+                    {{ sentence.xml_id }}
+                </button>
+                <div class="btn-group pull-right" role="group">
+                    {% for fragment_pk in sentence.fragment_pks %}
+                    <a href="{% url 'annotations:show' fragment_pk %}" class="btn btn-info btn-xs" title="View fragment">
+                        {{ forloop.counter }}
                     </a>
-                    {% include "annotations/_sentence.html" with words=sentence.word_set.all %}
+                    {% endfor %}
+                </div>
+                {% include "annotations/_sentence.html" with words=sentence.words %}
                 {% endwith %}
             {% elif sentence.content_xml %}
                 {% with sentence.content_xml as sentence %}
-                    <button type="button" class="btn btn-info btn-xs" disabled="disabled">
-                        {{ sentence.xml_id }}
-                    </button>
-                    {% include "annotations/_sentence.html" with words=sentence.words %}
+                <button type="button" class="btn btn-info btn-xs" disabled="disabled">
+                    {{ sentence.xml_id }}
+                </button>
+                {% include "annotations/_sentence.html" with words=sentence.words %}
                 {% endwith %}
             {% else %}
                 {% include "annotations/_sentence.html" with words=sentence.word_set.all %}

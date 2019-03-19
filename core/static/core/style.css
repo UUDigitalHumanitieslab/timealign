@@ -21,6 +21,10 @@ footer p {
     background-color: lightgreen;
 }
 
+.other {
+    background-color: lightyellow;
+}
+
 .filtered {
     border: 1px solid black;
 }
