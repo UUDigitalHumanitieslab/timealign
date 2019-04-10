@@ -1,0 +1,12 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+(% load custom_tags %}
+{% block content %}
+
+<div class="container">
+    <h1>{{ source.xml_file }} - {{ source.document.title }}</h1>
+    {{ sentences | safe }}
+</div>
+
+{% endblock %}

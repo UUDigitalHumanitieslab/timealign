@@ -3,7 +3,7 @@ from django.conf.urls import url
 from .views import InstructionsView, IntroductionView, StatusView, \
     AnnotationCreate, AnnotationUpdate, AnnotationDelete, AnnotationChoose, FragmentDetail, \
     AnnotationList, FragmentList, ExportPOSDownload, PrepareDownload, TenseCategoryList, \
-    ImportLabelsView
+    ImportLabelsView, DocumentDetail, SourceDetail
 
 urlpatterns = [
     # Static views
@@ -21,6 +21,12 @@ urlpatterns = [
 
     # Showing Fragments
     url(r'^show/(?P<pk>\d+)/$', FragmentDetail.as_view(), name='show'),
+
+    # Showing Documents
+    url(r'^document/(?P<pk>\d+)/$', DocumentDetail.as_view(), name='document'),
+
+    # Showing Sources
+    url(r'^source/(?P<pk>\d+)/$', SourceDetail.as_view(), name='source'),
 
     # List views
     url(r'^list/(?P<l1>\w+)/(?P<l2>\w+)/$', AnnotationList.as_view(), name='list'),

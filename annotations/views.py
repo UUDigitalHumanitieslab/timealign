@@ -1,12 +1,15 @@
 from collections import defaultdict
 from tempfile import NamedTemporaryFile
 
+from lxml import etree
+
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count
 from django.urls import reverse
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
+from django.template.loader import render_to_string
 from django.views import generic
 from django.utils.http import urlquote
 
@@ -16,10 +19,11 @@ from django_filters.views import FilterView
 from .exports import export_pos_file
 from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm
-from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, TenseCategory, Tense
+from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, TenseCategory, Tense, Source
 from .utils import get_random_alignment, get_available_corpora, get_xml_sentences
 
 from core.utils import XLSX
+from stats.utils import get_tense_properties
 
 
 ##############
@@ -208,11 +212,63 @@ class FragmentDetail(LoginRequiredMixin, generic.DetailView):
 
         return context
 
+
+############
+# CRUD Document
+############
+class DocumentDetail(LoginRequiredMixin, generic.DetailView):
+    model = Document
+
+
+############
+# CRUD Source
+############
+class SourceDetail(LoginRequiredMixin, generic.DetailView):
+    model = Source
+
+    def get_context_data(self, **kwargs):
+        context = super(SourceDetail, self).get_context_data(**kwargs)
+
+        source = self.get_object()
+
+        # Retrieve the Annotations
+        annotations = Annotation.objects. \
+            filter(alignment__translated_fragment__language=source.language,
+                   alignment__translated_fragment__document=source.document)
+
+        # Only include correct Annotations
+        annotations = annotations.filter(is_no_target=False, is_translation=True)
+
+        # Attach Annotations to the XML tree
+        tree = etree.parse(source.xml_file)
+
+        labels = set()
+        for annotation in annotations:
+            tense_label, tense_color, _ = get_tense_properties(annotation.label(), len(labels))
+            labels.add(tense_label)
+
+            words = annotation.words.all()
+            for w in words:
+                xml_w = tree.xpath('//w[@id="{}"]'.format(w.xml_id))
+                if len(xml_w) != 1:
+                    # print 'fail', w.xml_id TODO: show failed matches
+                    continue
+
+                xml_w = xml_w[0]
+                xml_w.set('annotation-pk', str(annotation.pk))
+                xml_w.set('fragment-pk', str(annotation.alignment.original_fragment.pk))
+                xml_w.set('tense', tense_label)
+                xml_w.set('color', tense_color)
+
+        transform = etree.XSLT(etree.fromstring(render_to_string('annotations/xml_transform.xslt').encode('utf-8')))
+        context['sentences'] = transform(tree)
+
+        return context
+
+
 ############
 # List views
 ############
-
-
 class AnnotationList(PermissionRequiredMixin, FilterView):
     context_object_name = 'annotations'
     filterset_class = AnnotationFilter
