@@ -92,9 +92,11 @@ def generate_results(source_language, languages, corpus, documents, formal_struc
 
         words = Word.objects.filter(sentence__fragment=fragment, is_target=True)
         row.append(str(fragment.pk))
-        row.append(' '.join([word.word for word in words]))
+        row.append(fragment.document.title)
+        row.append(fragment.first_sentence().xml_id)
         row.append(fragment.full(CSV))
         row.append(fragment.label())
+        row.append(' '.join([word.word for word in words]))
 
         # Retrieve the Annotations for this Fragment...
         f_annotations = annotations.filter(alignment__original_fragment=fragment). \
@@ -121,7 +123,7 @@ def generate_results(source_language, languages, corpus, documents, formal_struc
 
 
 def generate_header(languages, max_words):
-    header = ['id', 'source words', 'sentence', 'tense']
+    header = ['pk', 'document', 'xml-id', 'sentence', 'tense', 'source words']
 
     for language in languages:
         language_details = ['sentence', 'tense']
