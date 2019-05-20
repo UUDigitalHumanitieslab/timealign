@@ -214,6 +214,19 @@ class FragmentDetail(LoginRequiredMixin, generic.DetailView):
 
 
 ############
+# CRUD Corpus
+############
+class CorpusList(LoginRequiredMixin, generic.ListView):
+    model = Corpus
+    context_object_name = 'corpora'
+    ordering = 'title'
+
+
+class CorpusDetail(LoginRequiredMixin, generic.DetailView):
+    model = Corpus
+
+
+############
 # CRUD Document
 ############
 class DocumentDetail(LoginRequiredMixin, generic.DetailView):

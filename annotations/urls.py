@@ -3,7 +3,7 @@ from django.conf.urls import url
 from .views import InstructionsView, IntroductionView, StatusView, \
     AnnotationCreate, AnnotationUpdate, AnnotationDelete, AnnotationChoose, FragmentDetail, \
     AnnotationList, FragmentList, ExportPOSDownload, PrepareDownload, TenseCategoryList, \
-    ImportLabelsView, DocumentDetail, SourceDetail
+    ImportLabelsView, CorpusList, CorpusDetail, DocumentDetail, SourceDetail
 
 urlpatterns = [
     # Static views
@@ -21,6 +21,10 @@ urlpatterns = [
 
     # Showing Fragments
     url(r'^show/(?P<pk>\d+)/$', FragmentDetail.as_view(), name='show'),
+
+    # Showing Corpora
+    url(r'^corpora/$', CorpusList.as_view(), name='corpora'),
+    url(r'^corpus/(?P<pk>\d+)/$', CorpusDetail.as_view(), name='corpus'),
 
     # Showing Documents
     url(r'^document/(?P<pk>\d+)/$', DocumentDetail.as_view(), name='document'),

@@ -1,0 +1,45 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+(% load custom_tags %}
+{% block content %}
+
+<div class="container">
+    <h1>Corpora</h1>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>
+                    Corpus
+                </th>
+                <th>
+                    Actions
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for corpus in corpora %}
+            <tr>
+                <td>
+                    {{ corpus.title }}
+                </td>
+                <td>
+                    <a href="{% url 'annotations:corpus' corpus.pk %}" role="button" class="btn btn-primary btn-xs" title="View corpus">
+                        <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                    </a>
+                    <a href="{% url 'annotations:status' corpus.pk %}" role="button" class="btn btn-primary btn-xs" title="Status overview">
+                        <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+                    </a>
+                    <a href="{% url 'stats:scenarios' %}?corpus={{ corpus.pk }}" role="button" class="btn btn-primary btn-xs" title="Results">
+                        <span class="glyphicon glyphicon-stats" aria-hidden="true"></span>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+{% endblock %}

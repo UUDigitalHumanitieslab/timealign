@@ -1,0 +1,20 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+(% load custom_tags %}
+{% block content %}
+
+<div class="container">
+    <h1>{{ corpus.title }}</h1>
+
+    <h2>Documents</h2>
+    <ul>
+        {% for document in corpus.documents.all %}
+        <li>
+            <a href="{% url 'annotations:document' document.pk %}">{{ document.title }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% endblock %}
