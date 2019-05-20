@@ -1,6 +1,7 @@
 from django.conf.urls import url
 
-from .views import ScenarioList, ScenarioDetail, MDSView, MDSViewOld, DescriptiveStatsView, FragmentTableView, UpsetView
+from .views import ScenarioList, ScenarioDetail, MDSView, MDSViewOld, DescriptiveStatsView, FragmentTableView, \
+    UpsetView, SankeyView
 
 urlpatterns = [
 
@@ -25,6 +26,9 @@ urlpatterns = [
     # Upset
     url(r'upset/(?P<pk>\d+)/$', UpsetView.as_view(), name='upset'),
     url(r'upset/(?P<pk>\d+)/(?P<tc>\d+)/$', UpsetView.as_view(), name='upset'),
+
+    # Sankey
+    url(r'sankey/(?P<pk>\d+)/$', SankeyView.as_view(), name='sankey'),
 
     # Descriptive statistics
     url(r'^descriptive/(?P<pk>\d+)/$', DescriptiveStatsView.as_view(), name='descriptive'),

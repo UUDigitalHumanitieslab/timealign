@@ -1,0 +1,127 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-sankey/0.7.1/d3-sankey.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<h1>
+    Sankey diagram for scenario <em>{{ scenario.title }}</em>
+</h1>
+
+<div id="chart"></div>
+
+<script>
+// Code adapted from https://observablehq.com/@d3/parallel-sets
+// and https://jarrettmeyer.com/2018/05/31/creating-a-d3-sankey-graph
+
+// Data
+const data = {{ data | safe }};
+
+/* Dummy data (TODO: delete when done)
+const data = {
+    nodes: [
+        { id: "A1" },
+        { id: "A2" },
+        { id: "A3" },
+        { id: "B1" },
+        { id: "B2" },
+        { id: "B3" },
+        { id: "B4" },
+        { id: "C1" },
+        { id: "C2" },
+        { id: "C3" },
+        { id: "D1" },
+        { id: "D2" }
+    ],
+    links: [
+        { source: "A1", target: "B1", value: 27, color: "red" },
+        { source: "A1", target: "B2", value:  9, color: "blue" },
+        { source: "A2", target: "B2", value:  5, color: "blue" },
+        { source: "A2", target: "B3", value: 11, color: "blue" },
+        { source: "A3", target: "B2", value: 12, color: "blue" },
+        { source: "A3", target: "B4", value:  7, color: "red" },
+        { source: "B1", target: "C1", value: 13, color: "blue" },
+        { source: "B1", target: "C2", value: 10, color: "blue" },
+        { source: "B4", target: "C2", value:  5, color: "blue" },
+        { source: "B4", target: "C3", value:  2, color: "red" },
+        { source: "B1", target: "D1", value:  4, color: "blue" },
+        { source: "C3", target: "D1", value:  1, color: "red" },
+        { source: "C3", target: "D2", value:  1, color: "blue" },
+    ]
+}*/
+
+// General settings
+const width = 975;
+const height = 720;
+const sankey = d3.sankey()
+    .size([width, height])
+    .nodeWidth(4)
+    .nodePadding(20)
+    .nodeId(d => d.id)
+    .nodeAlign(d3.sankeyCenter)              // TODO: not sure what this does
+    .extent([[0, 5], [width, height - 5]]);  // TODO: not sure what this does
+
+var graph = sankey(data);
+
+// The SVG where the magic happens
+var svg = d3.select("#chart").append("svg")
+    .style("background", "#fff")
+    .style("width", width)
+    .style("height", height);
+
+// Nodes
+svg.append("g")
+    .classed("nodes", true)
+    .selectAll("rect")
+    .data(graph.nodes)
+    .enter()
+    .append("rect")
+        .classed("node", true)
+        .attr("x", d => d.x0)
+        .attr("y", d => d.y0)
+        .attr("height", d => d.y1 - d.y0)
+        .attr("width", d => d.x1 - d.x0)
+    .append("title")
+        .text(d => `${d.id}\n${d.value.toLocaleString()}`);
+
+// Links
+svg.append("g")
+        .attr("fill", "none")
+    .classed("links", true)
+    .selectAll("path")
+    .data(graph.links)
+    .enter()
+    .append("path")
+        .classed("link", true)
+        .attr("d", d3.sankeyLinkHorizontal())
+//        .attr("stroke", d => d.color)
+        .attr("stroke", "blue")  // TODO: replace with above
+        .attr("stroke-width", d => d.width)
+        .attr("stroke-opacity", 0.75)
+        .style("mix-blend-mode", "multiply")
+    .append("title")
+      .text(d => `${d.source.value}\n${d.value.toLocaleString()}`);
+
+// Titles
+svg.append("g")
+        .style("font", "10px sans-serif")
+    .selectAll("text")
+    .data(graph.nodes)
+    .join("text")
+        .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+        .attr("y", d => (d.y1 + d.y0) / 2)
+        .attr("dy", "0.35em")
+        .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
+        .text(d => d.name)
+    .append("tspan")
+        .attr("fill-opacity", 0.7)
+        .text(d => ` ${d.value.toLocaleString()}`);
+
+</script>
+
+{% endblock %}

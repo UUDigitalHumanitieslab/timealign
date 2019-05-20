@@ -268,7 +268,6 @@ class UpsetView(ScenarioDetail):
         # Get the currently selected TenseCategory. We pick "Present Perfect" as the default here.
         # TODO: we might want to change this magic number into a setting?
         tc_pk = int(self.kwargs.get('tc', TenseCategory.objects.get(title='Present Perfect').pk))
-        print tc_pk
 
         results = []
         languages = set()
@@ -300,3 +299,39 @@ class UpsetView(ScenarioDetail):
     def post(self, request, pk, *args, **kwargs):
         request.session['fragment_ids'] = json.loads(request.POST['fragment_ids'])
         return HttpResponseRedirect(reverse('stats:fragment_table', kwargs={'pk': pk}))
+
+
+class SankeyView(ScenarioDetail):
+    model = Scenario
+    template_name = 'stats/sankey.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(SankeyView, self).get_context_data(**kwargs)
+
+        scenario = self.object
+        labels = scenario.mds_labels
+
+        # Retrieve nodes and links
+        nodes = set()
+        labels_in_order = []
+        for language, ls in labels.items():
+            if language in ['fr', 'nl']:  # TODO: make this dependent upon parameters
+                labels_in_order.append(ls)
+                for n, label in enumerate(ls):
+                    nodes.add(label)
+
+        # Count the links  # TODO: more generic, e.g. more than two columns
+        zipped = [[(a, b)] for a, b in zip(labels_in_order[0], labels_in_order[1])]
+        links = Counter(chain(*zipped)).most_common()
+
+        # Convert the links into a dictionary
+        news = []
+        for link, value in links:
+            # TODO add colors (as well as links to the fragments?)
+            new = {'source': link[0], 'target': link[1], 'value': value}
+            news.append(new)
+
+        # JSONify the data
+        context['data'] = json.dumps({'nodes': [{'id': n} for n in nodes], 'links': news})
+
+        return context
