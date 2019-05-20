@@ -5,8 +5,54 @@
 {% block content %}
 
 <div class="container">
-    <h1>{{ source.xml_file }} - {{ source.document.title }}</h1>
+    <h1>{{ source.document.corpus.title }} - {{ source.document.title }} - {{ source.language.title }}</h1>
+
+    <h2>Content with annotations</h2>
     {{ sentences | safe }}
+
+    {% if failed_lookups %}
+    <h2>Failed lookups</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>
+                    XML id
+                </th>
+                <th>
+                    Source words
+                </th>
+                <th>
+                    Target words
+                </th>
+                <th>
+                    Actions
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for annotation in failed_lookups %}
+            {% with fragment=annotation.alignment.original_fragment %}
+            <tr>
+                <td>
+                    {{ fragment.first_sentence.xml_id }}
+                </td>
+                <td>
+                    {{ fragment.target_words }}
+                </td>
+                <td>
+                    {{ annotation.selected_words }}
+                </td>
+                <td>
+                    <a href="{% url 'annotations:show' fragment.pk %}" role="button" class="btn btn-primary btn-xs" title="View fragment">
+                        <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                    </a>
+                </td>
+            </tr>
+            {% endwith %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
 </div>
 
 {% endblock %}

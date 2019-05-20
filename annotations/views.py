@@ -243,6 +243,7 @@ class SourceDetail(LoginRequiredMixin, generic.DetailView):
         tree = etree.parse(source.xml_file)
 
         labels = set()
+        failed_lookups = []
         for annotation in annotations:
             tense_label, tense_color, _ = get_tense_properties(annotation.label(), len(labels))
             labels.add(tense_label)
@@ -251,7 +252,7 @@ class SourceDetail(LoginRequiredMixin, generic.DetailView):
             for w in words:
                 xml_w = tree.xpath('//w[@id="{}"]'.format(w.xml_id))
                 if len(xml_w) != 1:
-                    # print 'fail', w.xml_id TODO: show failed matches
+                    failed_lookups.append(annotation)
                     continue
 
                 xml_w = xml_w[0]
@@ -262,6 +263,7 @@ class SourceDetail(LoginRequiredMixin, generic.DetailView):
 
         transform = etree.XSLT(etree.fromstring(render_to_string('annotations/xml_transform.xslt').encode('utf-8')))
         context['sentences'] = transform(tree)
+        context['failed_lookups'] = failed_lookups
 
         return context
 
