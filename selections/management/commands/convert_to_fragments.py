@@ -8,7 +8,7 @@ from lxml import etree
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from annotations.models import Language, Corpus, Document, Fragment, Tense
+from annotations.models import Language, Corpus, Document, Fragment, Tense, Alignment
 from annotations.management.commands.add_fragments import retrieve_languages, create_to_fragments
 from annotations.management.commands.constants import COLUMN_DOCUMENT, COLUMN_XML
 
@@ -133,6 +133,11 @@ class Command(BaseCommand):
                             fragments = fragment_cache.get((doc.pk, s.get('id')))
                             if fragments:
                                 for fragment in fragments:
-                                    create_to_fragments(doc, fragment, languages_to, row)
+                                    languages = languages_to
+                                    for alignment in Alignment.objects.filter(original_fragment=fragment):
+                                        languages = {key: val for key, val in languages.items()
+                                                     if val != alignment.translated_fragment.language}
+
+                                    create_to_fragments(doc, fragment, languages, row)
 
                     self.stdout.write(self.style.SUCCESS('Line {} processed'.format(n)))
