@@ -58,7 +58,7 @@ class Command(BaseCommand):
                 .filter(is_no_target=False) \
                 .filter(fragment__document__corpus=corpus) \
                 .filter(fragment__language=language) \
-                .filter(fragment__resulting_fragment__isnull=True)
+                .filter(resulting_fragment__isnull=True)
 
             if document:
                 selections = selections.filter(fragment__document=document)
@@ -70,7 +70,6 @@ class Command(BaseCommand):
 
                 with transaction.atomic():
                     f = selection.fragment
-                    f_selection_pk = f.pk
                     sentences = f.sentence_set.all()
 
                     f.__class__ = Fragment
@@ -83,10 +82,9 @@ class Command(BaseCommand):
 
                     f.save()
 
-                    # Save the fragment as resulting fragment
-                    f_selection = PreProcessFragment.objects.get(pk=f_selection_pk)
-                    f_selection.resulting_fragment = f
-                    f_selection.save()
+                    # Save the Fragment as resulting Fragment on the Selection
+                    selection.resulting_fragment = f
+                    selection.save()
 
                     for sentence in sentences:
                         s = sentence
