@@ -102,6 +102,10 @@ class Command(BaseCommand):
                             w.sentence = s
                             w.is_target = w.xml_id in selected_words
                             w.save()
+
+                    # Re-save the Fragment to set formal_structure and sentence_function if necessary
+                    if corpus.check_structure:
+                        f.save()
         else:
             # Fetch Fragments that are not PreProcessFragments (TODO: in 1.11, use .difference() for this)
             fragments = Fragment.objects.filter(document__corpus=corpus, language=language)
