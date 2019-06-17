@@ -7,6 +7,9 @@ from lxml import etree
 
 from django.db.models import Count
 
+from selections.models import PreProcessFragment
+from stats.utils import get_tense_properties
+
 from .models import Corpus, Tense, Alignment, Source, Annotation, Fragment, Sentence, Word
 
 
@@ -252,3 +255,62 @@ def add_element(el, current_fragment, related_fragments, position):
             'content': sentence,
             'content_xml': sentence_content_xml,
             }
+
+
+def bind_annotations_to_xml(source):
+    # Retrieve the Annotations
+    annotations = Annotation.objects. \
+        filter(alignment__translated_fragment__language=source.language,
+               alignment__translated_fragment__document=source.document). \
+        select_related('alignment__original_fragment', 'tense'). \
+        prefetch_related('words')
+    # Only include correct Annotations
+    annotations = annotations.filter(is_no_target=False, is_translation=True)
+    tree = etree.parse(source.xml_file)
+    labels = set()
+    failed_lookups = []
+    if annotations:
+        # Attach Annotations to the XML tree
+        for annotation in annotations:
+            tense_label, tense_color, _ = get_tense_properties(annotation.label(), len(labels))
+            labels.add(tense_label)
+
+            words = annotation.words.all()
+            for w in words:
+                xml_w = tree.xpath('//w[@id="{}"]'.format(w.xml_id))
+                if len(xml_w) != 1:
+                    failed_lookups.append(annotation)
+                    continue
+
+                xml_w = xml_w[0]
+                xml_w.set('annotation-pk', str(annotation.pk))
+                xml_w.set('fragment-pk', str(annotation.alignment.original_fragment.pk))
+                xml_w.set('tense', tense_label)
+                xml_w.set('color', tense_color)
+    else:
+        # Assume we are dealing with a source language here
+        # Retrieve the fragments
+        fragments = Fragment.objects.filter(language=source.language, document=source.document). \
+            select_related('tense'). \
+            prefetch_related('sentence_set')
+        pp_fragments = PreProcessFragment.objects.filter(language=source.language, document=source.document)
+        fragments = fragments.exclude(pk__in=pp_fragments)
+
+        # Attach Fragments to the XML tree
+        for fragment in fragments:
+            tense_label, tense_color, _ = get_tense_properties(fragment.label(), len(labels))
+            labels.add(tense_label)
+
+            words = fragment.targets()
+            for w in words:
+                xml_w = tree.xpath('//w[@id="{}"]'.format(w.xml_id))
+                if len(xml_w) != 1:
+                    failed_lookups.append(fragment)
+                    continue
+
+                xml_w = xml_w[0]
+                xml_w.set('fragment-pk', str(fragment.pk))
+                xml_w.set('tense', tense_label)
+                xml_w.set('color', tense_color)
+
+    return tree, failed_lookups
