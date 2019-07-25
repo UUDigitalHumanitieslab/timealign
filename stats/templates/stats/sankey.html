@@ -5,6 +5,12 @@
 {% block head %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-sankey/0.7.1/d3-sankey.min.js"></script>
+
+<style>
+.link:hover {
+  stroke-opacity: .6;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -12,6 +18,21 @@
 <h1>
     Sankey diagram for scenario <em>{{ scenario.title }}</em>
 </h1>
+
+<form class="form-inline" action="{% url 'stats:sankey' scenario.pk %}" method="GET">
+    <div class="form-group">
+        <label for="language_to">Language to:</label>
+        <select id="language_to" class="form-control" name="language_to">
+            {% for language_to in languages_to %}
+            <option value="{{ language_to.language.iso }}"
+                    {% if language_to.language.iso == selected_language_to %}selected{% endif %}>
+                {{ language_to.language.title }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <button class="btn btn-primary">Show</button>
+</form>
 
 <div id="chart"></div>
 
@@ -56,20 +77,21 @@ const data = {
 }*/
 
 // General settings
-const width = 975;
+var chart = d3.select("#chart");
+const width = chart.node().getBoundingClientRect().width;
 const height = 720;
 const sankey = d3.sankey()
     .size([width, height])
-    .nodeWidth(4)
+    .nodeWidth(15)
     .nodePadding(20)
     .nodeId(d => d.id)
-    .nodeAlign(d3.sankeyCenter)              // TODO: not sure what this does
-    .extent([[0, 5], [width, height - 5]]);  // TODO: not sure what this does
+    .nodeAlign(d3.sankeyCenter)                  // TODO: not sure what this does
+    .extent([[0, 5], [width - 5, height - 5]]);
 
 var graph = sankey(data);
 
 // The SVG where the magic happens
-var svg = d3.select("#chart").append("svg")
+var svg = chart.append("svg")
     .style("background", "#fff")
     .style("width", width)
     .style("height", height);
@@ -86,8 +108,11 @@ svg.append("g")
         .attr("y", d => d.y0)
         .attr("height", d => d.y1 - d.y0)
         .attr("width", d => d.x1 - d.x0)
+        .attr("fill", d => d.color)
+        .attr("stroke", "#000")
+        .attr("shape-rendering", "crispEdges")
     .append("title")
-        .text(d => `${d.id}\n${d.value.toLocaleString()}`);
+        .text(d => `${d.value.toLocaleString()} ${d.label}`);
 
 // Links
 svg.append("g")
@@ -99,13 +124,12 @@ svg.append("g")
     .append("path")
         .classed("link", true)
         .attr("d", d3.sankeyLinkHorizontal())
-//        .attr("stroke", d => d.color)
-        .attr("stroke", "blue")  // TODO: replace with above
+        .attr("stroke", d => d.link_color)
         .attr("stroke-width", d => d.width)
         .attr("stroke-opacity", 0.75)
         .style("mix-blend-mode", "multiply")
     .append("title")
-      .text(d => `${d.source.value}\n${d.value.toLocaleString()}`);
+      .text(d => `${d.source.value} ${d.source_label}\n=>${d.value.toLocaleString()} ${d.target_label}`);
 
 // Titles
 svg.append("g")
@@ -117,10 +141,7 @@ svg.append("g")
         .attr("y", d => (d.y1 + d.y0) / 2)
         .attr("dy", "0.35em")
         .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
-        .text(d => d.name)
-    .append("tspan")
-        .attr("fill-opacity", 0.7)
-        .text(d => ` ${d.value.toLocaleString()}`);
+        .text(d => d.label);
 
 </script>
 

@@ -311,27 +311,47 @@ class SankeyView(ScenarioDetail):
         scenario = self.object
         labels = scenario.mds_labels
 
+        language_from = scenario.languages(as_from=True).first().language.iso
+        language_to = self.request.GET.get('language_to', scenario.languages(as_to=True).first().language.iso)
+
         # Retrieve nodes and links
         nodes = set()
-        labels_in_order = []
         for language, ls in labels.items():
-            if language in ['fr', 'nl']:  # TODO: make this dependent upon parameters
-                labels_in_order.append(ls)
+            if language in [language_from, language_to]:
                 for n, label in enumerate(ls):
                     nodes.add(label)
 
         # Count the links  # TODO: more generic, e.g. more than two columns
-        zipped = [[(a, b)] for a, b in zip(labels_in_order[0], labels_in_order[1])]
+        zipped = [[(a, b)] for a, b in zip(labels[language_from], labels[language_to])]
         links = Counter(chain(*zipped)).most_common()
 
-        # Convert the links into a dictionary
-        news = []
-        for link, value in links:
-            # TODO add colors (as well as links to the fragments?)
-            new = {'source': link[0], 'target': link[1], 'value': value}
-            news.append(new)
+        # Convert the nodes into a dictionary
+        new_nodes = []
+        for node in nodes:
+            node_label, node_color, node_category = get_tense_properties(node)
 
-        # JSONify the data
-        context['data'] = json.dumps({'nodes': [{'id': n} for n in nodes], 'links': news})
+            new_node = {'id': node, 'color': node_color, 'label': node_label}
+            new_nodes.append(new_node)
+
+        # Convert the links into a dictionary
+        new_links = []
+        for link, value in links:
+            t0 = link[0]
+            t0_label, t0_color, t0_category = get_tense_properties(t0)
+            t1 = link[1]
+            t1_label, t1_color, t1_category = get_tense_properties(t1)
+
+            # TODO add links to the fragments
+            new_link = {'source': t0, 'source_color': t0_color, 'source_label': t0_label,
+                        'target': t1, 'target_color': t1_color, 'target_label': t1_label,
+                        'value': value, 'link_color': t0_color}
+            new_links.append(new_link)
+
+        # JSONify the data and add it to the context
+        context['data'] = json.dumps({'nodes': new_nodes, 'links': new_links})
+
+        # Add selection of languages to the context
+        context['selected_language_to'] = language_to
+        context['languages_to'] = scenario.languages(as_to=True)
 
         return context
