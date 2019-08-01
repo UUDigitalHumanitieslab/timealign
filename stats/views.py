@@ -6,6 +6,7 @@ from itertools import chain
 
 from braces.views import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.db.models import Case, When
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -85,7 +86,14 @@ class MDSView(ScenarioDetail):
         # Retrieve pickled data
         model = scenario.mds_model
         tenses = scenario.mds_labels
-        fragments = scenario.mds_fragments
+        fragment_pks = scenario.mds_fragments
+
+        # Retrieve Fragments, but keep order intact
+        # Solution taken from https://stackoverflow.com/a/38390480
+        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(fragment_pks)])
+        fragments = list(Fragment.objects.filter(pk__in=fragment_pks).
+                         order_by(preserved).
+                         prefetch_related('sentence_set', 'sentence_set__word_set'))
 
         # Turn the pickled model into a scatterplot dictionary
         random.seed(scenario.pk)  # Fixed seed for random jitter
@@ -98,8 +106,7 @@ class MDSView(ScenarioDetail):
             if d2 > 0:
                 y += l[d2 - 1]
 
-            f = fragments[n]
-            fragment = Fragment.objects.get(pk=f)
+            fragment = fragments[n]
             ts = [tenses[l][n] for l in tenses.keys()]
 
             labels = []
@@ -114,7 +121,9 @@ class MDSView(ScenarioDetail):
                 labels.append(label)
 
             # Add all values to the dictionary
-            j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(HTML), 'tenses': labels})
+            j[tenses[language][n]].append({'x': x, 'y': y,
+                                           'fragment_id': fragment.pk, 'fragment': fragment.full(HTML),
+                                           'tenses': labels})
 
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
