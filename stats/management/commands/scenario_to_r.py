@@ -35,7 +35,9 @@ class Command(BaseCommand):
         robjects.r.assign('scenario_title', scenario.title)
         robjects.r.assign('scenario_description', scenario.description)
         robjects.r.assign('mds_matrix', mds_matrix)
-        robjects.r.assign('fragment_ids', robjects.StrVector(fragment_ids))
+        robjects.r.assign('fragment_ids', robjects.IntVector(fragment_ids))
+        robjects.r.assign('weights', robjects.IntVector(scenario.mds_weights))
+        robjects.r.assign('labels_all', [robjects.StrVector(l) for l in scenario.mds_labels_unique])
 
         for sl in scenario.languages().all():
             labels = []

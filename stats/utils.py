@@ -3,7 +3,7 @@
 from __future__ import division
 
 import numbers
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 import numpy as np
 from sklearn import manifold
@@ -117,11 +117,13 @@ def run_mds(scenario):
         for n, tense in enumerate(language_tenses):
             labels_matrix[n].append(tense)
 
+    unique_labels = dict(Counter(tuple(l) for l in labels_matrix.values()))
+
     # Create a distance matrix
     matrix = []
-    for labels_1 in labels_matrix.values():
+    for labels_1 in unique_labels.keys():
         result = []
-        for labels_2 in labels_matrix.values():
+        for labels_2 in unique_labels.keys():
             result.append(get_distance(labels_1, labels_2))
         matrix.append(result)
 
@@ -136,6 +138,8 @@ def run_mds(scenario):
     scenario.mds_fragments = fragment_ids
     scenario.mds_labels = fragment_labels
     scenario.mds_stress = mds.stress_
+    scenario.mds_labels_unique = unique_labels.keys()
+    scenario.mds_weights = unique_labels.values()
     scenario.save()
 
 

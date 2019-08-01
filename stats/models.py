@@ -34,6 +34,8 @@ class Scenario(models.Model):
     mds_matrix = PickledObjectField('MDS matrix', null=True)
     mds_fragments = PickledObjectField('MDS fragments', null=True)
     mds_labels = PickledObjectField('MDS labels', null=True)
+    mds_labels_unique = PickledObjectField('MDS unique labels', null=True)
+    mds_weights = PickledObjectField('MDS weights', null=True)
     mds_stress = models.FloatField('MDS stress', null=True)
     mds_allow_partial = models.BooleanField(
         'Allow partial tuples in model', default=False,
