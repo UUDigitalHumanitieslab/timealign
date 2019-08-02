@@ -107,6 +107,16 @@ class AnnotationMixin(SuccessMessageMixin, PermissionRequiredMixin):
     def get_alignment(self):
         raise NotImplementedError
 
+    def get_alignments(self):
+        """Retrieve the Alignments and also some related fields to speed up processing"""
+        return Alignment.objects.select_related('original_fragment',
+                                                'original_fragment__tense',
+                                                'original_fragment__language',
+                                                'original_fragment__document__corpus',
+                                                'translated_fragment',
+                                                'translated_fragment__language',
+                                                'translated_fragment__document')
+
 
 class AnnotationUpdateMixin(AnnotationMixin):
     def get_context_data(self, **kwargs):
@@ -124,7 +134,7 @@ class AnnotationUpdateMixin(AnnotationMixin):
 
     def get_alignment(self):
         """Retrieves the Alignment from the object"""
-        return self.object.alignment
+        return self.get_alignments().get(pk=self.object.alignment.pk)
 
 
 class AnnotationCreate(AnnotationMixin, generic.CreateView):
@@ -144,15 +154,8 @@ class AnnotationCreate(AnnotationMixin, generic.CreateView):
         return super(AnnotationCreate, self).form_valid(form)
 
     def get_alignment(self):
-        """Retrieves the Alignment by the pk in the kwargs, and also some related fields to speed up processing"""
-        alignments = Alignment.objects.select_related('original_fragment',
-                                                      'original_fragment__tense',
-                                                      'original_fragment__language',
-                                                      'original_fragment__document__corpus',
-                                                      'translated_fragment',
-                                                      'translated_fragment__language',
-                                                      'translated_fragment__document')
-        return get_object_or_404(alignments, pk=self.kwargs['pk'])
+        """Retrieves the Alignment by the pk in the kwargs"""
+        return get_object_or_404(self.get_alignments(), pk=self.kwargs['pk'])
 
 
 class AnnotationUpdate(AnnotationUpdateMixin, generic.UpdateView):
