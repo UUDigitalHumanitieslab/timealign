@@ -57,7 +57,10 @@ class ScenarioDetail(LoginRequiredMixin, generic.DetailView):
         """
         Only show Scenarios that have been run
         """
-        scenario = super(ScenarioDetail, self).get_object(queryset)
+        qs = Scenario.objects \
+            .select_related('corpus') \
+            .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels')  # Don't fetch the PickledObjectFields
+        scenario = super(ScenarioDetail, self).get_object(qs)
         if scenario.corpus not in get_available_corpora(self.request.user):
             raise PermissionDenied
         if not scenario.last_run:
@@ -257,7 +260,10 @@ class FragmentTableView(ScenarioDetail):
     def get_context_data(self, **kwargs):
         context = super(FragmentTableView, self).get_context_data(**kwargs)
 
-        fragments = Fragment.objects.filter(pk__in=self.request.session.get('fragment_ids', []))
+        fragments = Fragment.objects \
+            .filter(pk__in=self.request.session.get('fragment_ids', [])) \
+            .select_related('document') \
+            .prefetch_related('sentence_set', 'sentence_set__word_set')
         tenses = self.request.session.get('tenses', [])
 
         context['fragments'] = fragments
