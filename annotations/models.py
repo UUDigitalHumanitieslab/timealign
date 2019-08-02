@@ -142,21 +142,14 @@ class Fragment(models.Model):
         Retrieves all target Words for this Fragment.
         :return: A QuerySet of Words.
         """
-        result = Word.objects.none()
-        for sentence in self.sentence_set.all():
-            result |= sentence.word_set.filter(is_target=True)
-        return result
+        return Word.objects.filter(sentence__in=self.sentence_set.all(), is_target=True)
 
     def target_words(self):
         """
         Retrieves the target words for this Fragment.
         :return: A string that consists of the target words.
         """
-        result = []
-        for sentence in self.sentence_set.all():
-            result.extend(
-                [word.word for word in sentence.word_set.filter(is_target=True)])
-        return ' '.join(result)
+        return ' '.join(word.word for word in self.targets())
 
     def get_alignments(self, as_original=False, as_translation=False):
         alignments = Alignment.objects.none()
