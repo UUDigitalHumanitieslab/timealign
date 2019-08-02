@@ -41,8 +41,10 @@ class ScenarioList(LoginRequiredMixin, FilterView):
         return Scenario.objects \
             .filter(corpus__in=get_available_corpora(self.request.user)) \
             .exclude(last_run__isnull=True) \
+            .select_related('corpus') \
             .prefetch_related('scenariolanguage_set') \
-            .order_by('corpus__title')
+            .order_by('corpus__title') \
+            .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels')  # Don't fetch the PickledObjectFields
 
 
 class ScenarioDetail(LoginRequiredMixin, generic.DetailView):
