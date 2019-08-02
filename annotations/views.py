@@ -5,7 +5,7 @@ from lxml import etree
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from django.urls import reverse
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
@@ -19,7 +19,8 @@ from django_filters.views import FilterView
 from .exports import export_pos_file
 from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm
-from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, TenseCategory, Tense, Source
+from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, \
+    TenseCategory, Tense, Source, Word
 from .utils import get_random_alignment, get_available_corpora, get_xml_sentences, bind_annotations_to_xml
 
 from core.utils import XLSX
@@ -280,6 +281,9 @@ class AnnotationList(PermissionRequiredMixin, FilterView):
                             'alignment__original_fragment',
                             'alignment__original_fragment__document',
                             'alignment__translated_fragment') \
+            .prefetch_related('alignment__original_fragment__sentence_set__word_set',
+                              'alignment__translated_fragment__sentence_set__word_set',
+                              'words') \
             .order_by('-annotated_at')
 
 
