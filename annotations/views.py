@@ -294,6 +294,9 @@ class AnnotationList(PermissionRequiredMixin, FilterView):
 
 
 class FragmentList(PermissionRequiredMixin, generic.ListView):
+    """
+    TODO: consider refactoring, too many queries.
+    """
     context_object_name = 'fragments'
     template_name = 'annotations/fragment_list.html'
     paginate_by = 25
@@ -311,6 +314,8 @@ class FragmentList(PermissionRequiredMixin, generic.ListView):
         for fragment in fragments:
             if Annotation.objects.filter(alignment__original_fragment=fragment, is_no_target=False).exists():
                 results.append(fragment)
+            if len(results) == 50:  # TODO: Capping this for now with a magic number.
+                break
         return results
 
     def get_context_data(self, **kwargs):
