@@ -6,8 +6,12 @@ class ScenarioForm(forms.ModelForm):
         super(ScenarioForm, self).__init__(*args, **kwargs)
 
         # If the Corpus has been set, filter the Documents based on the Corpus
+        document_field = self.fields['documents']
         if self.instance.corpus_id:
-            self.fields['documents'].queryset = self.fields['documents'].queryset.filter(corpus=self.instance.corpus)
+            document_field.queryset = document_field.queryset.filter(corpus=self.instance.corpus)
+
+        # Select the Corpus to prevent queries being fired on the __unicode__ method
+        document_field.queryset = document_field.queryset.select_related('corpus')
 
 
 class ScenarioLanguageForm(forms.ModelForm):
