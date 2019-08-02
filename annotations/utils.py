@@ -5,7 +5,7 @@ import re
 
 from lxml import etree
 
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 
 from selections.models import PreProcessFragment
 from stats.utils import get_tense_properties
@@ -290,9 +290,11 @@ def bind_annotations_to_xml(source):
     else:
         # Assume we are dealing with a source language here
         # Retrieve the fragments
+        target_words = Sentence.objects. \
+            prefetch_related(Prefetch('word_set', queryset=Word.objects.filter(is_target=True)))
         fragments = Fragment.objects.filter(language=source.language, document=source.document). \
             select_related('tense'). \
-            prefetch_related('sentence_set')
+            prefetch_related(Prefetch('sentence_set', queryset=target_words, to_attr='targets_prefetched'))
         pp_fragments = PreProcessFragment.objects.filter(language=source.language, document=source.document)
         fragments = fragments.exclude(pk__in=pp_fragments)
 
@@ -301,16 +303,17 @@ def bind_annotations_to_xml(source):
             tense_label, tense_color, _ = get_tense_properties(fragment.label(), len(labels))
             labels.add(tense_label)
 
-            words = fragment.targets()
-            for w in words:
-                xml_w = tree.xpath('//w[@id="{}"]'.format(w.xml_id))
-                if len(xml_w) != 1:
-                    failed_lookups.append(fragment)
-                    continue
+            sentences = fragment.targets_prefetched
+            for s in sentences:
+                for w in s.word_set.all():
+                    xml_w = tree.xpath('//w[@id="{}"]'.format(w.xml_id))
+                    if len(xml_w) != 1:
+                        failed_lookups.append(fragment)
+                        continue
 
-                xml_w = xml_w[0]
-                xml_w.set('fragment-pk', str(fragment.pk))
-                xml_w.set('tense', tense_label)
-                xml_w.set('color', tense_color)
+                    xml_w = xml_w[0]
+                    xml_w.set('fragment-pk', str(fragment.pk))
+                    xml_w.set('tense', tense_label)
+                    xml_w.set('color', tense_color)
 
     return tree, failed_lookups

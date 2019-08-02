@@ -5,7 +5,7 @@ from lxml import etree
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Count, Prefetch
+from django.db.models import Count
 from django.urls import reverse
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
@@ -20,7 +20,7 @@ from .exports import export_pos_file
 from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm
 from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, \
-    TenseCategory, Tense, Source, Word
+    TenseCategory, Tense, Source
 from .utils import get_random_alignment, get_available_corpora, get_xml_sentences, bind_annotations_to_xml
 
 from core.utils import XLSX
@@ -238,13 +238,16 @@ class SourceDetail(LoginRequiredMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(SourceDetail, self).get_context_data(**kwargs)
 
-        source = self.get_object()
+        source = self.object
         tree, failed_lookups = bind_annotations_to_xml(source)
+        additional_sources = Source.objects.filter(document=source.document) \
+            .exclude(pk=source.pk) \
+            .select_related('language')
 
         transform = etree.XSLT(etree.fromstring(render_to_string('annotations/xml_transform.xslt').encode('utf-8')))
         context['sentences'] = transform(tree)
         context['failed_lookups'] = failed_lookups
-        context['additional_sources'] = Source.objects.filter(document=source.document).exclude(pk=source.pk)
+        context['additional_sources'] = additional_sources
 
         additional_source = self.request.GET.get('additional_source')
         if additional_source:
