@@ -61,21 +61,17 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
             .values('original_fragment__language', 'translated_fragment__language') \
             .order_by('original_fragment__language', 'translated_fragment__language') \
             .annotate(count=Count('pk'))
-        completed = totals.exclude(annotation=None)
+        completed = {(t.get('original_fragment__language'), t.get('translated_fragment__language')): t.get('count')
+                     for t in totals.exclude(annotation=None)}
 
         # Convert the QuerySets into a list of tuples
+        languages = {l.pk: l for l in Language.objects.all()}
         language_totals = []
         for total in totals:
-            l1 = Language.objects.get(pk=total['original_fragment__language'])
-            l2 = Language.objects.get(pk=total['translated_fragment__language'])
+            l1 = languages.get(total['original_fragment__language'])
+            l2 = languages.get(total['translated_fragment__language'])
+            complete = completed.get((l1.pk, l2.pk), 0)
             available = total['count']
-
-            # TODO: can we do this more elegantly, e.g. without a database call?
-            complete = completed.filter(original_fragment__language=l1, translated_fragment__language=l2)
-            if complete:
-                complete = complete[0]['count']
-            else:
-                complete = 0
 
             language_totals.append((l1, l2, complete, available))
 
