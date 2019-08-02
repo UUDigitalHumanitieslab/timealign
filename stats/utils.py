@@ -174,7 +174,7 @@ def get_tense_properties(tense_identifier, seq=0):
         tense_color = '#000000'
         tense_category = None
     elif isinstance(tense_identifier, numbers.Number):
-        tense = Tense.objects.get(pk=tense_identifier)
+        tense = Tense.objects.select_related('category').get(pk=tense_identifier)
         tense_label = tense.title
         tense_color = tense.category.color
         tense_category = tense.category.title

@@ -205,9 +205,14 @@ class DescriptiveStatsView(ScenarioDetail):
             c_tensecats = Counter()
             n = 0
             labels = set()
+            tense_cache = dict()
             for t in tenses[l.iso]:
-                tense_label, tense_color, tense_category = get_tense_properties(
-                    t, len(labels))
+                if t in tense_cache:
+                    tense_label, tense_color, tense_category = tense_cache[t]
+                else:
+                    tense_label, tense_color, tense_category = get_tense_properties(t, len(labels))
+                    tense_cache[t] = (tense_label, tense_color, tense_category)
+
                 labels.add(tense_label)
                 distinct_tensecats.add(tense_category)
 
@@ -231,20 +236,16 @@ class DescriptiveStatsView(ScenarioDetail):
                 else:
                     tensecat_table[tensecat].append(0)
 
-        tensecat_table_ordered = OrderedDict(sorted(tensecat_table.items(),
-                                                    key=lambda item: sum(
-                                                        item[1]) if item[0] else 0,
-                                                    reverse=True))
+        tensecat_table_ordered = OrderedDict(
+            sorted(tensecat_table.items(), key=lambda item: sum(item[1]) if item[0] else 0, reverse=True))
 
         context['counters'] = counters_tenses
-        context['counters_json'] = json.dumps(
-            {language.iso: values for language, values in counters_tenses.items()})
+        context['counters_json'] = json.dumps({language.iso: values for language, values in counters_tenses.items()})
         context['tensecat_table'] = tensecat_table_ordered
         context['tuples'] = Counter(tuples.values()).most_common()
         context['colors_json'] = json.dumps(colors)
         context['languages'] = languages
-        context['languages_json'] = json.dumps(
-            {l.iso: l.title for l in languages})
+        context['languages_json'] = json.dumps({l.iso: l.title for l in languages})
 
         return context
 
