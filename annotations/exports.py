@@ -40,7 +40,9 @@ def export_pos_file(filename, format_, corpus, language, subcorpus=None,
                            'alignment__original_fragment__tense',
                            'alignment__translated_fragment',
                            'tense'). \
-            prefetch_related('words')
+            prefetch_related('words',
+                             'alignment__original_fragment__sentence_set__word_set',
+                             'alignment__translated_fragment__sentence_set__word_set')
 
         # Sort by document and sentence.xml_id
         annotations = sorted(annotations, key=lambda a: (a.alignment.original_fragment.document.title,
@@ -67,7 +69,9 @@ def export_pos_file(filename, format_, corpus, language, subcorpus=None,
                 of = annotation.alignment.original_fragment
                 of_details = [of.pk, of.document.title, of.xml_ids(), of.target_words(),
                               of.tense.title if of.tense else '', of.other_label, of.full(format_)]
-                writer.writerow([annotation.pk, annotation.tense.title if annotation.tense else '', annotation.other_label,
+                writer.writerow([annotation.pk,
+                                 annotation.tense.title if annotation.tense else '',
+                                 annotation.other_label,
                                  'no' if annotation.is_no_target else 'yes',
                                  'yes' if annotation.is_translation else 'no'] +
                                 pad_list(w, max_words) +
@@ -118,7 +122,9 @@ def export_fragments_file(filename, format_, corpus, language,
                     w = [word.word for word in words]
                     pos = [word.pos for word in words]
                     f = fragment.full(format_)
-                    writer.writerow([fragment.pk, fragment.tense.title if fragment.tense else '', fragment.other_label] +
+                    writer.writerow([fragment.pk,
+                                     fragment.tense.title if fragment.tense else '',
+                                     fragment.other_label] +
                                     pad_list(w, max_words) +
                                     pad_list(pos, max_words) +
                                     (pad_list([word.lemma for word in words], max_words) if add_lemmata else []) +
