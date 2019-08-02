@@ -165,15 +165,14 @@ class Fragment(models.Model):
         :return: A list of Annotations per language, with None if there's no Annotation or Alignment for this Fragment.
         """
         result = []
-        other_languages = self.document.corpus.languages.exclude(
-            pk=self.language.pk)
+        other_languages = self.document.corpus.languages.exclude(pk=self.language.pk)
         for language in other_languages:
             # Note that there should be only one Alignment per language, so we can use .first() here.
-            alignment = self.original.filter(
-                translated_fragment__language=language).first()
+            alignment = self.original.filter(translated_fragment__language=language).first()
             if alignment:
                 # TODO: We currently consider only one Annotation per Alignment, YMMV.
-                annotation = alignment.annotation_set.first()
+                # TODO: This should prefetch more stuff: lots of queries fired!
+                annotation = alignment.annotation_set.select_related('tense').first()
                 if annotation:
                     result.append((language, annotation))
                 else:

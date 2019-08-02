@@ -197,7 +197,7 @@ def add_element(el, current_fragment, related_fragments, position):
         sentences = Sentence.objects.filter(
             xml_id=el.get('id'),
             fragment__in=related_fragments
-        )
+        ).select_related('fragment').prefetch_related('word_set')
 
         if sentences:
             xml_id = None

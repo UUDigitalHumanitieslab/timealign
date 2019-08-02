@@ -199,10 +199,20 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
 class FragmentDetail(LoginRequiredMixin, generic.DetailView):
     model = Fragment
 
+    def get_object(self, queryset=None):
+        """
+        Only show Scenarios that have been run
+        """
+        qs = Fragment.objects \
+            .select_related('document', 'document__corpus', 'language') \
+            .prefetch_related('original', 'sentence_set')
+        fragment = super(FragmentDetail, self).get_object(qs)
+        return fragment
+
     def get_context_data(self, **kwargs):
         context = super(FragmentDetail, self).get_context_data(**kwargs)
 
-        fragment = self.get_object()
+        fragment = self.object
         limit = 5  # TODO: magic number
         doc_sentences = get_xml_sentences(fragment, limit)
 
