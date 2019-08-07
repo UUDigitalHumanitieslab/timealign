@@ -30,6 +30,19 @@
             </option>
             {% endfor %}
         </select>
+        <label for="lto_option">Other field:</label>
+        <select id="lto_option" class="form-control" name="lto_option">
+            <option value="none"
+                    {% if 'none' == lto_option_selected %}selected{% endif %}>
+                None
+            </option>
+            {% for lto_option in lto_options %}
+            <option value="{{ lto_option }}"
+                    {% if lto_option == selected_lto_option %}selected{% endif %}>
+                {{ lto_option }}
+            </option>
+            {% endfor %}
+        </select>
     </div>
     <button class="btn btn-primary">Show</button>
 </form>
@@ -85,7 +98,6 @@ const sankey = d3.sankey()
     .nodeWidth(15)
     .nodePadding(20)
     .nodeId(d => d.id)
-    .nodeAlign(d3.sankeyCenter)                  // TODO: not sure what this does
     .extent([[0, 5], [width - 5, height - 5]]);
 
 var graph = sankey(data);

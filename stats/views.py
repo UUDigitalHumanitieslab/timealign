@@ -13,7 +13,7 @@ from django.views import generic
 
 from django_filters.views import FilterView
 
-from annotations.models import Fragment, Language, Tense, TenseCategory
+from annotations.models import Fragment, Language, Tense, TenseCategory, Annotation
 from annotations.utils import get_available_corpora
 from core.utils import HTML
 
@@ -310,20 +310,39 @@ class SankeyView(ScenarioDetail):
 
         scenario = self.object
         labels = scenario.mds_labels
+        fragment_pks = scenario.mds_fragments
 
         language_from = scenario.languages(as_from=True).first().language.iso
         language_to = self.request.GET.get('language_to', scenario.languages(as_to=True).first().language.iso)
+        lto_option = self.request.GET.get('lto_option')
+        lto_option = None if lto_option == 'none' else lto_option
 
         # Retrieve nodes and links
         nodes = set()
         for language, ls in labels.items():
             if language in [language_from, language_to]:
-                for n, label in enumerate(ls):
+                for iterator, label in enumerate(ls):
                     nodes.add(label)
 
-        # Count the links  # TODO: more generic, e.g. more than two columns
-        zipped = [[(a, b)] for a, b in zip(labels[language_from], labels[language_to])]
-        links = Counter(chain(*zipped)).most_common()
+        lto_values = []
+        if lto_option:
+            for fragment_pk in fragment_pks:
+                annotation = Annotation.objects \
+                    .filter(alignment__original_fragment__pk=fragment_pk,
+                            alignment__translated_fragment__language__iso=language_to) \
+                    .first()
+                lto_value = 'none'
+                if annotation:
+                    lto_value = getattr(annotation, lto_option)
+                nodes.add(lto_value)
+                lto_values.append(lto_value)
+
+        # Count the links  # TODO: can we do this in a more generic way?
+        zipped = list(zip(labels[language_from], labels[language_to]))
+        links = Counter(zipped).most_common()
+        if lto_values:
+            zipped = list(zip(labels[language_to], lto_values))
+            links.extend(Counter(zipped).most_common())
 
         # Convert the nodes into a dictionary
         new_nodes = []
@@ -336,22 +355,25 @@ class SankeyView(ScenarioDetail):
         # Convert the links into a dictionary
         new_links = []
         for link, value in links:
-            t0 = link[0]
-            t0_label, t0_color, t0_category = get_tense_properties(t0)
-            t1 = link[1]
-            t1_label, t1_color, t1_category = get_tense_properties(t1)
+            for l1, l2 in zip(link, link[1:]):
+                l1_label, l1_color, l1_category = get_tense_properties(l1)
+                l2_label, l2_color, l2_category = get_tense_properties(l2)
 
-            # TODO add links to the fragments
-            new_link = {'source': t0, 'source_color': t0_color, 'source_label': t0_label,
-                        'target': t1, 'target_color': t1_color, 'target_label': t1_label,
-                        'value': value, 'link_color': t0_color}
-            new_links.append(new_link)
+                # TODO add links to the Fragments (i.e. on click, go to the set of Fragments related with this link)
+                new_link = {'source': l1, 'source_color': l1_color, 'source_label': l1_label,
+                            'target': l2, 'target_color': l2_color, 'target_label': l2_label,
+                            'value': value, 'link_color': l1_color}
+
+                new_links.append(new_link)
 
         # JSONify the data and add it to the context
         context['data'] = json.dumps({'nodes': new_nodes, 'links': new_links})
 
         # Add selection of languages to the context
         context['selected_language_to'] = language_to
+        # context['lfrom_options'] = ['other_label', 'formal_structure', 'sentence_function']  # TODO: implement
+        context['lto_options'] = ['other_label']
+        context['selected_lto_option'] = lto_option
         context['languages_to'] = scenario.languages(as_to=True)
 
         return context
