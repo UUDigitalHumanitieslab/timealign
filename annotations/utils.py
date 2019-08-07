@@ -292,11 +292,11 @@ def bind_annotations_to_xml(source):
         # Retrieve the fragments
         target_words = Sentence.objects. \
             prefetch_related(Prefetch('word_set', queryset=Word.objects.filter(is_target=True)))
+        pp_fragments = PreProcessFragment.objects.filter(language=source.language, document=source.document)
         fragments = Fragment.objects.filter(language=source.language, document=source.document). \
+            exclude(pk__in=pp_fragments). \
             select_related('tense'). \
             prefetch_related(Prefetch('sentence_set', queryset=target_words, to_attr='targets_prefetched'))
-        pp_fragments = PreProcessFragment.objects.filter(language=source.language, document=source.document)
-        fragments = fragments.exclude(pk__in=pp_fragments)
 
         # Attach Fragments to the XML tree
         for fragment in fragments:

@@ -200,9 +200,6 @@ class FragmentDetail(LoginRequiredMixin, generic.DetailView):
     model = Fragment
 
     def get_object(self, queryset=None):
-        """
-        Only show Scenarios that have been run
-        """
         qs = Fragment.objects \
             .select_related('document', 'document__corpus', 'language') \
             .prefetch_related('original', 'sentence_set')
@@ -247,6 +244,12 @@ class DocumentDetail(LoginRequiredMixin, generic.DetailView):
 ############
 class SourceDetail(LoginRequiredMixin, generic.DetailView):
     model = Source
+
+    def get_object(self, queryset=None):
+        qs = Source.objects \
+            .select_related('document', 'language')
+        source = super(SourceDetail, self).get_object(qs)
+        return source
 
     def get_context_data(self, **kwargs):
         context = super(SourceDetail, self).get_context_data(**kwargs)
