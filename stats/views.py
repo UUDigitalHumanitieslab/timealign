@@ -286,23 +286,17 @@ class UpsetView(ScenarioDetail):
         # Get the currently selected TenseCategory. We pick "Present Perfect" as the default here.
         # TODO: we might want to change this magic number into a setting?
         tc_pk = int(self.kwargs.get('tc', TenseCategory.objects.get(title='Present Perfect').pk))
-        print tc_pk
 
         results = []
         languages = set()
-        tense_cache = dict()
+        tense_cache = {t.pk: t for t in Tense.objects.select_related('category')}
         for n, fragment_pk in enumerate(fragments):
             d = {'fragment_pk': fragment_pk}
             for language, t in tenses.items():
                 t = t[n]
 
                 if isinstance(t, numbers.Number):
-                    if t in tense_cache:
-                        tense = tense_cache[t]
-                    else:
-                        tense = Tense.objects.select_related('category').get(pk=t)
-                        tense_cache[t] = tense
-
+                    tense = tense_cache.get(t)
                     d[str(language)] = int(tense.category.pk == tc_pk)
                     languages.add(language)
 
