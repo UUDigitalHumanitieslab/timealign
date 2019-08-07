@@ -6,7 +6,7 @@ from itertools import chain
 
 from braces.views import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.db.models import Case, When
+from django.db.models import Case, When, Prefetch
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -14,7 +14,7 @@ from django.views import generic
 
 from django_filters.views import FilterView
 
-from annotations.models import Fragment, Language, Tense, TenseCategory
+from annotations.models import Fragment, Language, Tense, TenseCategory, Sentence, Word
 from annotations.utils import get_available_corpora
 from core.utils import HTML
 
@@ -260,10 +260,15 @@ class FragmentTableView(ScenarioDetail):
     def get_context_data(self, **kwargs):
         context = super(FragmentTableView, self).get_context_data(**kwargs)
 
+        # TODO: preferably, this would be a paginated view, rather than pagination in the frontend
+        target_words = Sentence.objects. \
+            prefetch_related(Prefetch('word_set', queryset=Word.objects.filter(is_target=True)))
         fragments = Fragment.objects \
             .filter(pk__in=self.request.session.get('fragment_ids', [])) \
             .select_related('document') \
-            .prefetch_related('sentence_set', 'sentence_set__word_set')
+            .prefetch_related('sentence_set',
+                              'sentence_set__word_set',
+                              Prefetch('sentence_set', queryset=target_words, to_attr='targets_prefetched'))
         tenses = self.request.session.get('tenses', [])
 
         context['fragments'] = fragments

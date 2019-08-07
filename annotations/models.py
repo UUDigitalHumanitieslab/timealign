@@ -149,7 +149,12 @@ class Fragment(models.Model):
         Retrieves the target words for this Fragment.
         :return: A string that consists of the target words.
         """
-        return ' '.join(word.word for word in self.targets())
+        # Check if we have the target words prefetched
+        if hasattr(self, 'targets_prefetched'):
+            target_words = [w.word for s in self.targets_prefetched for w in s.word_set.all()]
+        else:
+            target_words = [word.word for word in self.targets()]
+        return ' '.join(target_words)
 
     def get_alignments(self, as_original=False, as_translation=False):
         alignments = Alignment.objects.none()

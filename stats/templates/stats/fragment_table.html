@@ -53,7 +53,7 @@
         </em>)
     </h2>
     <p>
-        {{fragments|length}} fragment{{fragments|pluralize:"s" }}
+        {{ fragments|length }} fragments
         {% if tenses %}
         with labels:
         {% for tense in tenses %} {{tense|safe|lower}}{%if not forloop.last%},{%endif%} {% endfor %}
