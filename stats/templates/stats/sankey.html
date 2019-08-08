@@ -21,6 +21,19 @@
 
 <form class="form-inline" action="{% url 'stats:sankey' scenario.pk %}" method="GET">
     <div class="form-group">
+        <label for="lfrom_option">Other field:</label>
+        <select id="lfrom_option" class="form-control" name="lfrom_option">
+            <option value="none"
+                    {% if 'none' == lfrom_option_selected %}selected{% endif %}>
+                None
+            </option>
+            {% for lfrom_option, lfrom_description in lfrom_options.items %}
+            <option value="{{ lfrom_option }}"
+                    {% if lfrom_option == selected_lfrom_option %}selected{% endif %}>
+                {{ lfrom_description }}
+            </option>
+            {% endfor %}
+        </select>
         <label for="language_to">Language to:</label>
         <select id="language_to" class="form-control" name="language_to">
             {% for language_to in languages_to %}
@@ -36,10 +49,10 @@
                     {% if 'none' == lto_option_selected %}selected{% endif %}>
                 None
             </option>
-            {% for lto_option in lto_options %}
+            {% for lto_option, lto_description in lto_options.items %}
             <option value="{{ lto_option }}"
                     {% if lto_option == selected_lto_option %}selected{% endif %}>
-                {{ lto_option }}
+                {{ lto_description }}
             </option>
             {% endfor %}
         </select>
@@ -55,39 +68,6 @@
 
 // Data
 const data = {{ data | safe }};
-
-/* Dummy data (TODO: delete when done)
-const data = {
-    nodes: [
-        { id: "A1" },
-        { id: "A2" },
-        { id: "A3" },
-        { id: "B1" },
-        { id: "B2" },
-        { id: "B3" },
-        { id: "B4" },
-        { id: "C1" },
-        { id: "C2" },
-        { id: "C3" },
-        { id: "D1" },
-        { id: "D2" }
-    ],
-    links: [
-        { source: "A1", target: "B1", value: 27, color: "red" },
-        { source: "A1", target: "B2", value:  9, color: "blue" },
-        { source: "A2", target: "B2", value:  5, color: "blue" },
-        { source: "A2", target: "B3", value: 11, color: "blue" },
-        { source: "A3", target: "B2", value: 12, color: "blue" },
-        { source: "A3", target: "B4", value:  7, color: "red" },
-        { source: "B1", target: "C1", value: 13, color: "blue" },
-        { source: "B1", target: "C2", value: 10, color: "blue" },
-        { source: "B4", target: "C2", value:  5, color: "blue" },
-        { source: "B4", target: "C3", value:  2, color: "red" },
-        { source: "B1", target: "D1", value:  4, color: "blue" },
-        { source: "C3", target: "D1", value:  1, color: "red" },
-        { source: "C3", target: "D2", value:  1, color: "blue" },
-    ]
-}*/
 
 // General settings
 var chart = d3.select("#chart");
