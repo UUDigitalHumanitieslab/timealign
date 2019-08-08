@@ -8,7 +8,7 @@ from lxml import etree
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from annotations.models import Language, Corpus, Document, Fragment, Tense
+from annotations.models import Language, Corpus, Document, Fragment, Tense, Alignment
 from annotations.management.commands.add_fragments import retrieve_languages, create_to_fragments
 from annotations.management.commands.constants import COLUMN_DOCUMENT, COLUMN_XML
 
@@ -58,7 +58,7 @@ class Command(BaseCommand):
                 .filter(is_no_target=False) \
                 .filter(fragment__document__corpus=corpus) \
                 .filter(fragment__language=language) \
-                .filter(fragment__resulting_fragment__isnull=True)
+                .filter(resulting_fragment__isnull=True)
 
             if document:
                 selections = selections.filter(fragment__document=document)
@@ -70,7 +70,6 @@ class Command(BaseCommand):
 
                 with transaction.atomic():
                     f = selection.fragment
-                    f_selection_pk = f.pk
                     sentences = f.sentence_set.all()
 
                     f.__class__ = Fragment
@@ -83,10 +82,9 @@ class Command(BaseCommand):
 
                     f.save()
 
-                    # Save the fragment as resulting fragment
-                    f_selection = PreProcessFragment.objects.get(pk=f_selection_pk)
-                    f_selection.resulting_fragment = f
-                    f_selection.save()
+                    # Save the Fragment as resulting Fragment on the Selection
+                    selection.resulting_fragment = f
+                    selection.save()
 
                     for sentence in sentences:
                         s = sentence
@@ -104,6 +102,10 @@ class Command(BaseCommand):
                             w.sentence = s
                             w.is_target = w.xml_id in selected_words
                             w.save()
+
+                    # Re-save the Fragment to set formal_structure and sentence_function if necessary
+                    if corpus.check_structure:
+                        f.save()
         else:
             # Fetch Fragments that are not PreProcessFragments (TODO: in 1.11, use .difference() for this)
             fragments = Fragment.objects.filter(document__corpus=corpus, language=language)
@@ -135,6 +137,11 @@ class Command(BaseCommand):
                             fragments = fragment_cache.get((doc.pk, s.get('id')))
                             if fragments:
                                 for fragment in fragments:
-                                    create_to_fragments(doc, fragment, languages_to, row)
+                                    languages = languages_to
+                                    for alignment in Alignment.objects.filter(original_fragment=fragment):
+                                        languages = {key: val for key, val in languages.items()
+                                                     if val != alignment.translated_fragment.language}
+
+                                    create_to_fragments(doc, fragment, languages, row)
 
                     self.stdout.write(self.style.SUCCESS('Line {} processed'.format(n)))

@@ -19,11 +19,11 @@ from django_filters.views import FilterView
 from .exports import export_pos_file
 from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm
-from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, TenseCategory, Tense, Source
-from .utils import get_random_alignment, get_available_corpora, get_xml_sentences
+from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, \
+    TenseCategory, Tense, Source
+from .utils import get_random_alignment, get_available_corpora, get_xml_sentences, bind_annotations_to_xml
 
 from core.utils import XLSX
-from stats.utils import get_tense_properties
 
 
 ##############
@@ -62,21 +62,17 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
             .values('original_fragment__language', 'translated_fragment__language') \
             .order_by('original_fragment__language', 'translated_fragment__language') \
             .annotate(count=Count('pk'))
-        completed = totals.exclude(annotation=None)
+        completed = {(t.get('original_fragment__language'), t.get('translated_fragment__language')): t.get('count')
+                     for t in totals.exclude(annotation=None)}
 
         # Convert the QuerySets into a list of tuples
+        languages = {l.pk: l for l in Language.objects.all()}
         language_totals = []
         for total in totals:
-            l1 = Language.objects.get(pk=total['original_fragment__language'])
-            l2 = Language.objects.get(pk=total['translated_fragment__language'])
+            l1 = languages.get(total['original_fragment__language'])
+            l2 = languages.get(total['translated_fragment__language'])
+            complete = completed.get((l1.pk, l2.pk), 0)
             available = total['count']
-
-            # TODO: can we do this more elegantly, e.g. without a database call?
-            complete = completed.filter(original_fragment__language=l1, translated_fragment__language=l2)
-            if complete:
-                complete = complete[0]['count']
-            else:
-                complete = 0
 
             language_totals.append((l1, l2, complete, available))
 
@@ -111,6 +107,16 @@ class AnnotationMixin(SuccessMessageMixin, PermissionRequiredMixin):
     def get_alignment(self):
         raise NotImplementedError
 
+    def get_alignments(self):
+        """Retrieve the Alignments and also some related fields to speed up processing"""
+        return Alignment.objects.select_related('original_fragment',
+                                                'original_fragment__tense',
+                                                'original_fragment__language',
+                                                'original_fragment__document__corpus',
+                                                'translated_fragment',
+                                                'translated_fragment__language',
+                                                'translated_fragment__document')
+
 
 class AnnotationUpdateMixin(AnnotationMixin):
     def get_context_data(self, **kwargs):
@@ -128,7 +134,7 @@ class AnnotationUpdateMixin(AnnotationMixin):
 
     def get_alignment(self):
         """Retrieves the Alignment from the object"""
-        return self.object.alignment
+        return self.get_alignments().get(pk=self.object.alignment.pk)
 
 
 class AnnotationCreate(AnnotationMixin, generic.CreateView):
@@ -148,15 +154,8 @@ class AnnotationCreate(AnnotationMixin, generic.CreateView):
         return super(AnnotationCreate, self).form_valid(form)
 
     def get_alignment(self):
-        """Retrieves the Alignment by the pk in the kwargs, and also some related fields to speed up processing"""
-        alignments = Alignment.objects.select_related('original_fragment',
-                                                      'original_fragment__tense',
-                                                      'original_fragment__language',
-                                                      'original_fragment__document__corpus',
-                                                      'translated_fragment',
-                                                      'translated_fragment__language',
-                                                      'translated_fragment__document')
-        return get_object_or_404(alignments, pk=self.kwargs['pk'])
+        """Retrieves the Alignment by the pk in the kwargs"""
+        return get_object_or_404(self.get_alignments(), pk=self.kwargs['pk'])
 
 
 class AnnotationUpdate(AnnotationUpdateMixin, generic.UpdateView):
@@ -200,10 +199,17 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
 class FragmentDetail(LoginRequiredMixin, generic.DetailView):
     model = Fragment
 
+    def get_object(self, queryset=None):
+        qs = Fragment.objects \
+            .select_related('document', 'document__corpus', 'language') \
+            .prefetch_related('original', 'sentence_set')
+        fragment = super(FragmentDetail, self).get_object(qs)
+        return fragment
+
     def get_context_data(self, **kwargs):
         context = super(FragmentDetail, self).get_context_data(**kwargs)
 
-        fragment = self.get_object()
+        fragment = self.object
         limit = 5  # TODO: magic number
         doc_sentences = get_xml_sentences(fragment, limit)
 
@@ -239,44 +245,34 @@ class DocumentDetail(LoginRequiredMixin, generic.DetailView):
 class SourceDetail(LoginRequiredMixin, generic.DetailView):
     model = Source
 
+    def get_object(self, queryset=None):
+        qs = Source.objects \
+            .select_related('document', 'language')
+        source = super(SourceDetail, self).get_object(qs)
+        return source
+
     def get_context_data(self, **kwargs):
         context = super(SourceDetail, self).get_context_data(**kwargs)
 
-        source = self.get_object()
-
-        # Retrieve the Annotations
-        annotations = Annotation.objects. \
-            filter(alignment__translated_fragment__language=source.language,
-                   alignment__translated_fragment__document=source.document)
-
-        # Only include correct Annotations
-        annotations = annotations.filter(is_no_target=False, is_translation=True)
-
-        # Attach Annotations to the XML tree
-        tree = etree.parse(source.xml_file)
-
-        labels = set()
-        failed_lookups = []
-        for annotation in annotations:
-            tense_label, tense_color, _ = get_tense_properties(annotation.label(), len(labels))
-            labels.add(tense_label)
-
-            words = annotation.words.all()
-            for w in words:
-                xml_w = tree.xpath('//w[@id="{}"]'.format(w.xml_id))
-                if len(xml_w) != 1:
-                    failed_lookups.append(annotation)
-                    continue
-
-                xml_w = xml_w[0]
-                xml_w.set('annotation-pk', str(annotation.pk))
-                xml_w.set('fragment-pk', str(annotation.alignment.original_fragment.pk))
-                xml_w.set('tense', tense_label)
-                xml_w.set('color', tense_color)
+        source = self.object
+        tree, failed_lookups = bind_annotations_to_xml(source)
+        additional_sources = Source.objects.filter(document=source.document) \
+            .exclude(pk=source.pk) \
+            .select_related('language')
 
         transform = etree.XSLT(etree.fromstring(render_to_string('annotations/xml_transform.xslt').encode('utf-8')))
         context['sentences'] = transform(tree)
         context['failed_lookups'] = failed_lookups
+        context['additional_sources'] = additional_sources
+
+        additional_source = self.request.GET.get('additional_source')
+        if additional_source:
+            source = get_object_or_404(Source, pk=additional_source)
+            add_tree, add_failed_lookups = bind_annotations_to_xml(source)
+
+            context['additional_source'] = source
+            context['additional_sentences'] = transform(add_tree)
+            context['failed_lookups'] = context['failed_lookups'].extend(add_failed_lookups)
 
         return context
 
@@ -304,10 +300,16 @@ class AnnotationList(PermissionRequiredMixin, FilterView):
                             'alignment__original_fragment',
                             'alignment__original_fragment__document',
                             'alignment__translated_fragment') \
+            .prefetch_related('alignment__original_fragment__sentence_set__word_set',
+                              'alignment__translated_fragment__sentence_set__word_set',
+                              'words') \
             .order_by('-annotated_at')
 
 
 class FragmentList(PermissionRequiredMixin, generic.ListView):
+    """
+    TODO: consider refactoring, too many queries.
+    """
     context_object_name = 'fragments'
     template_name = 'annotations/fragment_list.html'
     paginate_by = 25
@@ -325,6 +327,8 @@ class FragmentList(PermissionRequiredMixin, generic.ListView):
         for fragment in fragments:
             if Annotation.objects.filter(alignment__original_fragment=fragment, is_no_target=False).exists():
                 results.append(fragment)
+            if len(results) == 50:  # TODO: Capping this for now with a magic number.
+                break
         return results
 
     def get_context_data(self, **kwargs):

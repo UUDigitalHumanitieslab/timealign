@@ -50,9 +50,11 @@
                     <a href="{% url 'annotations:list' l1.iso l2.iso %}" role="button" class="btn btn-default btn-xs" title="List view">
                         <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
                     </a>
+                    <!-- Not using this for the moment.
                     <a href="{% url 'annotations:matrix' l1.iso %}" role="button" class="btn btn-default btn-xs" title="Matrix view">
                         <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
                     </a>
+                    -->
                     <a href="{% url 'annotations:prepare_download' l2.iso %}" role="button" class="btn btn-default btn-xs" title="Download spreadsheet">
                         <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
                     </a>

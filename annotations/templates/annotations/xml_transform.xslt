@@ -5,9 +5,12 @@
     <xsl:for-each select="s">
         <xsl:for-each select="w">
             <xsl:choose>
-            <xsl:when test="@annotation-pk">
+            <xsl:when test="@fragment-pk">
                 <a>
                     <xsl:attribute name="href">../../show/<xsl:value-of select="@fragment-pk" /></xsl:attribute>
+                    <xsl:attribute name="data-annotation-pk">
+                        <xsl:value-of select="@annotation-pk" />
+                    </xsl:attribute>
                     <xsl:attribute name="data-xml-id">
                         <xsl:value-of select="@id" />
                     </xsl:attribute>

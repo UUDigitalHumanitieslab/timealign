@@ -39,6 +39,10 @@ class ScenarioAdmin(DjangoObjectActions, admin.ModelAdmin):
 
     inlines = [ScenarioLanguageInline]
 
+    def get_queryset(self, request):
+        return super(ScenarioAdmin, self).get_queryset(request) \
+            .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels')  # Don't fetch the PickledObjectFields
+
     def run_mds(self, request, obj):
         try:
             run_mds(obj)

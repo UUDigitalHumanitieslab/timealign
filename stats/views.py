@@ -6,6 +6,7 @@ from itertools import chain
 
 from braces.views import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.db.models import Case, When, Prefetch
 from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -13,7 +14,7 @@ from django.views import generic
 
 from django_filters.views import FilterView
 
-from annotations.models import Fragment, Language, Tense, TenseCategory, Annotation
+from annotations.models import Fragment, Language, Tense, TenseCategory, Sentence, Word, Annotation
 from annotations.utils import get_available_corpora
 from core.utils import HTML
 
@@ -40,8 +41,10 @@ class ScenarioList(LoginRequiredMixin, FilterView):
         return Scenario.objects \
             .filter(corpus__in=get_available_corpora(self.request.user)) \
             .exclude(last_run__isnull=True) \
+            .select_related('corpus') \
             .prefetch_related('scenariolanguage_set') \
-            .order_by('corpus__title')
+            .order_by('corpus__title') \
+            .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels')  # Don't fetch the PickledObjectFields
 
 
 class ScenarioDetail(LoginRequiredMixin, generic.DetailView):
@@ -54,7 +57,10 @@ class ScenarioDetail(LoginRequiredMixin, generic.DetailView):
         """
         Only show Scenarios that have been run
         """
-        scenario = super(ScenarioDetail, self).get_object(queryset)
+        qs = Scenario.objects \
+            .select_related('corpus') \
+            .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels')  # Don't fetch the PickledObjectFields
+        scenario = super(ScenarioDetail, self).get_object(qs)
         if scenario.corpus not in get_available_corpora(self.request.user):
             raise PermissionDenied
         if not scenario.last_run:
@@ -85,7 +91,14 @@ class MDSView(ScenarioDetail):
         # Retrieve pickled data
         model = scenario.mds_model
         tenses = scenario.mds_labels
-        fragments = scenario.mds_fragments
+        fragment_pks = scenario.mds_fragments
+
+        # Retrieve Fragments, but keep order intact
+        # Solution taken from https://stackoverflow.com/a/38390480
+        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(fragment_pks)])
+        fragments = list(Fragment.objects.filter(pk__in=fragment_pks).
+                         order_by(preserved).
+                         prefetch_related('sentence_set', 'sentence_set__word_set'))
 
         # Turn the pickled model into a scatterplot dictionary
         random.seed(scenario.pk)  # Fixed seed for random jitter
@@ -98,8 +111,7 @@ class MDSView(ScenarioDetail):
             if d2 > 0:
                 y += l[d2 - 1]
 
-            f = fragments[n]
-            fragment = Fragment.objects.get(pk=f)
+            fragment = fragments[n]
             ts = [tenses[l][n] for l in tenses.keys()]
 
             labels = []
@@ -114,7 +126,9 @@ class MDSView(ScenarioDetail):
                 labels.append(label)
 
             # Add all values to the dictionary
-            j[tenses[language][n]].append({'x': x, 'y': y, 'fragment_id': f, 'fragment': fragment.full(HTML), 'tenses': labels})
+            j[tenses[language][n]].append({'x': x, 'y': y,
+                                           'fragment_id': fragment.pk, 'fragment': fragment.full(HTML),
+                                           'tenses': labels})
 
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
@@ -194,9 +208,14 @@ class DescriptiveStatsView(ScenarioDetail):
             c_tensecats = Counter()
             n = 0
             labels = set()
+            tense_cache = dict()
             for t in tenses[l.iso]:
-                tense_label, tense_color, tense_category = get_tense_properties(
-                    t, len(labels))
+                if t in tense_cache:
+                    tense_label, tense_color, tense_category = tense_cache[t]
+                else:
+                    tense_label, tense_color, tense_category = get_tense_properties(t, len(labels))
+                    tense_cache[t] = (tense_label, tense_color, tense_category)
+
                 labels.add(tense_label)
                 distinct_tensecats.add(tense_category)
 
@@ -220,20 +239,16 @@ class DescriptiveStatsView(ScenarioDetail):
                 else:
                     tensecat_table[tensecat].append(0)
 
-        tensecat_table_ordered = OrderedDict(sorted(tensecat_table.items(),
-                                                    key=lambda item: sum(
-                                                        item[1]) if item[0] else 0,
-                                                    reverse=True))
+        tensecat_table_ordered = OrderedDict(
+            sorted(tensecat_table.items(), key=lambda item: sum(item[1]) if item[0] else 0, reverse=True))
 
         context['counters'] = counters_tenses
-        context['counters_json'] = json.dumps(
-            {language.iso: values for language, values in counters_tenses.items()})
+        context['counters_json'] = json.dumps({language.iso: values for language, values in counters_tenses.items()})
         context['tensecat_table'] = tensecat_table_ordered
         context['tuples'] = Counter(tuples.values()).most_common()
         context['colors_json'] = json.dumps(colors)
         context['languages'] = languages
-        context['languages_json'] = json.dumps(
-            {l.iso: l.title for l in languages})
+        context['languages_json'] = json.dumps({l.iso: l.title for l in languages})
 
         return context
 
@@ -245,7 +260,15 @@ class FragmentTableView(ScenarioDetail):
     def get_context_data(self, **kwargs):
         context = super(FragmentTableView, self).get_context_data(**kwargs)
 
-        fragments = Fragment.objects.filter(pk__in=self.request.session.get('fragment_ids', []))
+        # TODO: preferably, this would be a paginated view, rather than pagination in the frontend
+        target_words = Sentence.objects. \
+            prefetch_related(Prefetch('word_set', queryset=Word.objects.filter(is_target=True)))
+        fragments = Fragment.objects \
+            .filter(pk__in=self.request.session.get('fragment_ids', [])) \
+            .select_related('document') \
+            .prefetch_related('sentence_set',
+                              'sentence_set__word_set',
+                              Prefetch('sentence_set', queryset=target_words, to_attr='targets_prefetched'))
         tenses = self.request.session.get('tenses', [])
 
         context['fragments'] = fragments
@@ -271,19 +294,14 @@ class UpsetView(ScenarioDetail):
 
         results = []
         languages = set()
-        tense_cache = dict()
+        tense_cache = {t.pk: t for t in Tense.objects.select_related('category')}
         for n, fragment_pk in enumerate(fragments):
             d = {'fragment_pk': fragment_pk}
             for language, t in tenses.items():
                 t = t[n]
 
                 if isinstance(t, numbers.Number):
-                    if t in tense_cache:
-                        tense = tense_cache[t]
-                    else:
-                        tense = Tense.objects.select_related('category').get(pk=t)
-                        tense_cache[t] = tense
-
+                    tense = tense_cache.get(t)
                     d[str(language)] = int(tense.category.pk == tc_pk)
                     languages.add(language)
 

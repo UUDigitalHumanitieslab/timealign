@@ -137,16 +137,24 @@ class Fragment(models.Model):
         result += '</ul>'
         return result
 
+    def targets(self):
+        """
+        Retrieves all target Words for this Fragment.
+        :return: A QuerySet of Words.
+        """
+        return Word.objects.filter(sentence__in=self.sentence_set.all(), is_target=True)
+
     def target_words(self):
         """
         Retrieves the target words for this Fragment.
-        :return: A list of Strings with the target Words.
+        :return: A string that consists of the target words.
         """
-        result = []
-        for sentence in self.sentence_set.all():
-            result.extend(
-                [word.word for word in sentence.word_set.filter(is_target=True)])
-        return ' '.join(result)
+        # Check if we have the target words prefetched
+        if hasattr(self, 'targets_prefetched'):
+            target_words = [w.word for s in self.targets_prefetched for w in s.word_set.all()]
+        else:
+            target_words = [word.word for word in self.targets()]
+        return ' '.join(target_words)
 
     def get_alignments(self, as_original=False, as_translation=False):
         alignments = Alignment.objects.none()
@@ -162,15 +170,14 @@ class Fragment(models.Model):
         :return: A list of Annotations per language, with None if there's no Annotation or Alignment for this Fragment.
         """
         result = []
-        other_languages = self.document.corpus.languages.exclude(
-            pk=self.language.pk)
+        other_languages = self.document.corpus.languages.exclude(pk=self.language.pk)
         for language in other_languages:
             # Note that there should be only one Alignment per language, so we can use .first() here.
-            alignment = self.original.filter(
-                translated_fragment__language=language).first()
+            alignment = self.original.filter(translated_fragment__language=language).first()
             if alignment:
                 # TODO: We currently consider only one Annotation per Alignment, YMMV.
-                annotation = alignment.annotation_set.first()
+                # TODO: This should prefetch more stuff: lots of queries fired!
+                annotation = alignment.annotation_set.select_related('tense').first()
                 if annotation:
                     result.append((language, annotation))
                 else:

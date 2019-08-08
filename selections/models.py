@@ -5,8 +5,6 @@ from annotations.models import Fragment, Word
 
 
 class PreProcessFragment(Fragment):
-    resulting_fragment = models.ForeignKey(Fragment, related_name='fragment_preprocess', null=True, on_delete=models.SET_NULL)
-
     def selected_words(self, user=None):
         result = dict()
 
@@ -43,6 +41,9 @@ class Selection(models.Model):
 
     tense = models.CharField('Tense', max_length=200, blank=True)
     other_label = models.CharField(max_length=200, blank=True)
+
+    resulting_fragment = models.ForeignKey(Fragment, related_name='fragment_preprocess', null=True,
+                                           on_delete=models.SET_NULL)
 
     class Meta:
         unique_together = ('fragment', 'selected_by', 'order')
