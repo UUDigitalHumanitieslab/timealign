@@ -44,10 +44,12 @@ class Scenario(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='scenarios', null=True, on_delete=models.SET_NULL)
 
     def from_languages(self):
-        return ', '.join([sl.language.title for sl in self.languages(as_from=True)])
+        languages = self.languages_from if hasattr(self, 'languages_from') else self.languages(as_from=True)
+        return ', '.join([sl.language.title for sl in languages])
 
     def to_languages(self):
-        return ', '.join([sl.language.title for sl in self.languages(as_to=True)])
+        languages = self.languages_to if hasattr(self, 'languages_to') else self.languages(as_to=True)
+        return ', '.join([sl.language.title for sl in languages])
 
     def languages(self, **kwargs):
         return self.scenariolanguage_set.filter(**kwargs).select_related('language')

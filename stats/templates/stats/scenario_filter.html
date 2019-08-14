@@ -6,16 +6,15 @@
 
 <h2>Scenarios</h2>
 {% include "stats/_scenarios.html" %}
-<hr/>
+
+{% if is_paginated %}
+{% bootstrap_pagination page_obj extra=request.GET.urlencode %}
+{% endif %}
 
 <h2>Filter</h2>
 <form action="" method="get">
     {% bootstrap_form filter.form %}
     {% bootstrap_button "Filter" button_type="submit" %}
 </form>
-
-{% if is_paginated %}
-{% bootstrap_pagination page_obj extra=request.GET.urlencode %}
-{% endif %}
 
 {% endblock %}

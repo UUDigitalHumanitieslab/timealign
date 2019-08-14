@@ -19,7 +19,7 @@ from annotations.utils import get_available_corpora
 from core.utils import HTML
 
 from .filters import ScenarioFilter
-from .models import Scenario
+from .models import Scenario, ScenarioLanguage
 from .utils import get_tense_properties
 
 
@@ -38,11 +38,14 @@ class ScenarioList(LoginRequiredMixin, FilterView):
         and if show_test is False, don't show test Scenarios either.
         Order the Scenarios by Corpus title.
         """
+        languages_from = ScenarioLanguage.objects.filter(as_from=True).select_related('language')
+        languages_to = ScenarioLanguage.objects.filter(as_to=True).select_related('language')
         return Scenario.objects \
             .filter(corpus__in=get_available_corpora(self.request.user)) \
             .exclude(last_run__isnull=True) \
             .select_related('corpus') \
-            .prefetch_related('scenariolanguage_set') \
+            .prefetch_related(Prefetch('scenariolanguage_set', queryset=languages_from, to_attr='languages_from'),
+                              Prefetch('scenariolanguage_set', queryset=languages_to, to_attr='languages_to')) \
             .order_by('corpus__title') \
             .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels')  # Don't fetch the PickledObjectFields
 
