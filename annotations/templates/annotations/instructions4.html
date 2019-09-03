@@ -7,15 +7,16 @@
     <h1>Instructions (part 4)</h1>
     <div>
         <p class="lead">
-            In some cases, there is no suitable target translation for the given construction.
-            In that case, you should select the checkbox <em>There is no present perfect in the original fragment</em>.
+            In some cases, the (automatically or manually) selected target in the original fragment is incorrectly labeled.
+            In that case, you should select the checkbox <em>{{ is_no_target_title | safe }}</em>.
         </p>
         <div class="alert alert-info" role="alert">
             Please select the correct checkbox.
             After that, click the 'Submit' button to continue.
         </div>
         {% url "annotations:instructions" 5 as next_url %}
-        {% include "annotations/_annotation_instructions.html" with url=next_url %}
+        {% include "annotations/_instructions4.html" %}
+        {% include "annotations/_instructions_buttons.html" with url=next_url %}
     </div>
 </div>
 

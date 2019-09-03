@@ -40,6 +40,14 @@ class InstructionsView(generic.TemplateView):
     def get_template_names(self):
         return 'annotations/instructions{}.html'.format(self.kwargs['n'])
 
+    def get_context_data(self, **kwargs):
+        context = super(InstructionsView, self).get_context_data(**kwargs)
+
+        context['is_no_target_title'] = Annotation._meta.get_field('is_no_target').verbose_name.format('present perfect')
+        context['is_translation_title'] = Annotation._meta.get_field('is_translation').verbose_name
+
+        return context
+
 
 class StatusView(PermissionRequiredMixin, generic.TemplateView):
     """Loads a static home view, with an overview of the annotation progress"""

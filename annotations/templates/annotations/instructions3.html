@@ -16,7 +16,8 @@
             After that, click the 'Submit' button to continue.
         </div>
         {% url "annotations:instructions" 4 as next_url %}
-        {% include "annotations/_annotation_instructions.html" with url=next_url %}
+        {% include "annotations/_instructions4.html" %}
+        {% include "annotations/_instructions_buttons.html" with url=next_url %}
     </div>
 </div>
 

@@ -8,14 +8,15 @@
     <div>
         <p class="lead">
             In other cases, the translation of the given fragment is incorrect.
-            In that case, you should clear the checkbox <em>This is a correct translation of the original fragment</em>.
+            In that case, you should clear the checkbox <em>{{ is_translation_title }}</em>.
         </p>
         <div class="alert alert-info" role="alert">
             Please clear the correct checkbox.
             After that, click the 'Submit' button to continue.
         </div>
         {% url "annotations:instructions" 6 as next_url %}
-        {% include "annotations/_annotation_instructions.html" with url=next_url %}
+        {% include "annotations/_instructions5.html" %}
+        {% include "annotations/_instructions_buttons.html" with url=next_url %}
     </div>
 </div>
 
