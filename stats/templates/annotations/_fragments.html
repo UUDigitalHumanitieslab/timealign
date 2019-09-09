@@ -1,0 +1,28 @@
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th width="20%">Document</th>
+            <th width="20%">Sentence XML-id</th>
+            <th width="40%">Target words</th>
+            <th width="20%">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for f in fragments %}
+        <tr>
+            <td>{{ f.document.title }}</td>
+            <td>{{ f.xml_ids }}</td>
+            <td >
+                <span data-toggle="popover" data-content='{% include "annotations/_sentences.html" with sentences=f.sentence_set.all %}' title="Source fragment">
+                    {{ f.target_words }}
+                </span>
+            </td>
+            <td>
+                <a href="{% url 'annotations:show' f.pk %}" role="button" class="btn btn-primary btn-xs" title="View fragment">
+                    <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

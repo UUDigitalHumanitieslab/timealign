@@ -2,7 +2,7 @@ from django import forms
 
 from django_filters import FilterSet, BooleanFilter, CharFilter
 
-from .models import Scenario
+from .models import Scenario, Fragment
 
 
 class ScenarioFilter(FilterSet):
@@ -29,3 +29,12 @@ class ScenarioFilter(FilterSet):
     def __init__(self, *args, **kwargs):
         super(ScenarioFilter, self).__init__(*args, **kwargs)
         self.filters['scenariolanguage__language'].label = 'Language'
+
+
+class FragmentFilter(FilterSet):
+    def filter_document(self, queryset, name, value):
+        return queryset if value else queryset.filter(**{name: False})
+
+    class Meta:
+        model = Fragment
+        fields = ['formal_structure', 'sentence_function']
