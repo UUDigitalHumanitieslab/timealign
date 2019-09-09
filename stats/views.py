@@ -18,7 +18,7 @@ from annotations.models import Fragment, Language, Tense, TenseCategory, Sentenc
 from annotations.utils import get_available_corpora
 from core.utils import HTML
 
-from .filters import ScenarioFilter
+from .filters import ScenarioFilter, FragmentFilter
 from .models import Scenario, ScenarioLanguage
 from .utils import get_tense_properties
 
@@ -177,9 +177,10 @@ class MDSView(ScenarioDetail):
         return context
 
     def post(self, request, pk, *args, **kwargs):
-        request.session['fragment_ids'] = json.loads(request.POST['fragment_ids'])
+        request.session['scenario_pk'] = pk
+        request.session['fragment_pks'] = json.loads(request.POST['fragment_ids'])
         request.session['tenses'] = json.loads(request.POST['tenses'])
-        return HttpResponseRedirect(reverse('stats:fragment_table', kwargs={'pk': pk}))
+        return HttpResponseRedirect(reverse('stats:fragment_table'))
 
 
 class MDSViewOld(MDSView):
@@ -256,25 +257,40 @@ class DescriptiveStatsView(ScenarioDetail):
         return context
 
 
-class FragmentTableView(ScenarioDetail):
-    model = Scenario
-    template_name = 'stats/fragment_table.html'
+class FragmentTableView(LoginRequiredMixin, FilterView):
+    model = Fragment
+    context_object_name = 'fragments'
+    filterset_class = FragmentFilter
+    paginate_by = 15
+
+    def get_queryset(self):
+        fragment_pks = self.request.session.get('fragment_pks', [])
+        target_words = Sentence.objects. \
+            prefetch_related(Prefetch('word_set', queryset=Word.objects.filter(is_target=True)))
+
+        return Fragment.objects \
+            .filter(pk__in=fragment_pks) \
+            .select_related('document') \
+            .prefetch_related('sentence_set',
+                              'sentence_set__word_set',
+                              Prefetch('sentence_set', queryset=target_words, to_attr='targets_prefetched')) \
+            .order_by('pk')
 
     def get_context_data(self, **kwargs):
         context = super(FragmentTableView, self).get_context_data(**kwargs)
 
-        # TODO: preferably, this would be a paginated view, rather than pagination in the frontend
-        target_words = Sentence.objects. \
-            prefetch_related(Prefetch('word_set', queryset=Word.objects.filter(is_target=True)))
-        fragments = Fragment.objects \
-            .filter(pk__in=self.request.session.get('fragment_ids', [])) \
-            .select_related('document') \
-            .prefetch_related('sentence_set',
-                              'sentence_set__word_set',
-                              Prefetch('sentence_set', queryset=target_words, to_attr='targets_prefetched'))
+        scenario_pk = self.request.session.get('scenario_pk')
+
+        if not scenario_pk:
+            return Http404
+
+        # Don't fetch the PickledObjectFields
+        scenario = Scenario.objects \
+            .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels') \
+            .get(pk=scenario_pk)
         tenses = self.request.session.get('tenses', [])
 
-        context['fragments'] = fragments
+        context['scenario'] = scenario
         context['tenses'] = tenses
 
         return context
@@ -318,5 +334,6 @@ class UpsetView(ScenarioDetail):
         return context
 
     def post(self, request, pk, *args, **kwargs):
-        request.session['fragment_ids'] = json.loads(request.POST['fragment_ids'])
-        return HttpResponseRedirect(reverse('stats:fragment_table', kwargs={'pk': pk}))
+        request.session['scenario_pk'] = pk
+        request.session['fragment_pks'] = json.loads(request.POST['fragment_ids'])
+        return HttpResponseRedirect(reverse('stats:fragment_table'))

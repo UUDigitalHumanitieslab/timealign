@@ -1,11 +1,11 @@
 <ul class="list-group" dir="auto" style="margin-bottom: 0px">
     {% for sentence in sentences %}
         {% if sentence.tag == 'p' %}
-        <li class="paragraph {{sentence.position}}">
+        <li class="paragraph {{ sentence.position }}">
             &para
         </li>
         {% else %}
-        <li class="list-group-item {{sentence.position}}" data-pk="{{ sentence.pk }}" data-xml-id="{{ sentence.xml_id }}">
+        <li class="list-group-item {{ sentence.position }}" data-pk="{{ sentence.pk }}" data-xml-id="{{ sentence.xml_id }}">
             {% if sentence.content %}
                 {% if sentence.position == "current" %}
                 <button role="button" class="reset-btn btn btn-primary btn-xs" title="Reset context">
