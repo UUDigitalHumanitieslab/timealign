@@ -1,0 +1,140 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.2/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-sankey/0.7.1/d3-sankey.min.js"></script>
+
+<style>
+.link:hover {
+  stroke-opacity: .6;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h1>
+    Sankey diagram for scenario <em>{{ scenario.title }}</em>
+</h1>
+
+<form class="form-inline" action="{% url 'stats:sankey' scenario.pk %}" method="GET">
+    <div class="form-group">
+        <label for="lfrom_option">Other field:</label>
+        <select id="lfrom_option" class="form-control" name="lfrom_option">
+            <option value="none"
+                    {% if 'none' == lfrom_option_selected %}selected{% endif %}>
+                None
+            </option>
+            {% for lfrom_option, lfrom_description in lfrom_options.items %}
+            <option value="{{ lfrom_option }}"
+                    {% if lfrom_option == selected_lfrom_option %}selected{% endif %}>
+                {{ lfrom_description }}
+            </option>
+            {% endfor %}
+        </select>
+        <label for="language_to">Language to:</label>
+        <select id="language_to" class="form-control" name="language_to">
+            {% for language_to in languages_to %}
+            <option value="{{ language_to.language.iso }}"
+                    {% if language_to.language.iso == selected_language_to %}selected{% endif %}>
+                {{ language_to.language.title }}
+            </option>
+            {% endfor %}
+        </select>
+        <label for="lto_option">Other field:</label>
+        <select id="lto_option" class="form-control" name="lto_option">
+            <option value="none"
+                    {% if 'none' == lto_option_selected %}selected{% endif %}>
+                None
+            </option>
+            {% for lto_option, lto_description in lto_options.items %}
+            <option value="{{ lto_option }}"
+                    {% if lto_option == selected_lto_option %}selected{% endif %}>
+                {{ lto_description }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <button class="btn btn-primary">Show</button>
+</form>
+
+<div id="chart"></div>
+
+<script>
+// Code adapted from https://observablehq.com/@d3/parallel-sets
+// and https://jarrettmeyer.com/2018/05/31/creating-a-d3-sankey-graph
+
+// Data
+const data = {{ data | safe }};
+
+// General settings
+var chart = d3.select("#chart");
+const width = chart.node().getBoundingClientRect().width;
+const height = 720;
+const sankey = d3.sankey()
+    .size([width, height])
+    .nodeWidth(15)
+    .nodePadding(20)
+    .nodeId(d => d.id)
+    .extent([[0, 5], [width - 5, height - 5]]);
+
+var graph = sankey(data);
+
+// The SVG where the magic happens
+var svg = chart.append("svg")
+    .style("background", "#fff")
+    .style("width", width)
+    .style("height", height);
+
+// Nodes
+svg.append("g")
+    .classed("nodes", true)
+    .selectAll("rect")
+    .data(graph.nodes)
+    .enter()
+    .append("rect")
+        .classed("node", true)
+        .attr("x", d => d.x0)
+        .attr("y", d => d.y0)
+        .attr("height", d => d.y1 - d.y0)
+        .attr("width", d => d.x1 - d.x0)
+        .attr("fill", d => d.color)
+        .attr("stroke", "#000")
+        .attr("shape-rendering", "crispEdges")
+    .append("title")
+        .text(d => `${d.value.toLocaleString()} ${d.label}`);
+
+// Links
+svg.append("g")
+        .attr("fill", "none")
+    .classed("links", true)
+    .selectAll("path")
+    .data(graph.links)
+    .enter()
+    .append("path")
+        .classed("link", true)
+        .attr("d", d3.sankeyLinkHorizontal())
+        .attr("stroke", d => d.link_color)
+        .attr("stroke-width", d => d.width)
+        .attr("stroke-opacity", 0.75)
+        .style("mix-blend-mode", "multiply")
+    .append("title")
+      .text(d => `${d.source.value} ${d.source_label}\n=>${d.value.toLocaleString()} ${d.target_label}`);
+
+// Titles
+svg.append("g")
+        .style("font", "10px sans-serif")
+    .selectAll("text")
+    .data(graph.nodes)
+    .join("text")
+        .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+        .attr("y", d => (d.y1 + d.y0) / 2)
+        .attr("dy", "0.35em")
+        .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
+        .text(d => d.label);
+
+</script>
+
+{% endblock %}

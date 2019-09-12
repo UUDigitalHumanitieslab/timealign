@@ -185,6 +185,15 @@ def get_tense_properties(tense_identifier, seq=0):
     return tense_label, tense_color, tense_category
 
 
+def get_tense_properties_from_cache(tense_identifier, tense_cache, seq=0):
+    if tense_identifier in tense_cache:
+        tense_label, tense_color, tense_category = tense_cache[tense_identifier]
+    else:
+        tense_label, tense_color, tense_category = get_tense_properties(tense_identifier, seq)
+        tense_cache[tense_identifier] = (tense_label, tense_color, tense_category)
+    return tense_label, tense_color, tense_category
+
+
 def get_color(tense, seq=0):
     """
     This function maps a tense on a color from the d3 color scale.

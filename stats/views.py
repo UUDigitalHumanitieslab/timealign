@@ -14,13 +14,13 @@ from django.views import generic
 
 from django_filters.views import FilterView
 
-from annotations.models import Fragment, Language, Tense, TenseCategory, Sentence, Word
+from annotations.models import Fragment, Language, Tense, TenseCategory, Sentence, Word, Annotation
 from annotations.utils import get_available_corpora
 from core.utils import HTML
 
 from .filters import ScenarioFilter, FragmentFilter
 from .models import Scenario, ScenarioLanguage
-from .utils import get_tense_properties
+from .utils import get_tense_properties, get_tense_properties_from_cache
 
 
 class ScenarioList(LoginRequiredMixin, FilterView):
@@ -214,11 +214,7 @@ class DescriptiveStatsView(ScenarioDetail):
             labels = set()
             tense_cache = dict()
             for t in tenses[l.iso]:
-                if t in tense_cache:
-                    tense_label, tense_color, tense_category = tense_cache[t]
-                else:
-                    tense_label, tense_color, tense_category = get_tense_properties(t, len(labels))
-                    tense_cache[t] = (tense_label, tense_color, tense_category)
+                tense_label, tense_color, tense_category = get_tense_properties_from_cache(t, tense_cache, len(labels))
 
                 labels.add(tense_label)
                 distinct_tensecats.add(tense_category)
@@ -337,3 +333,112 @@ class UpsetView(ScenarioDetail):
         request.session['scenario_pk'] = pk
         request.session['fragment_pks'] = json.loads(request.POST['fragment_ids'])
         return HttpResponseRedirect(reverse('stats:fragment_table'))
+
+
+class SankeyView(ScenarioDetail):
+    model = Scenario
+    template_name = 'stats/sankey.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(SankeyView, self).get_context_data(**kwargs)
+
+        scenario = self.object
+        labels = scenario.mds_labels
+        fragment_pks = scenario.mds_fragments
+
+        language_from = scenario.languages(as_from=True).first().language.iso
+        language_to = self.request.GET.get('language_to', scenario.languages(as_to=True).first().language.iso)
+        lfrom_option = self.request.GET.get('lfrom_option')
+        lfrom_option = None if lfrom_option == 'none' else lfrom_option
+        lto_option = self.request.GET.get('lto_option')
+        lto_option = None if lto_option == 'none' else lto_option
+
+        # Retrieve nodes and links
+        nodes = set()
+        for language, ls in labels.items():
+            if language in [language_from, language_to]:
+                for iterator, label in enumerate(ls):
+                    nodes.add(label)
+
+        # Retrieve the values for the source language
+        lfrom_values = []
+        if lfrom_option:
+            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(fragment_pks)])
+            fragments = Fragment.objects.filter(pk__in=fragment_pks).order_by(preserved)
+            for fragment in fragments:
+                lfrom_value = getattr(fragment, lfrom_option)() if lfrom_option.endswith('display') \
+                    else getattr(fragment, lfrom_option)
+                nodes.add(lfrom_value)
+                lfrom_values.append(lfrom_value)
+
+        # Retrieve the values for the target language
+        lto_values = []
+        if lto_option:
+            annotations = Annotation.objects \
+                .filter(alignment__original_fragment__pk__in=fragment_pks,
+                        alignment__translated_fragment__language__iso=language_to) \
+                .select_related('alignment__original_fragment')
+            annotations = {a.alignment.original_fragment.pk: a for a in annotations}
+            for fragment_pk in fragment_pks:
+                annotation = annotations.get(fragment_pk)
+                lto_value = 'none'
+                if annotation:
+                    lto_value = getattr(annotation, lto_option)
+                nodes.add(lto_value)
+                lto_values.append(lto_value)
+
+        # Count the links  # TODO: can we do this in a more generic way?
+        list_of_lists = [labels[language_from]]
+        for l in [lfrom_values, labels[language_to], lto_values]:
+            if l:
+                list_of_lists.append(l)
+
+        links = []
+        for l1, l2 in zip(list_of_lists, list_of_lists[1:]):
+            zipped = list(zip(l1, l2))
+            links.extend(Counter(zipped).most_common())
+
+        # Convert the nodes into a dictionary
+        tense_cache = {t.pk: (t.title, t.category.color, t.category.title)
+                       for t in Tense.objects.select_related('category')}
+        labels = set()
+        new_nodes = []
+        for node in nodes:
+            node_label, node_color, _ = get_tense_properties_from_cache(node, tense_cache, len(labels))
+
+            labels.add(node_label)
+            new_node = {'id': node, 'color': node_color, 'label': node_label}
+            new_nodes.append(new_node)
+
+        # Convert the links into a dictionary
+        new_links = []
+        for link, value in links:
+            for l1, l2 in zip(link, link[1:]):
+                l1_label, l1_color, _ = get_tense_properties_from_cache(l1, tense_cache)
+                l2_label, l2_color, _ = get_tense_properties_from_cache(l2, tense_cache)
+
+                # TODO add links to the Fragments (i.e. on click, go to the set of Fragments related with this link)
+                new_link = {'source': l1, 'source_color': l1_color, 'source_label': l1_label,
+                            'target': l2, 'target_color': l2_color, 'target_label': l2_label,
+                            'value': value, 'link_color': l1_color}
+
+                new_links.append(new_link)
+
+        # JSONify the data and add it to the context
+        context['data'] = json.dumps({'nodes': new_nodes, 'links': new_links})
+
+        # Add selection of languages to the context
+        context['selected_language_to'] = language_to
+        context['lfrom_options'] = {
+            'other_label': 'Other label',
+            'get_formal_structure_display': 'Formal structure',
+            'get_sentence_function_display': 'Sentence function'
+        }
+        context['selected_lfrom_option'] = lfrom_option
+        context['lto_options'] = {
+            'other_label': 'Other label'
+        }
+        context['selected_lto_option'] = lto_option
+        context['languages_to'] = scenario.languages(as_to=True)
+
+        return context
