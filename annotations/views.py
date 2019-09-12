@@ -255,7 +255,7 @@ class SourceDetail(LoginRequiredMixin, generic.DetailView):
 
     def get_object(self, queryset=None):
         qs = Source.objects \
-            .select_related('document', 'language')
+            .select_related('document__corpus', 'language')
         source = super(SourceDetail, self).get_object(qs)
         return source
 
