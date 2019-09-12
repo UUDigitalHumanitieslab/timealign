@@ -311,6 +311,8 @@ class Word(models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['xml_id']),
+            models.Index(fields=['is_target']),
+            models.Index(fields=['is_target', 'sentence']),
         ]
 
     def to_html(self):
@@ -376,6 +378,9 @@ class Annotation(models.Model):
     class Meta:
         unique_together = ('alignment', 'annotated_by', )
         permissions = (('edit_labels_in_interface', 'Can edit labels in the interface'),)
+        indexes = [
+            models.Index(fields=['is_no_target', 'is_translation']),
+        ]
 
     def selected_words(self):
         """
