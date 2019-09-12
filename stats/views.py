@@ -106,7 +106,7 @@ class MDSView(ScenarioDetail):
         # Turn the pickled model into a scatterplot dictionary
         random.seed(scenario.pk)  # Fixed seed for random jitter
         j = defaultdict(list)
-        tense_cache = dict()
+        tense_cache = {t.pk: t.title for t in Tense.objects.select_related('category')}
         for n, l in enumerate(model):
             # Retrieve x/y dimensions, add some jitter
             x = l[d1 - 1] + random.uniform(-.5, .5) / 100
@@ -207,12 +207,13 @@ class DescriptiveStatsView(ScenarioDetail):
         colors = dict()
         distinct_tensecats = set()
 
+        tense_cache = {t.pk: (t.title, t.category.color, t.category.title)
+                       for t in Tense.objects.select_related('category')}
         for l in languages:
             c_tenses = Counter()
             c_tensecats = Counter()
             n = 0
             labels = set()
-            tense_cache = dict()
             for t in tenses[l.iso]:
                 tense_label, tense_color, tense_category = get_tense_properties_from_cache(t, tense_cache, len(labels))
 
