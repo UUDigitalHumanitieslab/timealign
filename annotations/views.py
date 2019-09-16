@@ -99,6 +99,11 @@ class AnnotationMixin(SuccessMessageMixin, PermissionRequiredMixin):
     form_class = AnnotationForm
     permission_required = 'annotations.change_annotation'
 
+    def __init__(self):
+        """Creates an attribute to cache the Alignment"""
+        super(AnnotationMixin, self).__init__()
+        self.alignment = None
+
     def get_form_kwargs(self):
         """Sets the User and the Alignment as a form kwarg"""
         kwargs = super(AnnotationMixin, self).get_form_kwargs()
@@ -116,7 +121,7 @@ class AnnotationMixin(SuccessMessageMixin, PermissionRequiredMixin):
         raise NotImplementedError
 
     def get_alignments(self):
-        """Retrieve the Alignments and also some related fields to speed up processing"""
+        """Retrieve related fields on Alignment to prevent extra queries"""
         return Alignment.objects.select_related('original_fragment',
                                                 'original_fragment__tense',
                                                 'original_fragment__language',
@@ -142,7 +147,9 @@ class AnnotationUpdateMixin(AnnotationMixin):
 
     def get_alignment(self):
         """Retrieves the Alignment from the object"""
-        return self.get_alignments().get(pk=self.object.alignment.pk)
+        if not self.alignment:
+            self.alignment = self.get_alignments().get(pk=self.object.alignment.pk)
+        return self.alignment
 
 
 class AnnotationCreate(AnnotationMixin, generic.CreateView):
@@ -163,7 +170,9 @@ class AnnotationCreate(AnnotationMixin, generic.CreateView):
 
     def get_alignment(self):
         """Retrieves the Alignment by the pk in the kwargs"""
-        return get_object_or_404(self.get_alignments(), pk=self.kwargs['pk'])
+        if not self.alignment:
+            self.alignment = get_object_or_404(self.get_alignments(), pk=self.kwargs['pk'])
+        return self.alignment
 
 
 class AnnotationUpdate(AnnotationUpdateMixin, generic.UpdateView):
