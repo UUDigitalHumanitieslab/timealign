@@ -22,8 +22,8 @@
         <tbody>
             {% for tc, ts in tenses %}
             <tr>
-                <th>
-                    {{ tc }}
+                <th bgcolor="{{ tc.color }}">
+                    {{ tc.title }}
                 </th>
                 {% for t in ts %}
                 <td>

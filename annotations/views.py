@@ -376,26 +376,29 @@ class TenseCategoryList(PermissionRequiredMixin, generic.ListView):
 
     def get_context_data(self, **kwargs):
         """
-        Sets all current languages on the context
+        Sets the tenses and languages on the context
         :return: The context variables.
         """
         context = super(TenseCategoryList, self).get_context_data(**kwargs)
 
+        tense_cache = {(t.category.title, t.language.iso): t.title for t in
+                       Tense.objects.select_related('category', 'language')}
+        tense_categories = TenseCategory.objects.all()
+
         tenses = defaultdict(list)
         languages = []
 
-        for language in Language.objects.all().order_by('iso'):
+        for language in Language.objects.order_by('iso'):
             if not Tense.objects.filter(language=language):
                 continue
 
             languages.append(language)
 
-            for tc in TenseCategory.objects.all():
-                ts = Tense.objects.filter(
-                    category=tc, language=language).values_list('title', flat=True)
-                tenses[tc.title].append(', '.join(ts))
+            for tc in tense_categories:
+                tense = tense_cache.get((tc.title, language.iso), '')
+                tenses[tc].append(tense)
 
-        context['tenses'] = sorted(tenses.items())
+        context['tenses'] = sorted(tenses.items(), key=lambda item: item[0].pk)
         context['languages'] = languages
 
         return context
