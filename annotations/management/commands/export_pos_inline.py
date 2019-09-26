@@ -87,6 +87,9 @@ def generate_results(source_language, languages, corpus, documents, formal_struc
             fragments = fragments.filter(formal_structure=Fragment.FS_DIALOGUE)
     rows = []
 
+    # Sort by document and sentence.xml_id
+    fragments = sorted(fragments, key=lambda f: (f.document.title, f.sort_key()))
+
     for fragment in fragments:
         row = []
 
