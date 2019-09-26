@@ -7,11 +7,11 @@ from .models import Scenario, Fragment
 
 class ScenarioFilter(FilterSet):
     title = CharFilter(lookup_expr='icontains')
-    is_test = BooleanFilter(name='is_test',
+    is_test = BooleanFilter(field_name='is_test',
                             label='Show test scenarios',
                             widget=forms.CheckboxInput,
                             method='filter_test')
-    current_user_is_owner = BooleanFilter(name='owner',
+    current_user_is_owner = BooleanFilter(field_name='owner',
                                           label='Only show my scenarios',
                                           widget=forms.CheckboxInput,
                                           method='filter_owned')

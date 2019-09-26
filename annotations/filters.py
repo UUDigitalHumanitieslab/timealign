@@ -1,11 +1,14 @@
-from django_filters import FilterSet, CharFilter, OrderingFilter
+from django_filters import FilterSet, CharFilter, ModelChoiceFilter, OrderingFilter
 
-from .models import Annotation
+from .models import Annotation, Corpus
 
 
 class AnnotationFilter(FilterSet):
+    corpus = ModelChoiceFilter(label='Corpus',
+                               field_name='alignment__original_fragment__document__corpus',
+                               queryset=Corpus.objects.all())
     word_in_source = CharFilter(label='Word in source',
-                                name='alignment__original_fragment__sentence__word__word',
+                                field_name='alignment__original_fragment__sentence__word__word',
                                 lookup_expr='iexact',
                                 help_text='Use this to filter for words in the source text (case-insensitive)')
 
@@ -19,4 +22,4 @@ class AnnotationFilter(FilterSet):
 
     class Meta:
         model = Annotation
-        fields = ['is_no_target', 'is_translation', 'tense', 'word_in_source', 'annotated_by']
+        fields = ['corpus', 'is_no_target', 'is_translation', 'tense', 'word_in_source', 'annotated_by']

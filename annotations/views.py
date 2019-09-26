@@ -318,6 +318,7 @@ class AnnotationList(PermissionRequiredMixin, FilterView):
                             'tense',
                             'alignment__original_fragment',
                             'alignment__original_fragment__document',
+                            'alignment__original_fragment__tense',
                             'alignment__translated_fragment') \
             .prefetch_related('alignment__original_fragment__sentence_set__word_set',
                               Prefetch('alignment__original_fragment__sentence_set', queryset=target_words, to_attr='targets_prefetched'),

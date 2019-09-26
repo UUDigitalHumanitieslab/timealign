@@ -27,6 +27,7 @@
                     <a title="Source fragment" data-toggle="popover"
                        data-content='{% include "annotations/_sentences.html" with sentences=source.sentence_set.all filtered=filter.form.word_in_source.value %}'>
                         {{ source.target_words }}
+                        {% if source.label %}({{ source.label }}){% endif %}
                     </a>
                 </td>
                 <td>
