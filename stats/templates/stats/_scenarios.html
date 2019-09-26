@@ -1,10 +1,10 @@
 <table class="table table-striped">
     <thead>
         <tr>
-            <th width="15%">Corpus</th>
+            <th width="10%">Corpus</th>
             <th width="30%">Scenario</th>
             <th width="35%">Languages</th>
-            <th width="20%">Actions</th>
+            <th width="25%">Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -29,6 +29,9 @@
                 </a>
                 <a href="{% url 'stats:upset' scenario.pk %}" role="button" class="btn btn-primary btn-xs" title="Upset">
                     Upset
+                </a>
+                <a href="{% url 'stats:sankey' scenario.pk %}" role="button" class="btn btn-primary btn-xs" title="Sankey">
+                    Sankey
                 </a>
                 <a href="{% url 'stats:descriptive' scenario.pk %}" role="button" class="btn btn-primary btn-xs" title="Descriptive statistics">
                     <span class="glyphicon glyphicon-stats" aria-hidden="true"></span>
