@@ -1,4 +1,8 @@
 from django.contrib import admin
+from django.urls import reverse
+from django.http import HttpResponseRedirect
+
+from django_object_actions import DjangoObjectActions
 
 from .forms import SubSentenceFormSet, SubSentenceForm
 from .models import Language, TenseCategory, Tense, Corpus, Document, Source, Fragment, \
@@ -48,10 +52,23 @@ class SourceAdmin(admin.ModelAdmin):
 
 
 @admin.register(Fragment)
-class FragmentAdmin(admin.ModelAdmin):
-    list_display = ('language', 'xml_ids', 'full', 'target_words', 'label', )
+class FragmentAdmin(DjangoObjectActions, admin.ModelAdmin):
+    list_display = ('pk', 'language', 'xml_ids', 'full', 'target_words', 'label', )
     list_filter = ('document__corpus', 'language', )
-    search_fields = ['sentence__word__word']
+    list_per_page = 25
+    search_fields = ['pk', 'sentence__word__word']
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'document':
+            kwargs['queryset'] = Document.objects.select_related('corpus')
+        return super(FragmentAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def show_fragment(self, request, obj):
+        return HttpResponseRedirect(reverse('annotations:show', args=(obj.pk, )))
+    show_fragment.label = 'Show Fragment'
+    show_fragment.short_description = 'Show Fragment in front-end'
+
+    change_actions = ['show_fragment']
 
 
 @admin.register(Sentence)
