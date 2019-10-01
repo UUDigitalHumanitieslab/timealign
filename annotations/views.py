@@ -122,13 +122,7 @@ class AnnotationMixin(SuccessMessageMixin, PermissionRequiredMixin):
 
     def get_alignments(self):
         """Retrieve related fields on Alignment to prevent extra queries"""
-        return Alignment.objects.select_related('original_fragment',
-                                                'original_fragment__tense',
-                                                'original_fragment__language',
-                                                'original_fragment__document__corpus',
-                                                'translated_fragment',
-                                                'translated_fragment__language',
-                                                'translated_fragment__document')
+        return Alignment.objects.select_related('original_fragment', 'translated_fragment')
 
 
 class AnnotationUpdateMixin(AnnotationMixin):
