@@ -25,11 +25,10 @@ class SelectionForm(forms.ModelForm):
         self.fragment = kwargs.pop('fragment', None)
         self.user = kwargs.pop('user', None)
 
-        sentences = self.fragment.sentence_set.all()
         selected_words = self.fragment.selected_words()
 
         super(SelectionForm, self).__init__(*args, **kwargs)
-        self.fields['words'].queryset = Word.objects.filter(sentence__in=sentences)
+        self.fields['words'].queryset = Word.objects.filter(sentence__fragment=self.fragment)
 
         # Allow to select for tense if the Corpus is tense/aspect-based.
         if self.fragment.document.corpus.tense_based:

@@ -77,6 +77,11 @@ class SelectionMixin(PermissionRequiredMixin):
     form_class = SelectionForm
     permission_required = 'selections.change_selection'
 
+    def __init__(self):
+        """Creates an attribute to cache the PreProcessFragment"""
+        super(SelectionMixin, self).__init__()
+        self.fragment = None
+
     def get_form_kwargs(self):
         """Sets the PreProcessFragment as a form kwarg"""
         kwargs = super(SelectionMixin, self).get_form_kwargs()
@@ -94,6 +99,12 @@ class SelectionMixin(PermissionRequiredMixin):
     def get_fragment(self):
         raise NotImplementedError
 
+    def get_fragments(self):
+        """Retrieve related fields on PreProcessFragment to prevent extra queries"""
+        return PreProcessFragment.objects. \
+            select_related('document__corpus', 'language'). \
+            prefetch_related('sentence_set', 'selection_set__words')
+
     def is_final(self):
         return 'is_final' in self.request.POST
 
@@ -107,7 +118,9 @@ class SelectionUpdateMixin(SelectionMixin):
 
     def get_fragment(self):
         """Retrieves the PreProcessFragment from the object"""
-        return self.object.fragment
+        if not self.fragment:
+            self.fragment = self.get_fragments().get(pk=self.object.fragment.pk)
+        return self.fragment
 
 
 class SelectionCreate(SelectionMixin, generic.CreateView):
@@ -144,7 +157,9 @@ class SelectionCreate(SelectionMixin, generic.CreateView):
 
     def get_fragment(self):
         """Retrieves the Fragment by the pk in the kwargs"""
-        return get_object_or_404(PreProcessFragment, pk=self.kwargs['pk'])
+        if not self.fragment:
+            self.fragment = get_object_or_404(self.get_fragments(), pk=self.kwargs['pk'])
+        return self.fragment
 
 
 class SelectionUpdate(SelectionUpdateMixin, generic.UpdateView):

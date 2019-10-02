@@ -22,7 +22,7 @@ class AnnotationForm(forms.ModelForm):
         Filters the Words on the translated language.
         """
         self.alignment = kwargs.pop('alignment', None)
-        translated_sentences = self.alignment.translated_fragment.sentence_set.all()
+        translated_fragment = self.alignment.translated_fragment
         corpus = self.alignment.original_fragment.document.corpus
         label = self.alignment.original_fragment.label()
         structure = self.alignment.original_fragment.get_formal_structure_display()
@@ -30,7 +30,7 @@ class AnnotationForm(forms.ModelForm):
         self.user = kwargs.pop('user', None)
 
         super(AnnotationForm, self).__init__(*args, **kwargs)
-        self.fields['words'].queryset = Word.objects.filter(sentence__in=translated_sentences)
+        self.fields['words'].queryset = Word.objects.filter(sentence__fragment=translated_fragment)
         self.fields['is_no_target'].label = self.fields['is_no_target'].label.format(label)
         self.fields['is_not_labeled_structure'].label = self.fields['is_not_labeled_structure'].label.format(structure)
         self.fields['tense'].queryset = Tense.objects.filter(language=self.alignment.translated_fragment.language)
