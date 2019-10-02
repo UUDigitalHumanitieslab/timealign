@@ -1,0 +1,124 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+<div>
+    <div class="pull-right">
+        <a href="{% url 'stats:scenarios' %}" class="btn btn-primary" role="button">
+            <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+            Back to scenario overview
+        </a>
+    </div>
+	<h2>Scenarios in TimeAlign</h2>
+</div>
+
+<p>
+TimeAlign allows us to create so-called scenarios. 
+A scenario basically filters the fragments you would want to include into your (multidimensional scaling) analysis.
+It works as follows:
+</p>
+
+<ol>
+	<li>
+	<strong>Log in</strong> with your credentials in
+	<a href="{% url 'admin:index' %}">the admin interface</a>.
+	</li>
+	<li>
+	Click on the link "<strong>Scenarios</strong>".
+	</li>
+	<li>
+	You will see an <strong>overview</strong> of the currently available
+	scenarios. You can either <strong>edit</strong> an existing scenario (click on
+	its title) or <strong>create</strong> a new one using the button "Add
+	scenario" (top right). On the right, you can also <strong>filter</strong>
+	the scenarios by corpus.
+	</li>
+	<li>
+	When adding or editing a scenario, you first supply a proper <strong>title</strong>,
+	a <strong>description</strong> (as clear as possible, so others know what it's
+	about) and check whether this is (or isn't) a <strong>test</strong>
+	scenario. Then click "<strong>Save and continue editing</strong>".
+	</li>
+    <li>
+	This button will <strong>update</strong> the "Documents" selection box
+	with documents only for this Corpus. If you want, you can now <strong>select</strong>
+	the <strong>documents</strong> that you want to use ("1.xml" → Chapter
+	1). Leave this empty to include all documents.
+	</li>
+    <li>
+	Next, you can select (if your Corpus has annotations for that) for
+	which <strong>formal structure</strong> (narration, dialogue or "none",
+	which means both narration and dialogue) you want to create maps,
+	and if you want to require translations to be in the same formal
+	structure.
+	</li>
+    <li>
+	Next, you'll see a link allowing you to show Multidimensional
+	Scaling options. If you want to be really scrupulous, you can <strong>set
+	the number of dimensions</strong> to be used in the multidimensional
+	scaling algorithm. It's 5 by default, but in some situations fewer
+	dimensions will also return good results (i.e. the solution has a
+	low stress value (&lt;20), which means a high goodness-of-fit; the
+	idea is basically that the optimal number of dimensions is where the
+	stress doesn't go down a lot anymore when you add another
+	dimension; see <a href="http://www.analytictech.com/networks/mds.htm">this
+	page</a> for some explanation). If you tick the box for
+	"<strong>Allow partial tuples in model</strong>", you will generate
+	results on all the data in your sample, not just those data points
+	with annotated translations in all languages in your sample.
+	</li>
+    <li>
+	Next, you will have to <strong>supply the original languages</strong> for this
+	scenario. First, select the language(s) your original fragments are
+	in, and click the "as from" checkbox to signal this as a
+	"from"-language. Again, click "Save and continue editing".
+	</li>
+    <li>
+	This button will update the "Tenses" selection box with tenses
+	only for this language. If you want, you can now <strong>select the
+	tenses</strong> you would want to use. Leave this empty to include all
+	tenses.
+	</li>
+    <li>
+	Next, you have to <strong>supply the translated languages</strong> for this
+	scenario. First, select the language(s) your translated fragments
+	are in, and click the "as to" checkbox to signal this as a
+	"to"-language. Again, click "Save and continue editing".
+	</li>
+    <li>
+	This button will again update the "Tenses" selection box and
+	allow you to <strong>filter</strong> these (if needed).
+	</li>
+    <li>
+	If you happen to work on a <strong>tenseless language</strong> (e.g. Mandarin,
+	Hebrew), you should check the "Use other label" checkbox to
+	signal you want to use this column. If you want to filter any of
+	these, you can supply the labels you want to include in a
+	comma-separated list in the "Allowed labels" text input (e.g.
+	"guo,le1,le12" to only select these annotations).
+	</li>
+    <li>
+	<strong>Repeat steps 8-12 for every language</strong> in your scenario. If
+	you're finished, again click "<strong>Save and continue editing</strong>".
+	</li>
+    <li>
+	Then, click "<strong>(Re)run Multidimensional Scaling</strong>" to run the
+	multidimensional scaling algorithm.
+	</li>
+    <li>
+	After completion, you will now be able to <strong>see the results</strong> in
+	the application if you navigate to
+        <a href="{% url 'stats:scenarios' %}">"Translation Mining → Results"</a>.
+	Be sure to use the <strong>filter</strong> all the way down to include test
+	scenarios if your scenario happens to be a test scenario.
+	</li>
+    <li>
+	If the map doesn't look quite right, you can <strong>retry</strong> by
+	clicking the "(Re)run Multidimensional Scaling" button again. If
+	you want, you can also limit the number of dimensions used by
+	editing the "Number of dimensions" field hidden under the
+	Multidimensional Scaling bar (see step 7 above).
+</ol>
+
+{% endblock %}

@@ -1,12 +1,15 @@
 from django.conf.urls import url
 
-from .views import ScenarioList, ScenarioDetail, MDSView, MDSViewOld, DescriptiveStatsView, FragmentTableView, \
+from .views import ScenarioList, ScenarioDetail, ScenarioManual, \
+    MDSView, MDSViewOld, \
+    DescriptiveStatsView, FragmentTableView, \
     UpsetView, SankeyView
 
 urlpatterns = [
 
     # List views
     url(r'^scenarios/$', ScenarioList.as_view(), name='scenarios'),
+    url(r'^scenarios/manual/$', ScenarioManual.as_view(), name='scenarios_manual'),
 
     # List views
     url(r'^show/(?P<pk>\d+)/$', ScenarioDetail.as_view(), name='show'),

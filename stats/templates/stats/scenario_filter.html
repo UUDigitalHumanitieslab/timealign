@@ -5,6 +5,14 @@
 {% block content %}
 
 <h2>Scenarios</h2>
+<div class="alert alert-info alert-dismissable" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    This page lists all created scenarios. Please see the
+    <a href="{% url 'stats:scenarios_manual' %}" class="alert-link">manual</a> for help on scenario creation.
+</div>
+
 {% include "stats/_scenarios.html" %}
 
 {% if is_paginated %}

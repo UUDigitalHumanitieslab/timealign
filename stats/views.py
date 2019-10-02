@@ -71,6 +71,10 @@ class ScenarioDetail(LoginRequiredMixin, generic.DetailView):
         return scenario
 
 
+class ScenarioManual(generic.TemplateView):
+    template_name = 'stats/scenario_manual.html'
+
+
 class MDSView(ScenarioDetail):
     """Loads the matrix plot view"""
     model = Scenario
