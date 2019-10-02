@@ -60,6 +60,12 @@
     <button class="btn btn-primary">Show</button>
 </form>
 
+<!-- Form for posting fragment_ids to server -->
+<form name="fragmentform" action="." method="post">
+    {% csrf_token %}
+    <input type="hidden" name="fragment_ids">
+</form>
+
 <div id="chart"></div>
 
 <script>
@@ -119,9 +125,10 @@ svg.append("g")
         .attr("stroke", d => d.link_color)
         .attr("stroke-width", d => d.width)
         .attr("stroke-opacity", 0.75)
+        .attr("data-fragments", d => d.fragment_pks)
         .style("mix-blend-mode", "multiply")
     .append("title")
-      .text(d => `${d.source.value} ${d.source_label}\n=>${d.value.toLocaleString()} ${d.target_label}`);
+        .text(d => `${d.source.value} ${d.source_label}\n=>${d.value.toLocaleString()} ${d.target_label}`);
 
 // Titles
 svg.append("g")
@@ -135,6 +142,11 @@ svg.append("g")
         .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
         .text(d => d.label);
 
+// Drill-through to fragments
+$("path").click(function() {
+    $('input[name="fragment_ids"]').val(JSON.stringify($(this).attr("data-fragments").split(",")));
+    $('form[name="fragmentform"]').submit();
+});
 </script>
 
 {% endblock %}

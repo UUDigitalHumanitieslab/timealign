@@ -398,10 +398,11 @@ class SankeyView(ScenarioDetail):
             if l:
                 list_of_lists.append(l)
 
-        links = []
+        links = defaultdict(list)
         for l1, l2 in zip(list_of_lists, list_of_lists[1:]):
             zipped = list(zip(l1, l2))
-            links.extend(Counter(zipped).most_common())
+            for n, link in enumerate(zipped):
+                links[(link[0], link[1])].append(fragment_pks[n])
 
         # Convert the nodes into a dictionary
         tense_cache = {t.pk: (t.title, t.category.color, t.category.title)
@@ -417,7 +418,7 @@ class SankeyView(ScenarioDetail):
 
         # Convert the links into a dictionary
         new_links = []
-        for link, value in links:
+        for link, fragment_pks in links.items():
             for l1, l2 in zip(link, link[1:]):
                 l1_label, l1_color, _ = get_tense_properties_from_cache(l1, tense_cache)
                 l2_label, l2_color, _ = get_tense_properties_from_cache(l2, tense_cache)
@@ -425,7 +426,7 @@ class SankeyView(ScenarioDetail):
                 # TODO add links to the Fragments (i.e. on click, go to the set of Fragments related with this link)
                 new_link = {'source': l1, 'source_color': l1_color, 'source_label': l1_label,
                             'target': l2, 'target_color': l2_color, 'target_label': l2_label,
-                            'value': value, 'link_color': l1_color}
+                            'value': len(fragment_pks), 'fragment_pks': fragment_pks, 'link_color': l1_color}
 
                 new_links.append(new_link)
 
@@ -447,3 +448,8 @@ class SankeyView(ScenarioDetail):
         context['languages_to'] = scenario.languages(as_to=True)
 
         return context
+
+    def post(self, request, pk, *args, **kwargs):
+        request.session['scenario_pk'] = pk
+        request.session['fragment_pks'] = json.loads(request.POST['fragment_ids'])
+        return HttpResponseRedirect(reverse('stats:fragment_table'))

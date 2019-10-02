@@ -8,11 +8,15 @@
     <div class="pull-right">
         <a href="{% url 'stats:mds' scenario.pk %}" class="btn btn-primary" role="button">
             <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
-            Back to MDS
+            MDS
         </a>
         <a href="{% url 'stats:upset' scenario.pk %}" class="btn btn-primary" role="button">
             <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
-            Back to Upset
+            Upset
+        </a>
+        <a href="{% url 'stats:sankey' scenario.pk %}" class="btn btn-primary" role="button">
+            <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+            Sankey
         </a>
     </div>
     <h2>Fragment overview (scenario
