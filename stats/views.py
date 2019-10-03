@@ -14,7 +14,7 @@ from django.views import generic
 
 from django_filters.views import FilterView
 
-from annotations.models import Fragment, Language, Tense, TenseCategory, Sentence, Word, Annotation
+from annotations.models import Corpus, Fragment, Language, Tense, TenseCategory, Sentence, Word, Annotation
 from annotations.utils import get_available_corpora
 from core.utils import HTML
 
@@ -350,9 +350,11 @@ class SankeyView(ScenarioDetail):
         scenario = self.object
         labels = scenario.mds_labels
         fragment_pks = scenario.mds_fragments
+        languages_from = scenario.languages(as_from=True)
+        languages_to = scenario.languages(as_to=True)
 
-        language_from = scenario.languages(as_from=True).first().language.iso
-        language_to = self.request.GET.get('language_to', scenario.languages(as_to=True).first().language.iso)
+        language_from = self.request.GET.get('language_from', languages_from.first().language.iso)
+        language_to = self.request.GET.get('language_to', languages_to.first().language.iso)
         lfrom_option = self.request.GET.get('lfrom_option')
         lfrom_option = None if lfrom_option == 'none' else lfrom_option
         lto_option = self.request.GET.get('lto_option')
@@ -433,6 +435,9 @@ class SankeyView(ScenarioDetail):
         context['data'] = json.dumps({'nodes': new_nodes, 'links': new_links})
 
         # Add selection of languages to the context
+        context['languages_from'] = languages_from
+        context['languages_to'] = languages_to
+        context['selected_language_from'] = language_from
         context['selected_language_to'] = language_to
         context['lfrom_options'] = {
             'other_label': 'Other label',
@@ -444,7 +449,6 @@ class SankeyView(ScenarioDetail):
             'other_label': 'Other label'
         }
         context['selected_lto_option'] = lto_option
-        context['languages_to'] = scenario.languages(as_to=True)
 
         return context
 
@@ -452,3 +456,14 @@ class SankeyView(ScenarioDetail):
         request.session['scenario_pk'] = pk
         request.session['fragment_pks'] = json.loads(request.POST['fragment_ids'])
         return HttpResponseRedirect(reverse('stats:fragment_table'))
+
+
+class SankeyManual(generic.TemplateView):
+    template_name = 'stats/sankey_manual.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(SankeyManual, self).get_context_data(**kwargs)
+
+        context['corpora'] = Corpus.objects.filter(check_structure=True)
+
+        return context

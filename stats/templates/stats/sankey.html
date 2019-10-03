@@ -15,12 +15,29 @@
 
 {% block content %}
 
-<h1>
+<h2>
     Sankey diagram for scenario <em>{{ scenario.title }}</em>
-</h1>
+</h2>
+
+<div class="alert alert-info alert-dismissable" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    This visualization allows to compare the tense use in two languages. Please see the
+    <a href="{% url 'stats:sankey_manual' %}" class="alert-link">manual</a> for explanation.
+</div>
 
 <form class="form-inline" action="{% url 'stats:sankey' scenario.pk %}" method="GET">
     <div class="form-group">
+        <label for="language_from">Language from:</label>
+        <select id="language_from" class="form-control" name="language_from">
+            {% for language_from in languages_from %}
+            <option value="{{ language_from.language.iso }}"
+                    {% if language_from.language.iso == selected_language_from %}selected{% endif %}>
+                {{ language_from.language.title }}
+            </option>
+            {% endfor %}
+        </select>
         <label for="lfrom_option">Other field:</label>
         <select id="lfrom_option" class="form-control" name="lfrom_option">
             <option value="none"

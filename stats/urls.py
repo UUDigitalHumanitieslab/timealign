@@ -3,7 +3,7 @@ from django.conf.urls import url
 from .views import ScenarioList, ScenarioDetail, ScenarioManual, \
     MDSView, MDSViewOld, \
     DescriptiveStatsView, FragmentTableView, \
-    UpsetView, SankeyView
+    UpsetView, SankeyView, SankeyManual
 
 urlpatterns = [
 
@@ -32,6 +32,7 @@ urlpatterns = [
 
     # Sankey
     url(r'sankey/(?P<pk>\d+)/$', SankeyView.as_view(), name='sankey'),
+    url(r'sankey_manual/$', SankeyManual.as_view(), name='sankey_manual'),
 
     # Descriptive statistics
     url(r'^descriptive/(?P<pk>\d+)/$', DescriptiveStatsView.as_view(), name='descriptive'),
