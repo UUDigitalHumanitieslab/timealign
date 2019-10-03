@@ -47,4 +47,5 @@ urlpatterns = [
     url(r'^contact/$', views.flatpage, {'url': '/contact/'}, name='contact'),
 
     url(r'^ckeditor/', include('ckeditor_uploader.urls')),
+    url(r'^nested_admin/', include('nested_admin.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

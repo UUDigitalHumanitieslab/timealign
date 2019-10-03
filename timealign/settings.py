@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'ckeditor_uploader',
     'django_filters',
     'django_object_actions',
+    'nested_admin',
 
     'core.apps.CoreConfig',
     'news.apps.NewsConfig',
@@ -133,7 +134,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-LOGIN_REDIRECT_URL = '/stats/scenarios'
+LOGIN_REDIRECT_URL = '/timealign/status'
 
 
 # Flatpages

@@ -3,6 +3,7 @@ django-bootstrap3
 django-braces
 django-ckeditor
 django-filter<2.0
+django-nested-admin
 django-object-actions
 django-picklefield
 lxml

@@ -3,10 +3,11 @@ from django.urls import reverse
 from django.http import HttpResponseRedirect
 
 from django_object_actions import DjangoObjectActions
+import nested_admin
 
 from .forms import SubSentenceFormSet, SubSentenceForm
 from .models import Language, TenseCategory, Tense, Corpus, Document, Source, Fragment, \
-    Sentence, Alignment, Annotation, SubCorpus, SubSentence
+    Sentence, Word, Alignment, Annotation, SubCorpus, SubSentence
 
 
 @admin.register(Language)
@@ -51,12 +52,34 @@ class SourceAdmin(admin.ModelAdmin):
     list_filter = ('document__corpus', 'language', )
 
 
+class WordInline(nested_admin.NestedTabularInline):
+    model = Word
+    extra = 0
+
+
+class SentenceInline(nested_admin.NestedTabularInline):
+    model = Sentence
+    extra = 0
+    inlines = [WordInline]
+
+
 @admin.register(Fragment)
-class FragmentAdmin(DjangoObjectActions, admin.ModelAdmin):
+class FragmentAdmin(DjangoObjectActions, nested_admin.NestedModelAdmin):
     list_display = ('pk', 'language', 'xml_ids', 'full', 'target_words', 'label', )
     list_filter = ('document__corpus', 'language', )
-    list_per_page = 25
+    list_per_page = 20
     search_fields = ['pk', 'sentence__word__word']
+
+    fieldsets = (
+        ('General', {
+            'fields': ('language', 'document', )
+        }),
+        ('Annotation', {
+            'fields': ('tense', 'other_label', 'formal_structure', 'sentence_function', )
+        }),
+    )
+
+    inlines = [SentenceInline]
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == 'document':
@@ -69,11 +92,6 @@ class FragmentAdmin(DjangoObjectActions, admin.ModelAdmin):
     show_fragment.short_description = 'Show Fragment in front-end'
 
     change_actions = ['show_fragment']
-
-
-@admin.register(Sentence)
-class SentenceAdmin(admin.ModelAdmin):
-    pass
 
 
 @admin.register(Alignment)
