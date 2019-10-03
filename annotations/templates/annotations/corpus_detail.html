@@ -9,12 +9,42 @@
 
     <h2>Documents</h2>
     <ul>
-        {% for document in corpus.documents.all %}
+        {% for d_pk, d_title in documents %}
         <li>
-            <a href="{% url 'annotations:document' document.pk %}">{{ document.title }}</a>
+            <a href="{% url 'annotations:document' d_pk %}">{{ d_title }}</a>
         </li>
         {% endfor %}
     </ul>
+
+    <h2>Annotations per language and document</h2>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>
+                Language
+            </th>
+            {% for d_pk, d_title in documents %}
+            <th>
+                {{ d_title }}
+            </th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for language, counts in languages.items %}
+        <tr>
+            <td>
+                {{ language }}
+            </td>
+            {% for count in counts %}
+            <td>
+                {{ count|default_if_none:"" }}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </div>
 
 {% endblock %}

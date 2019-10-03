@@ -21,7 +21,8 @@ from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm
 from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, \
     TenseCategory, Tense, Source, Sentence, Word
-from .utils import get_random_alignment, get_available_corpora, get_xml_sentences, bind_annotations_to_xml
+from .utils import get_random_alignment, get_available_corpora, get_xml_sentences, bind_annotations_to_xml, \
+    natural_sort_key
 
 from core.utils import XLSX
 
@@ -137,7 +138,7 @@ class AnnotationUpdateMixin(AnnotationMixin):
         alignment = self.get_alignment()
         l1 = alignment.original_fragment.language.iso
         l2 = alignment.translated_fragment.language.iso
-        return reverse('annotations:list', args=(l1, l2, ))
+        return reverse('annotations:list', args=(l1, l2,))
 
     def get_alignment(self):
         """Retrieves the Alignment from the object"""
@@ -242,6 +243,40 @@ class CorpusList(LoginRequiredMixin, generic.ListView):
 class CorpusDetail(LoginRequiredMixin, generic.DetailView):
     model = Corpus
 
+    def get_context_data(self, **kwargs):
+        context = super(CorpusDetail, self).get_context_data(**kwargs)
+
+        # Retrieve all Documents and order them by title
+        corpus = self.object
+        documents = {d.pk: d.title for d in corpus.documents.all()}
+        documents_sorted = sorted(documents.items(), key=lambda x: natural_sort_key(x[1]))
+        document_pks = [d[0] for d in documents_sorted]
+
+        # Create a list of Languages
+        languages = defaultdict(list)
+        for language in corpus.languages.all():
+            languages[language.title] = [None] * len(document_pks)
+
+        # Retrieve the number of Annotations per document
+        by_document = Annotation.objects. \
+            filter(alignment__translated_fragment__document__corpus=corpus). \
+            values('alignment__translated_fragment__language__title',
+                   'alignment__translated_fragment__document__pk'). \
+            annotate(Count('pk'))
+
+        # Wrap the number of Annotations into the list of Languages
+        for d in by_document:
+            language = d.get('alignment__translated_fragment__language__title')
+            document_pk = d.get('alignment__translated_fragment__document__pk')
+
+            index = document_pks.index(document_pk)
+            languages[language][index] = d.get('pk__count')
+
+        # And finally, append the list of Document and Languages to the context
+        context['documents'] = documents_sorted
+        context['languages'] = dict(languages)
+
+        return context
 
 ############
 # CRUD Document
@@ -315,7 +350,8 @@ class AnnotationList(PermissionRequiredMixin, FilterView):
                             'alignment__original_fragment__tense',
                             'alignment__translated_fragment') \
             .prefetch_related('alignment__original_fragment__sentence_set__word_set',
-                              Prefetch('alignment__original_fragment__sentence_set', queryset=target_words, to_attr='targets_prefetched'),
+                              Prefetch('alignment__original_fragment__sentence_set', queryset=target_words,
+                                       to_attr='targets_prefetched'),
                               'alignment__translated_fragment__sentence_set__word_set',
                               'words') \
             .order_by('-annotated_at')

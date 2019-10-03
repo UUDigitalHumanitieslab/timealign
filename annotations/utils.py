@@ -137,6 +137,14 @@ def sort_key(xml_id, xml_tag):
     return result
 
 
+def natural_sort_key(s, _nsre=re.compile('([0-9]+)')):
+    """
+    Allows natural sorting, e.g. 2.xml is before 16.xml
+    """
+    return [int(text) if text.isdigit() else text.lower()
+            for text in _nsre.split(s)]
+
+
 def get_xml_sentences(fragment, limit):
     """
     Retrieves sentences in the XML in the vicinity of the given xml_id
