@@ -423,7 +423,6 @@ class SankeyView(ScenarioDetail):
                 l1_label, l1_color, _ = get_tense_properties_from_cache(l1, tense_cache)
                 l2_label, l2_color, _ = get_tense_properties_from_cache(l2, tense_cache)
 
-                # TODO add links to the Fragments (i.e. on click, go to the set of Fragments related with this link)
                 new_link = {'source': l1, 'source_color': l1_color, 'source_label': l1_label,
                             'target': l2, 'target_color': l2_color, 'target_label': l2_label,
                             'value': len(fragment_pks), 'fragment_pks': fragment_pks, 'link_color': l1_color}
