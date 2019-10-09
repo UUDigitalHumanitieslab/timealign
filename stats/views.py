@@ -97,13 +97,14 @@ class MDSView(ScenarioDetail):
 
         # Retrieve kwargs
         scenario = self.object
-        language = self.kwargs.get('language', scenario.languages().order_by('language__iso').first().language.iso)
+        default_language = scenario.languages().order_by('language__iso').first()
+        display_language = self.kwargs.get('language', default_language.language.iso)
         # We choose dimensions to be 1-based
         d1 = int(self.kwargs.get('d1', 1))
         d2 = int(self.kwargs.get('d2', 2))
 
         # Check whether the languages provided are correct, and included in this Scenario
-        language_object = get_object_or_404(Language, iso=language)
+        language_object = get_object_or_404(Language, iso=display_language)
         if language_object not in [sl.language for sl in scenario.languages()]:
             raise Http404('Language {} does not exist in Scenario {}'.format(language_object, scenario.pk))
 
@@ -122,39 +123,34 @@ class MDSView(ScenarioDetail):
         # Turn the pickled model into a scatterplot dictionary
         random.seed(scenario.pk)  # Fixed seed for random jitter
         j = defaultdict(list)
-        tense_cache = {t.pk: t.title for t in Tense.objects.select_related('category')}
-        for n, l in enumerate(model):
+        tense_cache = {t.pk: (t.title, t.category.color, t.category.title)
+                       for t in Tense.objects.select_related('category')}
+        for n, embedding in enumerate(model):
             # Retrieve x/y dimensions, add some jitter
-            x = l[d1 - 1] + random.uniform(-.5, .5) / 100
+            x = embedding[d1 - 1] + random.uniform(-.5, .5) / 100
             y = random.uniform(-.5, .5) / 100
-            if d2 > 0:
-                y += l[d2 - 1]
+            if d2 > 0:  # Only add y if it's been requested
+                y += embedding[d2 - 1]
 
             fragment = fragments[n]
-            ts = [tenses[l][n] for l in tenses.keys()]
 
+            # Retrieve the labels of all languages in this context
+            ts = [tenses[language][n] for language in tenses.keys()]
             labels = []
             for t in ts:
-                label = t
-                if isinstance(t, numbers.Number):
-                    if t in tense_cache:
-                        label = tense_cache[t]
-                    else:
-                        label = Tense.objects.get(pk=t).title
-                        tense_cache[t] = label
+                label, _, _ = get_tense_properties_from_cache(t, tense_cache, len(labels))
                 labels.append(label)
 
             # Add all values to the dictionary
-            j[tenses[language][n]].append({'x': x, 'y': y,
-                                           'fragment_id': fragment.pk, 'fragment': fragment.full(HTML),
-                                           'tenses': labels})
+            j[tenses[display_language][n]].append({'x': x, 'y': y, 'tenses': labels,
+                                                   'fragment_pk': fragment.pk, 'fragment': fragment.full(HTML)})
 
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
         matrix = []
         labels = set()
         for tense, values in j.items():
-            tense_label, tense_color, _ = get_tense_properties(tense, len(labels))
+            tense_label, tense_color, _ = get_tense_properties_from_cache(tense, tense_cache, len(labels))
             labels.add(tense_label)
 
             d = dict()
@@ -165,7 +161,7 @@ class MDSView(ScenarioDetail):
 
         # Add all variables to the context
         context['matrix'] = json.dumps(matrix)
-        context['language'] = language
+        context['language'] = display_language
         context['languages'] = Language.objects.filter(iso__in=tenses.keys()).order_by('iso')
         context['d1'] = d1
         context['d2'] = d2

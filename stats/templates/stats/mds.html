@@ -299,7 +299,7 @@
                     .style("opacity", .9);
                 tooltip.html(
                     '<strong>' +
-                    d.fragment_id +
+                    d.fragment_pk +
                     '</strong>: <em>' +
                     d.fragment +
                     '</em><br>' +
@@ -343,7 +343,7 @@
                 if (f != undefined) {
                     if (within_distance(origin, f, distance)) {
                         if (_.isEqual(f.tenses.sort(), origin.tenses.sort())) {
-                            brushedNodes.push(f.fragment_id)
+                            brushedNodes.push(f.fragment_pk)
                             circle.className.baseVal = 'selected'
                             circle.className.animVal = 'selected'
                             d3.selectAll('.selected').style('fill', 'yellow').attr('r', 5)
