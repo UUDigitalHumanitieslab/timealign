@@ -8,6 +8,9 @@
             <xsl:when test="@fragment-pk">
                 <a>
                     <xsl:attribute name="href">../../show/<xsl:value-of select="@fragment-pk" /></xsl:attribute>
+                    <xsl:attribute name="title">
+                        <xsl:value-of select="@tense" />
+                    </xsl:attribute>
                     <xsl:attribute name="data-annotation-pk">
                         <xsl:value-of select="@annotation-pk" />
                     </xsl:attribute>

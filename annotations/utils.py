@@ -8,7 +8,7 @@ from lxml import etree
 from django.db.models import Count, Prefetch
 
 from selections.models import PreProcessFragment
-from stats.utils import get_tense_properties
+from stats.utils import get_tense_properties_from_cache
 
 from .models import Corpus, Tense, Alignment, Source, Annotation, Fragment, Sentence, Word
 
@@ -275,12 +275,17 @@ def bind_annotations_to_xml(source):
     # Only include correct Annotations
     annotations = annotations.filter(is_no_target=False, is_translation=True)
     tree = etree.parse(source.xml_file)
+
+    tense_cache = {t.pk: (t.title, t.category.color, t.category.title)
+                   for t in Tense.objects.select_related('category')}
     labels = set()
     failed_lookups = []
+
     if annotations:
         # Attach Annotations to the XML tree
         for annotation in annotations:
-            tense_label, tense_color, _ = get_tense_properties(annotation.label(), len(labels))
+            tense_label, tense_color, _ = get_tense_properties_from_cache(
+                annotation.label(as_pk=True), tense_cache, len(labels))
             labels.add(tense_label)
 
             words = annotation.words.all()
@@ -308,7 +313,8 @@ def bind_annotations_to_xml(source):
 
         # Attach Fragments to the XML tree
         for fragment in fragments:
-            tense_label, tense_color, _ = get_tense_properties(fragment.label(), len(labels))
+            tense_label, tense_color, _ = get_tense_properties_from_cache(
+                fragment.label(as_pk=True), tense_cache, len(labels))
             labels.add(tense_label)
 
             sentences = fragment.targets_prefetched

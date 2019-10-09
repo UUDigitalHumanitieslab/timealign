@@ -193,8 +193,11 @@ class Fragment(models.Model):
 
         return '\n'.join([sentence.full(format_, annotation) for sentence in self.sentence_set.all()])
 
-    def label(self):
-        return self.tense.title if self.tense else self.other_label
+    def label(self, as_pk=False):
+        result = self.other_label
+        if self.tense:
+            result = self.tense.pk if as_pk else self.tense.title
+        return result
 
     def get_formal_structure(self):
         result = Fragment.FS_NONE
@@ -393,8 +396,11 @@ class Annotation(models.Model):
         ordered_words = sorted(self.words.all(), key=lambda w: sort_key(w.xml_id, w.XML_TAG))
         return ' '.join([word.word for word in ordered_words])
 
-    def label(self):
-        return self.tense.title if self.tense else self.other_label
+    def label(self, as_pk=False):
+        result = self.other_label
+        if self.tense:
+            result = self.tense.pk if as_pk else self.tense.title
+        return result
 
 
 class SubCorpus(models.Model):
