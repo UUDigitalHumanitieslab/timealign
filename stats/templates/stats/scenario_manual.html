@@ -15,7 +15,7 @@
 
 <p>
 TimeAlign allows us to create so-called scenarios. 
-A scenario basically filters the fragments you would want to include into your (multidimensional scaling) analysis.
+A scenario basically filters the fragments you would want to include into your analysis.
 It works as follows:
 </p>
 
@@ -120,5 +120,23 @@ It works as follows:
 	editing the "Number of dimensions" field hidden under the
 	Multidimensional Scaling bar (see step 7 above).
 </ol>
+
+<p>
+	Apart from (of course) the
+	<a href="{% url 'stats:mds' scenario.pk %}">Multidimensional Scaling visualization</a>,
+	running the algorithm opens up a wide range of other possible analyses:
+</p>
+
+<ul>
+	<li>
+		<a href="{% url 'stats:descriptive' scenario.pk %}">Descriptive statistics</a>
+	</li>
+	<li>
+		<a href="{% url 'stats:upset' scenario.pk %}">Upset visualization</a>
+	</li>
+	<li>
+		<a href="{% url 'stats:sankey' scenario.pk %}">Sankey diagram</a>
+	</li>
+</ul>
 
 {% endblock %}

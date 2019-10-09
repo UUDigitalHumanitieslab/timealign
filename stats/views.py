@@ -74,6 +74,18 @@ class ScenarioDetail(LoginRequiredMixin, generic.DetailView):
 class ScenarioManual(generic.TemplateView):
     template_name = 'stats/scenario_manual.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(ScenarioManual, self).get_context_data(**kwargs)
+
+        first_scenario = Scenario.objects \
+            .exclude(last_run=None) \
+            .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels') \
+            .first()
+
+        context['scenario'] = first_scenario
+
+        return context
+
 
 class MDSView(ScenarioDetail):
     """Loads the matrix plot view"""

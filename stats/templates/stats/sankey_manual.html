@@ -17,25 +17,25 @@
 	while on the right side, the annotated tenses in the first target language are displayed.
 	The width of the arrows indicate how many contexts follow this specific path from source to target tense,
 	while hovering allows you to see the exact number.
-	Clicking on an arrow allows to drill through to the specific contexts.
+	Clicking on an arrow allows you to drill through to the specific contexts.
 	The arrows are coloured based on our
 	<a href="{% url 'annotations:tenses' %}" target="_blank">default tense colouring</a>.
 </p>
 <p>
-	You are able to add additional lanes by changing the filters on top of the diagram:
+	You are able to add additional lanes by changing the filters at the top of the diagram:
 	<ul>
 	<li>
 		The first and third filter allow to change the source and target languages.
 	</li>
 	<li>
-		The second filter allows to add an additional lane for a property of the source language.
+		The second filter allows you to add an additional lane for a property of the source language.
 		This is especially of interest in corpora that are annotated for formal structure
 		(currently:
 		{% for corpus in corpora %}<a href="{% url 'annotations:corpus' corpus.pk %}">{{ corpus.title }}</a>{% endfor %}),
 		as this allows you to compare e.g. use of tense in dialogue or narration.
 	</li>
 	<li>
-		The fourth filter allows to add an additional lane for the target language.
+		The fourth filter allows you to add an additional lane for the target language.
 	</li>
 	</ul>
 </p>
