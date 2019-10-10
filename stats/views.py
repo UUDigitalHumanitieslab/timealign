@@ -20,7 +20,7 @@ from core.utils import HTML
 
 from .filters import ScenarioFilter, FragmentFilter
 from .models import Scenario, ScenarioLanguage
-from .utils import get_tense_properties, get_tense_properties_from_cache
+from .utils import get_tense_properties_from_cache
 
 
 class ScenarioList(LoginRequiredMixin, FilterView):

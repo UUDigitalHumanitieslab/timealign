@@ -191,6 +191,60 @@ def get_distance(array1, array2):
     return 1 - round(result / total, 2) if total > 0 else 0
 
 
+def copy_scenario(request, scenario):
+    # Save relationships
+    corpus = scenario.corpus
+    documents = scenario.documents.all()
+    subcorpora = scenario.subcorpora.all()
+    scenario_languages = scenario.scenariolanguage_set.all()
+
+    # Create a copy
+    copy_scenario = scenario
+    copy_scenario.pk = None
+
+    # Amend title and owner
+    copy_scenario.title = scenario.title + '-copy'
+    copy_scenario.owner = request.user
+
+    # Empty MDS fields
+    copy_scenario.mds_model = None
+    copy_scenario.mds_matrix = None
+    copy_scenario.mds_fragments = None
+    copy_scenario.mds_labels = None
+    copy_scenario.mds_stress = None
+    copy_scenario.last_run = None
+    copy_scenario.save()
+
+    # Add references
+    copy_scenario.corpus = corpus
+    copy_scenario.documents.set(documents)
+    copy_scenario.subcorpora.set(subcorpora)
+    copy_scenario.save()
+
+    # Copy linked models
+    for scenario_language in scenario_languages:
+        copy_scenario_language(copy_scenario, scenario_language)
+
+    return copy_scenario
+
+
+def copy_scenario_language(scenario, scenario_language):
+    # Save relationships
+    language = scenario_language.language
+    tenses = scenario_language.tenses.all()
+
+    # Create a copy
+    copy_sl = scenario_language
+    copy_sl.pk = None
+    copy_sl.scenario = scenario
+    copy_sl.save()
+
+    # Add references
+    copy_sl.language = language
+    copy_sl.tenses.set(tenses)
+    copy_sl.save()
+
+
 def get_tense_properties(tense_identifier, seq=0):
     if not tense_identifier:
         tense_label = '-'

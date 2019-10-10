@@ -1,4 +1,5 @@
 from django.contrib import admin, messages
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
@@ -6,7 +7,7 @@ from django_object_actions import DjangoObjectActions
 
 from .forms import ScenarioForm, ScenarioLanguageForm
 from .models import Scenario, ScenarioLanguage
-from .utils import run_mds
+from .utils import run_mds, copy_scenario
 
 
 class ScenarioLanguageInline(admin.TabularInline):
@@ -48,15 +49,26 @@ class ScenarioAdmin(DjangoObjectActions, admin.ModelAdmin):
             run_mds(obj)
             obj.last_run = timezone.now()
             obj.save()
+            self.message_user(request, mark_safe('Multidimensional Scaling has been run.'))
         except ValueError:
-            self.message_user(request,
-                              'Something went wrong while running scenario {}'.format(obj.title),
-                              level=messages.ERROR)
-        self.message_user(request, mark_safe('Multidimensional Scaling has been run.'))
+            message = 'Something went wrong while running scenario {}'.format(obj.title)
+            self.message_user(request, message, level=messages.ERROR)
     run_mds.label = '(Re)run Multidimensional Scaling'
     run_mds.short_description = '(Re)run Multidimensional Scaling'
 
-    change_actions = ['run_mds']
+    def copy_scenario(self, request, obj):
+        try:
+            new_scenario = copy_scenario(request, obj)
+            success_link = reverse('admin:stats_scenario_change', args=(new_scenario.pk,))
+            message = 'Scenario has been copied. <a href="{}">Find it here</a>.'.format(success_link)
+            self.message_user(request, mark_safe(message))
+        except ValueError:
+            message = 'Something went wrong while copying scenario {}'.format(obj.title)
+            self.message_user(request, message, level=messages.ERROR)
+    copy_scenario.label = 'Copy scenario'
+    copy_scenario.short_description = 'Copy scenario'
+
+    change_actions = ['run_mds', 'copy_scenario']
 
     def save_model(self, request, obj, form, change):
         if obj.owner is None:
