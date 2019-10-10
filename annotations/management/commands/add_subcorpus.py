@@ -34,7 +34,7 @@ class Command(BaseCommand):
         with open(options['filename'], 'rb') as f:
             try:
                 process_file(corpus, subcorpus, f)
-                self.stdout.write('Successfully created a SubCorpus')
+                self.stdout.write(self.style.SUCCESS('Successfully created SubCorpus {}'.format(subcorpus.title)))
             except ValueError as e:
                 raise CommandError(e.message)
 
