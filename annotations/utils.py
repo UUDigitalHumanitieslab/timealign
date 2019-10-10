@@ -248,7 +248,7 @@ def add_element(el, current_fragment, related_fragments, position):
                     'xml_id': w.get('id'),
                     'pos': w.get('tree') or w.get('pos') or w.get('hun') or '?',
                     'lemma': w.get('lem'),
-                    'is_in_dialogue': w.get('dialog', 0) > 0,
+                    'is_in_dialogue': float(w.get('dialog', 0)) > 0,
                 }
                 words.append(word)
 
