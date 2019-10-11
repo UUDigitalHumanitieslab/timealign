@@ -171,21 +171,17 @@ class Fragment(models.Model):
         """
         result = []
         other_languages = self.document.corpus.languages.exclude(pk=self.language.pk)
+        annotations = Annotation.objects. \
+            filter(alignment__original_fragment=self,
+                   alignment__translated_fragment__language__in=other_languages). \
+            select_related('tense', 'alignment__translated_fragment__language') . \
+            prefetch_related('words', 'alignment__translated_fragment__sentence_set__word_set')
+        # TODO: We currently consider only one Annotation per Alignment, YMMV.
+        annotations_by_language = {a.alignment.translated_fragment.language: a for a in annotations}
+
         for language in other_languages:
-            # Note that there should be only one Alignment per language, so we can use .first() here.
-            alignment = self.original.filter(translated_fragment__language=language).first()
-            if alignment:
-                # TODO: We currently consider only one Annotation per Alignment, YMMV.
-                # TODO: This should prefetch more stuff: lots of queries fired!
-                annotation = alignment.annotation_set.select_related('tense').first()
-                if annotation:
-                    result.append((language, annotation))
-                else:
-                    # This happens if there's no Annotation yet
-                    result.append((language, None))
-            else:
-                # This happens if there's no Alignment for this Fragment in the given language
-                result.append((language, None))
+            result.append((language, annotations_by_language.get(language)))
+
         return result
 
     def full(self, format_=False, annotation=None):

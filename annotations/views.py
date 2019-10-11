@@ -213,8 +213,8 @@ class FragmentDetail(LoginRequiredMixin, generic.DetailView):
 
     def get_object(self, queryset=None):
         qs = Fragment.objects \
-            .select_related('document', 'document__corpus', 'language') \
-            .prefetch_related('original', 'sentence_set')
+            .select_related('document__corpus', 'language', 'tense') \
+            .prefetch_related('original', 'sentence_set__word_set')
         fragment = super(FragmentDetail, self).get_object(qs)
         return fragment
 
@@ -237,8 +237,8 @@ class FragmentDetailPlain(LoginRequiredMixin, generic.DetailView):
 
     def get_object(self, queryset=None):
         qs = Fragment.objects \
-            .select_related('document', 'document__corpus', 'language') \
-            .prefetch_related('original', 'sentence_set')
+            .select_related('document__corpus', 'language', 'tense') \
+            .prefetch_related('original', 'sentence_set__word_set')
         fragment = super(FragmentDetailPlain, self).get_object(qs)
         return fragment
 
