@@ -231,6 +231,18 @@ class FragmentDetail(LoginRequiredMixin, generic.DetailView):
         return context
 
 
+class FragmentDetailPlain(LoginRequiredMixin, generic.DetailView):
+    model = Fragment
+    template_name = 'annotations/fragment_detail_plain.html'
+
+    def get_object(self, queryset=None):
+        qs = Fragment.objects \
+            .select_related('document', 'document__corpus', 'language') \
+            .prefetch_related('original', 'sentence_set')
+        fragment = super(FragmentDetailPlain, self).get_object(qs)
+        return fragment
+
+
 ############
 # CRUD Corpus
 ############

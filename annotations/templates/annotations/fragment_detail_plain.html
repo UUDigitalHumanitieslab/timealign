@@ -1,0 +1,68 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+
+
+<style>
+.selected {
+    background-color: transparent;
+    font-weight: bold;
+}
+</style>
+
+<h2>Fragment overview - plain</h2>
+
+<ul>
+    <li>Fragment: {{ fragment.pk }}</li>
+    <li>Document: {{ fragment.document.title }}</li>
+    {% if fragment.document.corpus.check_structure %}
+    <li>Formal structure: {{ fragment.get_formal_structure_display }}</li>
+    <li>Sentence function: {{ fragment.get_sentence_function_display }}</li>
+    {% endif %}
+</ul>
+
+<div>
+    <p class="pull-left">
+        {% include "annotations/_sentences.html" with sentences=fragment.sentence_set.all plain=1 %}
+    </p>
+    <p class="pull-right">
+        [{{ fragment.language.title }}, {{ fragment.label }}]
+    </p>
+    <div style="clear: both;"></div>
+</div>
+
+<h3>Translations:</h3>
+{% for language, annotation in fragment.get_annotations %}
+<div>
+{% if annotation %}
+    <p class="pull-left">
+        {% include "annotations/_sentences.html" with sentences=annotation.alignment.translated_fragment.sentence_set.all annotated_words=annotation.words.all plain=1 %}
+    </p>
+    <p class="pull-right">
+        [{{ language }}, {{ annotation.label }}]
+
+        {% if annotation.comments %}
+        <button type="button" class="btn btn-info btn-xs" title="{{ annotation.comments }}">
+            <span class="glyphicon glyphicon-comment" aria-hidden="true"></span>
+        </button>
+        {% endif %}
+
+        {% if fragment.document.corpus.check_structure and annotation.is_not_same_structure%}
+        <strong>Not same structure!</strong>
+        {% endif %}
+    </p>
+{% else %}
+    <p class="pull-left">
+        <em>No annotation available.</em>
+    </p>
+    <p class="pull-right">
+        [{{ language }}]
+    </p>
+{% endif %}
+    <div style="clear: both;"></div>
+</div>
+{% endfor %}
+
+{% endblock %}
