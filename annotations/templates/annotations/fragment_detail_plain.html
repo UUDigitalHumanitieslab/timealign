@@ -12,11 +12,18 @@
 }
 </style>
 
-<h2>Fragment overview - plain</h2>
+<h1>
+    Fragment overview - plain
+    <a href="{% url 'annotations:show' fragment.pk %}" class="label label-default pull-right" title="Show full version">
+        <span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span>
+    </a>
+</h1>
+
+<h2>Source</h2>
 
 <ul>
-    <li>Fragment: {{ fragment.pk }}</li>
-    <li>Document: {{ fragment.document.title }}</li>
+    <li>Fragment: <a href="{% url 'annotations:show' fragment.pk %}">{{ fragment.pk }}</a></li>
+    <li>Document: <a href="{% url 'annotations:document' fragment.document.pk %}">{{ fragment.document.title }}</a></li>
     {% if fragment.document.corpus.check_structure %}
     <li>Formal structure: {{ fragment.get_formal_structure_display }}</li>
     <li>Sentence function: {{ fragment.get_sentence_function_display }}</li>
@@ -33,7 +40,8 @@
     <div style="clear: both;"></div>
 </div>
 
-<h3>Translations:</h3>
+<h2>Translations</h2>
+
 {% for language, annotation in fragment.get_annotations %}
 <div>
 {% if annotation %}
