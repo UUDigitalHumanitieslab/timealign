@@ -88,3 +88,9 @@ class ModelsTestCase(BaseTestCase):
         annotation.tense = Tense.objects.get(language=self.nl, title='vtt')
         annotation.save()
         self.assertEqual(annotation.label(), 'vtt')
+
+    def test_to_html(self):
+        html = '<ul><li>This <strong>has</strong> always <strong>been</strong> hard to test </li></ul>'
+        self.assertEqual(self.f_en.to_html(), html)
+        html = '<ul><li>Dit <strong>is</strong> altijd moeilijk te testen <strong>geweest</strong> </li></ul>'
+        self.assertEqual(self.f_nl.to_html(), html)

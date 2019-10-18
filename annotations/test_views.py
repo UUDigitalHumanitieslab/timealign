@@ -1,23 +1,44 @@
-from django.contrib.auth.models import AnonymousUser, User
-from django.test import TestCase, RequestFactory
+from django.contrib.auth.models import Permission
+from django.test import Client
+from django.urls import reverse
 
-from .views import IntroductionView
+from .views import IntroductionView, StatusView
+from .test_models import BaseTestCase
 
 
-class ViewsTestCase(TestCase):
+class ViewsTestCase(BaseTestCase):
     def setUp(self):
-        self.factory = RequestFactory()
-        self.u1 = User.objects.create_user(username='test1', email='test@test.com', password='secret', is_superuser=True)
-        self.u2 = User.objects.create_user(username='test2', email='test@test.com', password='secret')
+        super(ViewsTestCase, self).setUp()
+
+        self.client = Client()
 
     def test_introduction(self):
-        request = self.factory.get('/introduction')
-
-        request.user = self.u1
-        response = IntroductionView.as_view()(request)
+        response = self.client.get(reverse('annotations:introduction'))
         self.assertEqual(response.status_code, 200)
 
-        request.user = AnonymousUser()
-        response = IntroductionView.as_view()(request)
+    def test_status(self):
+        response = self.client.get(reverse('annotations:status'))
+        self.assertEqual(response.status_code, 302)  # Login required!
+
+        self.client.login(username=self.u1.username, password='secret')
+        response = self.client.get(reverse('annotations:status'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['user'], self.u1)
+        self.assertEqual(response.context['languages'][0], (self.en, self.nl, 0, 1))
+
+    def test_annotation_create(self):
+        response = self.client.get(reverse('annotations:create', args=(self.c1.pk, self.alignment.pk,)))
+        self.assertEqual(response.status_code, 302)  # Login required!
+
+        self.client.login(username=self.u1.username, password='secret')
+        response = self.client.get(reverse('annotations:create', args=(self.c1.pk, self.alignment.pk,)))
         self.assertEqual(response.status_code, 200)
 
+        self.client.login(username=self.u2.username, password='secret')
+        response = self.client.get(reverse('annotations:create', args=(self.c1.pk, self.alignment.pk,)))
+        self.assertEqual(response.status_code, 302)  # Permission required!
+
+        self.u2.user_permissions.add(Permission.objects.get(content_type__app_label='annotations',
+                                                            codename='change_annotation'))
+        response = self.client.get(reverse('annotations:create', args=(self.c1.pk, self.alignment.pk,)))
+        self.assertEqual(response.status_code, 200)
