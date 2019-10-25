@@ -25,8 +25,8 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('is_translation', models.BooleanField()),
                 ('annotated_at', models.DateTimeField(auto_now=True)),
-                ('alignment', models.ForeignKey(to='annotations.Alignment')),
-                ('annotated_by', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('alignment', models.ForeignKey(to='annotations.Alignment', on_delete=models.CASCADE)),
+                ('annotated_by', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('language', models.CharField(max_length=2, choices=[(b'de', b'German'), (b'en', b'English'), (b'es', b'Spanish'), (b'fr', b'French'), (b'nl', b'Dutch')])),
                 ('speaker_language', models.CharField(max_length=2, choices=[(b'de', b'German'), (b'en', b'English'), (b'es', b'Spanish'), (b'fr', b'French'), (b'nl', b'Dutch')])),
-                ('document', models.ForeignKey(to='annotations.Document')),
+                ('document', models.ForeignKey(to='annotations.Document', on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -52,7 +52,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('xml_id', models.CharField(max_length=20)),
                 ('xml', models.TextField()),
-                ('fragment', models.ForeignKey(to='annotations.Fragment')),
+                ('fragment', models.ForeignKey(to='annotations.Fragment', on_delete=models.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -62,7 +62,7 @@ class Migration(migrations.Migration):
                 ('xml_id', models.CharField(max_length=20)),
                 ('pos', models.CharField(max_length=10)),
                 ('lemma', models.CharField(max_length=200)),
-                ('sentence', models.ForeignKey(to='annotations.Sentence')),
+                ('sentence', models.ForeignKey(to='annotations.Sentence', on_delete=models.CASCADE)),
             ],
         ),
         migrations.AddField(
@@ -73,12 +73,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='alignment',
             name='original_fragment',
-            field=models.ForeignKey(related_name='original', to='annotations.Fragment', null=True),
+            field=models.ForeignKey(related_name='original', to='annotations.Fragment', null=True, on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='alignment',
             name='translated_fragment',
-            field=models.ForeignKey(related_name='translated', to='annotations.Fragment', null=True),
+            field=models.ForeignKey(related_name='translated', to='annotations.Fragment', null=True, on_delete=models.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='annotation',

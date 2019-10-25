@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='document',
             name='corpus',
-            field=models.ForeignKey(related_name='documents', to='annotations.Corpus'),
+            field=models.ForeignKey(related_name='documents', to='annotations.Corpus', on_delete=models.CASCADE),
         ),
     ]

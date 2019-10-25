@@ -35,11 +35,11 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='word',
-            index=models.Index(fields=[b'xml_id'], name='annotations_xml_id_4487c7_idx'),
+            index=models.Index(fields=['xml_id'], name='annotations_xml_id_4487c7_idx'),
         ),
         migrations.AddIndex(
             model_name='sentence',
-            index=models.Index(fields=[b'xml_id'], name='annotations_xml_id_9ad5bf_idx'),
+            index=models.Index(fields=['xml_id'], name='annotations_xml_id_9ad5bf_idx'),
         ),
         migrations.AddField(
             model_name='subsentence',

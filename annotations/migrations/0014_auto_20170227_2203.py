@@ -62,7 +62,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='fragment',
             name='language',
-            field=models.ForeignKey(to='annotations.Language'),
+            field=models.ForeignKey(to='annotations.Language', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='corpus',

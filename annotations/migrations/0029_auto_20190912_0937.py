@@ -14,14 +14,14 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddIndex(
             model_name='annotation',
-            index=models.Index(fields=[b'is_no_target', b'is_translation'], name='annotations_is_no_t_ea122e_idx'),
+            index=models.Index(fields=['is_no_target', 'is_translation'], name='annotations_is_no_t_ea122e_idx'),
         ),
         migrations.AddIndex(
             model_name='word',
-            index=models.Index(fields=[b'is_target'], name='annotations_is_targ_0e75c4_idx'),
+            index=models.Index(fields=['is_target'], name='annotations_is_targ_0e75c4_idx'),
         ),
         migrations.AddIndex(
             model_name='word',
-            index=models.Index(fields=[b'is_target', b'sentence'], name='annotations_is_targ_c54455_idx'),
+            index=models.Index(fields=['is_target', 'sentence'], name='annotations_is_targ_c54455_idx'),
         ),
     ]

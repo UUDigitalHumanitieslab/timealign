@@ -175,12 +175,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='tense',
             name='category',
-            field=models.ForeignKey(to='annotations.TenseCategory'),
+            field=models.ForeignKey(to='annotations.TenseCategory', on_delete=models.CASCADE),
         ),
         migrations.AddField(
             model_name='tense',
             name='language',
-            field=models.ForeignKey(to='annotations.Language'),
+            field=models.ForeignKey(to='annotations.Language', on_delete=models.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='tense',
@@ -224,7 +224,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='annotation',
             name='tense',
-            field=models.ForeignKey(to='annotations.Tense', null=True),
+            field=models.ForeignKey(to='annotations.Tense', null=True, on_delete=models.CASCADE),
         ),
 
         migrations.RemoveField(
@@ -239,6 +239,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='fragment',
             name='tense',
-            field=models.ForeignKey(to='annotations.Tense', null=True),
+            field=models.ForeignKey(to='annotations.Tense', null=True, on_delete=models.CASCADE),
         ),
     ]
