@@ -54,7 +54,7 @@ class Scenario(models.Model):
     def languages(self, **kwargs):
         return self.scenariolanguage_set.filter(**kwargs).select_related('language')
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
 
@@ -69,5 +69,5 @@ class ScenarioLanguage(models.Model):
     use_other_label = models.BooleanField(default=False)  # if the Tense of a Fragment/Annotation is not used for the language
     other_labels = models.CharField('Allowed labels, comma-separated', max_length=200, blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return 'Details for language {} in scenario {}'.format(self.language.title, self.scenario.title)
