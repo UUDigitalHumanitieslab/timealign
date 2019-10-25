@@ -70,4 +70,4 @@ class ScenarioLanguage(models.Model):
     other_labels = models.CharField('Allowed labels, comma-separated', max_length=200, blank=True)
 
     def __unicode__(self):
-        return u'Details for language {} in scenario {}'.format(self.language.title, self.scenario.title)
+        return 'Details for language {} in scenario {}'.format(self.language.title, self.scenario.title)

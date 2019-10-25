@@ -32,18 +32,18 @@ class SelectionTestCase(TestCase):
             Word.objects.create(word=w, sentence=s)
 
     def test_open_fragments(self):
-        self.assertEquals(2, get_open_fragments(self.u1, self.en).count())
-        self.assertEquals(2, get_open_fragments(self.u2, self.en).count())
+        self.assertEqual(2, get_open_fragments(self.u1, self.en).count())
+        self.assertEqual(2, get_open_fragments(self.u2, self.en).count())
 
         s1 = Selection.objects.create(fragment=self.f1, selected_by=self.u1)
         s1.words = Word.objects.filter(sentence__fragment=self.f1, word='is')
         s1.save()
 
-        self.assertEquals(1, get_open_fragments(self.u1, self.en).count())
-        self.assertEquals(1, get_open_fragments(self.u2, self.en).count())
+        self.assertEqual(1, get_open_fragments(self.u1, self.en).count())
+        self.assertEqual(1, get_open_fragments(self.u2, self.en).count())
 
         f = get_random_fragment(self.u1, self.en)
-        self.assertEquals(self.f2, f)
+        self.assertEqual(self.f2, f)
 
         o = get_selection_order(self.f2, self.u1)
         s2 = Selection.objects.create(fragment=self.f2, selected_by=self.u1, order=o, is_final=False)
@@ -51,18 +51,18 @@ class SelectionTestCase(TestCase):
                   Word.objects.filter(sentence__fragment=self.f2, word='played')
         s2.save()
 
-        self.assertEquals(1, o)
-        self.assertEquals(1, get_open_fragments(self.u1, self.en).count())
-        self.assertEquals(1, get_open_fragments(self.u2, self.en).count())
+        self.assertEqual(1, o)
+        self.assertEqual(1, get_open_fragments(self.u1, self.en).count())
+        self.assertEqual(1, get_open_fragments(self.u2, self.en).count())
 
         o = get_selection_order(self.f2, self.u1)
         s3 = Selection.objects.create(fragment=self.f2, selected_by=self.u1, order=o)
         s3.words = Word.objects.filter(sentence__fragment=self.f2, word='said')
         s3.save()
 
-        self.assertEquals(2, o)
-        self.assertEquals(0, get_open_fragments(self.u1, self.en).count())
-        self.assertEquals(0, get_open_fragments(self.u2, self.en).count())
+        self.assertEqual(2, o)
+        self.assertEqual(0, get_open_fragments(self.u1, self.en).count())
+        self.assertEqual(0, get_open_fragments(self.u2, self.en).count())
 
         # Adding a new Fragment with a coordinated VP
         self.f3 = PreProcessFragment.objects.create(language=self.en, document=self.d)
@@ -71,7 +71,7 @@ class SelectionTestCase(TestCase):
             Word.objects.create(word=w, sentence=sentence)
 
         f = get_random_fragment(self.u1, self.en)
-        self.assertEquals(self.f3, f)
+        self.assertEqual(self.f3, f)
 
         o = get_selection_order(self.f3, self.u1)
         s4 = Selection.objects.create(fragment=self.f3, selected_by=self.u1, order=o, is_final=False)
@@ -79,9 +79,9 @@ class SelectionTestCase(TestCase):
                   Word.objects.filter(sentence__fragment=self.f3, word='enter')
         s4.save()
 
-        self.assertEquals(1, o)
-        self.assertEquals(1, get_open_fragments(self.u1, self.en).count())
-        self.assertEquals(1, get_open_fragments(self.u2, self.en).count())
+        self.assertEqual(1, o)
+        self.assertEqual(1, get_open_fragments(self.u1, self.en).count())
+        self.assertEqual(1, get_open_fragments(self.u2, self.en).count())
 
         o = get_selection_order(self.f3, self.u1)
         s5 = Selection.objects.create(fragment=self.f3, selected_by=self.u1, order=o, is_final=True)
@@ -89,13 +89,13 @@ class SelectionTestCase(TestCase):
                   Word.objects.filter(sentence__fragment=self.f3, word='leave')
         s5.save()
 
-        self.assertEquals(2, o)
-        self.assertEquals(0, get_open_fragments(self.u1, self.en).count())
-        self.assertEquals(0, get_open_fragments(self.u2, self.en).count())
+        self.assertEqual(2, o)
+        self.assertEqual(0, get_open_fragments(self.u1, self.en).count())
+        self.assertEqual(0, get_open_fragments(self.u2, self.en).count())
 
         s5.delete()  # Notice that this does not work when we delete s4. TODO: do we consider this a bug?
-        self.assertEquals(1, get_open_fragments(self.u1, self.en).count())
-        self.assertEquals(1, get_open_fragments(self.u2, self.en).count())
+        self.assertEqual(1, get_open_fragments(self.u1, self.en).count())
+        self.assertEqual(1, get_open_fragments(self.u2, self.en).count())
 
     def test_xml_order(self):
         s = Sentence.objects.create(xml_id='test_order', fragment=self.f1)
@@ -108,5 +108,5 @@ class SelectionTestCase(TestCase):
         s1.words = {w1, w2, w3, w4}
         s1.save()
 
-        self.assertEquals(s1.annotated_words(), ' '.join([w1.word, w3.word, w2.word, w4.word]))
+        self.assertEqual(s1.annotated_words(), ' '.join([w1.word, w3.word, w2.word, w4.word]))
 

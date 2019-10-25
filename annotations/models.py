@@ -214,14 +214,14 @@ class Fragment(models.Model):
         if self.document.corpus.check_structure:
             result = Fragment.SF_DECLARATIVE
 
-            if self.tense and self.tense.title == u'imperative':
+            if self.tense and self.tense.title == 'imperative':
                 result = Fragment.SF_IMPERATIVE
 
             for sentence in self.sentence_set.all():
                 for word in sentence.word_set.all():
-                    if word.word == u'?':
+                    if word.word == '?':
                         result = Fragment.SF_INTERROGATIVE
-                    if word.word == u'!':
+                    if word.word == '!':
                         result = Fragment.SF_EXCLAMATORY
 
         return result
@@ -315,7 +315,7 @@ class Word(models.Model):
         ]
 
     def to_html(self):
-        return u'<strong>{}</strong>'.format(self.word) if self.is_target else self.word
+        return '<strong>{}</strong>'.format(self.word) if self.is_target else self.word
 
     def index(self):
         """

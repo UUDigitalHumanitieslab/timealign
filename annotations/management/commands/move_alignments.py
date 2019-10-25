@@ -26,7 +26,7 @@ class Command(BaseCommand):
 
         for fragment in Fragment.objects.filter(document=from_doc, language=options['base_language']):
             for s in fragment.sentence_set.all():
-                r = map(str, range(int(s.xml_id) - 4, int(s.xml_id) + 4))
+                r = list(map(str, list(range(int(s.xml_id) - 4, int(s.xml_id) + 4))))
                 sentences = Sentence.objects.\
                     filter(fragment__document=to_doc, xml_id__in=r).\
                     filter(fragment__language__iso=options['base_language'])

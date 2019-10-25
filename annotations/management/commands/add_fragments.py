@@ -66,7 +66,7 @@ class Command(BaseCommand):
 
 
 def create_to_fragments(document, from_fragment, languages_to, row):
-    for m, language_to in languages_to.items():
+    for m, language_to in list(languages_to.items()):
         if row[m]:
             to_fragment = Fragment.objects.create(language=language_to,
                                                   document=document)

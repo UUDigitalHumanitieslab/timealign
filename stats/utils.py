@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import division
+
 
 import numbers
 from collections import defaultdict
@@ -136,15 +136,15 @@ def run_mds(scenario):
     # this then allows to calculate a distance measure for each item of labels_matrix
 
     labels_matrix = defaultdict(list)
-    for language_tenses in fragment_labels.values():
+    for language_tenses in list(fragment_labels.values()):
         for n, tense in enumerate(language_tenses):
             labels_matrix[n].append(tense)
 
     # Create a distance matrix
     matrix = []
-    for labels_1 in labels_matrix.values():
+    for labels_1 in list(labels_matrix.values()):
         result = []
-        for labels_2 in labels_matrix.values():
+        for labels_2 in list(labels_matrix.values()):
             result.append(get_distance(labels_1, labels_2))
         matrix.append(result)
 
@@ -166,7 +166,7 @@ def get_label(model, scenario_language):
     result = ''
     if scenario_language.use_other_label:
         # Special case for Scenario's that have 'le-combine' in the title. TODO: remove this hack.
-        if u'le-combine' in scenario_language.scenario.title and model.other_label in [u'le1', u'le12']:
+        if 'le-combine' in scenario_language.scenario.title and model.other_label in ['le1', 'le12']:
             result = 'le'
         else:
             result = model.other_label
@@ -280,139 +280,139 @@ def get_color(tense, seq=0):
     :param seq: The current sequence number
     :return: A color from the d3 color scale
     """
-    if tense in [u'Perfekt', u'present perfect', u'pretérito perfecto compuesto', u'passé composé', u'vtt',
-                 u'passato prossimo', u'PresPerf']:
+    if tense in ['Perfekt', 'present perfect', 'pretérito perfecto compuesto', 'passé composé', 'vtt',
+                 'passato prossimo', 'PresPerf']:
         return '#1f77b4'
-    elif tense in [u'Präsens', u'simple present', u'presente', u'présent', u'ott', u'Present', u'present imperfective', u'present']:
+    elif tense in ['Präsens', 'simple present', 'presente', 'présent', 'ott', 'Present', 'present imperfective', 'present']:
         return '#ff7f0e'
-    elif tense in [u'Präteritum', u'simple past', u'pretérito perfecto simple', u'indefinido', u'passé simple', u'ovt', u'Past', u'past perfective', u'past']:
+    elif tense in ['Präteritum', 'simple past', 'pretérito perfecto simple', 'indefinido', 'passé simple', 'ovt', 'Past', 'past perfective', 'past']:
         return '#2ca02c'
-    elif tense in [u'Plusquamperfekt', u'past perfect', u'pretérito pluscuamperfecto', u'plus-que-parfait', u'vvt',
-                   u'trapassato prossimo', u'PastPerf', u'past+infinitive']:
+    elif tense in ['Plusquamperfekt', 'past perfect', 'pretérito pluscuamperfecto', 'plus-que-parfait', 'vvt',
+                   'trapassato prossimo', 'PastPerf', 'past+infinitive']:
         return '#d62728'
-    elif tense in [u'Futur I', u'simple future', u'futur', u'futuro', u'ottt', u'future']:
+    elif tense in ['Futur I', 'simple future', 'futur', 'futuro', 'ottt', 'future']:
         return '#9467bd'
-    elif tense in [u'Futur II', u'future perfect', u'futur antérieur', u'futuro perfecto', u'ovtt', u'future past']:
+    elif tense in ['Futur II', 'future perfect', 'futur antérieur', 'futuro perfecto', 'ovtt', 'future past']:
         return '#8c564b'
-    elif tense in [u'present perfect continuous', u'Cont', u'present/adjective']:
+    elif tense in ['present perfect continuous', 'Cont', 'present/adjective']:
         return '#e377c2'
-    elif tense in [u'pasado reciente', u'passé récent', u'RecentPast', u'copular']:
+    elif tense in ['pasado reciente', 'passé récent', 'RecentPast', 'copular']:
         return '#7f7f7f'
-    elif tense in [u'pretérito imperfecto', u'imparfait', u'Imperfecto', u'past imperfective', u'past+present']:
+    elif tense in ['pretérito imperfecto', 'imparfait', 'Imperfecto', 'past imperfective', 'past+present']:
         return '#bcbd22'
-    elif tense in [u'present participle', u'participio', u'Gerund', u'gerund', u'gerund perfective']:
+    elif tense in ['present participle', 'participio', 'Gerund', 'gerund', 'gerund perfective']:
         return '#17becf'
-    elif tense in [u'Infinitiv', u'infinitief', u'infinitif', u'infinitivo', u'infinitive']:
+    elif tense in ['Infinitiv', 'infinitief', 'infinitif', 'infinitivo', 'infinitive']:
         return '#aec7e8'
-    elif tense in [u'present continuous', u'PresGer', u'existential']:
+    elif tense in ['present continuous', 'PresGer', 'existential']:
         return '#ffbb78'
-    elif tense in [u'condicional', u'conditionnel', u'Rep']:
+    elif tense in ['condicional', 'conditionnel', 'Rep']:
         return '#98df8a'
-    elif tense in [u'past continuous']:
+    elif tense in ['past continuous']:
         return '#ff9896'
-    elif tense in [u'past perfect continuous']:
+    elif tense in ['past perfect continuous']:
         return '#c5b0d5'
-    elif tense in [u'future continuous']:
+    elif tense in ['future continuous']:
         return '#c49c94'
-    elif tense in [u'future in the past', u'futuro perfecto']:
+    elif tense in ['future in the past', 'futuro perfecto']:
         return '#f7b6d2'
-    elif tense in [u'future in the past continuous']:
+    elif tense in ['future in the past continuous']:
         return '#c7c7c7'
-    elif tense in [u'infinitivo perfecto']:
+    elif tense in ['infinitivo perfecto']:
         return '#dbdb8d'
-    elif tense in [u'futur proche', u'futuro próximo']:
+    elif tense in ['futur proche', 'futuro próximo']:
         return '#9edae5'
-    elif tense in [u'futur proche du passé', u'futuro próximo en imperfecto']:
+    elif tense in ['futur proche du passé', 'futuro próximo en imperfecto']:
         return '#393b79'
-    elif tense in [u'conditionnel passé']:
+    elif tense in ['conditionnel passé']:
         return '#5254a3'
-    elif tense in [u'subjuntivo presente']:
+    elif tense in ['subjuntivo presente']:
         return '#e7cb94'
-    elif tense in [u'subjuntivo pretérito imperfecto']:
+    elif tense in ['subjuntivo pretérito imperfecto']:
         return '#8c6d31'
-    elif tense in [u'participle past perfective active']:
+    elif tense in ['participle past perfective active']:
         return '#843c39'
-    elif tense in [u'gerund imperfective']:
+    elif tense in ['gerund imperfective']:
         return '#393b79'
 
     # Mandarin
-    elif tense in [u'unmarked']:
+    elif tense in ['unmarked']:
         return '#1f77b4'
-    elif tense in [u'rvc']:
+    elif tense in ['rvc']:
         return '#ff7f0e'
-    elif tense in [u'le1', u'le']:
+    elif tense in ['le1', 'le']:
         return '#2ca02c'
-    elif tense in [u'le12']:
+    elif tense in ['le12']:
         return '#d62728'
-    elif tense in [u'guo']:
+    elif tense in ['guo']:
         return '#9467bd'
-    elif tense in [u'zhe']:
+    elif tense in ['zhe']:
         return '#8c564b'
-    elif tense in [u'zai']:
+    elif tense in ['zai']:
         return '#e377c2'
-    elif tense in [u'unmarked duplication']:
+    elif tense in ['unmarked duplication']:
         return '#7f7f7f'
-    elif tense in [u'adv']:
+    elif tense in ['adv']:
         return '#bcbd22'
-    elif tense in [u'adj']:
+    elif tense in ['adj']:
         return '#17becf'
-    elif tense in [u'conj']:
+    elif tense in ['conj']:
         return '#aec7e8'
-    elif tense in [u'mood']:
+    elif tense in ['mood']:
         return '#ffbb78'
-    elif tense in [u'noun']:
+    elif tense in ['noun']:
         return '#98df8a'
-    elif tense in [u'non-verb', u'other']:
+    elif tense in ['non-verb', 'other']:
         return '#ff9896'
 
     # ViB
-    elif tense in [u'adjectif']:
+    elif tense in ['adjectif']:
         return '#e6194b'
-    elif tense in [u'adverbe']:
+    elif tense in ['adverbe']:
         return '#3cb44b'
-    elif tense in [u'article défini']:
+    elif tense in ['article défini']:
         return '#ff0000'
-    elif tense in [u'article défini pluriel']:
+    elif tense in ['article défini pluriel']:
         return '#bf0000'
-    elif tense in [u'article défini singulier']:
+    elif tense in ['article défini singulier']:
         return '#ff0051'
-    elif tense in [u'article indéfini']:
+    elif tense in ['article indéfini']:
         return '#ff8400'
-    elif tense in [u'article indéfini pluriel']:
+    elif tense in ['article indéfini pluriel']:
         return '#8c4800'
-    elif tense in [u'article indéfini singulier']:
+    elif tense in ['article indéfini singulier']:
         return '#4c2800'
-    elif tense in [u'déterminant défini pluriel']:
+    elif tense in ['déterminant défini pluriel']:
         return '#adb300'
-    elif tense in [u'déterminant démonstratif']:
+    elif tense in ['déterminant démonstratif']:
         return '#56bf00'
-    elif tense in [u'déterminant indéfini']:
+    elif tense in ['déterminant indéfini']:
         return '#285900'
-    elif tense in [u'déterminant possessif']:
+    elif tense in ['déterminant possessif']:
         return '#00e686'
-    elif tense in [u'expression']:
+    elif tense in ['expression']:
         return '#e377c2'
-    elif tense in [u'nom commun']:
+    elif tense in ['nom commun']:
         return '#7f7f7f'
-    elif tense in [u'nom propre']:
+    elif tense in ['nom propre']:
         return '#bcbd22'
-    elif tense in [u'nom propre gén']:
+    elif tense in ['nom propre gén']:
         return '#dbdb8d'
-    elif tense in [u'numéral']:
+    elif tense in ['numéral']:
         return '#17becf'
-    elif tense in [u'pronom démonstratif']:
+    elif tense in ['pronom démonstratif']:
         return '#5b008c'
-    elif tense in [u'pronom indéfini']:
+    elif tense in ['pronom indéfini']:
         return '#2200ff'
-    elif tense in [u'pronom interrogatif']:
+    elif tense in ['pronom interrogatif']:
         return '#0058e6'
-    elif tense in [u'pronom personnel']:
+    elif tense in ['pronom personnel']:
         return '#006773'
-    elif tense in [u'pronom personnel adverbial']:
+    elif tense in ['pronom personnel adverbial']:
         return '#00331e'
-    elif tense in [u'pronom relatif']:
+    elif tense in ['pronom relatif']:
         return '#285900'
-    elif tense in [u'pronom réfléchi']:
+    elif tense in ['pronom réfléchi']:
         return '#00e686'
 
     else:

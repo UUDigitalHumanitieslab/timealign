@@ -135,7 +135,7 @@ class MDSView(ScenarioDetail):
             fragment = fragments[n]
 
             # Retrieve the labels of all languages in this context
-            ts = [tenses[language][n] for language in tenses.keys()]
+            ts = [tenses[language][n] for language in list(tenses.keys())]
             labels = []
             for t in ts:
                 label, _, _ = get_tense_properties_from_cache(t, tense_cache, len(labels))
@@ -149,7 +149,7 @@ class MDSView(ScenarioDetail):
         # TODO: can this be done in the loop above?
         matrix = []
         labels = set()
-        for tense, values in j.items():
+        for tense, values in list(j.items()):
             tense_label, tense_color, _ = get_tense_properties_from_cache(tense, tense_cache, len(labels))
             labels.add(tense_label)
 
@@ -162,10 +162,10 @@ class MDSView(ScenarioDetail):
         # Add all variables to the context
         context['matrix'] = json.dumps(matrix)
         context['language'] = display_language
-        context['languages'] = Language.objects.filter(iso__in=tenses.keys()).order_by('iso')
+        context['languages'] = Language.objects.filter(iso__in=list(tenses.keys())).order_by('iso')
         context['d1'] = d1
         context['d2'] = d2
-        context['max_dimensions'] = range(1, len(model[0]) + 1)  # We choose dimensions to be 1-based
+        context['max_dimensions'] = list(range(1, len(model[0]) + 1))  # We choose dimensions to be 1-based
         context['stress'] = scenario.mds_stress
 
         # flat data representation for d3
@@ -179,8 +179,8 @@ class MDSView(ScenarioDetail):
                 s = {'key': series['key'], 'color': series['color']}
                 flat_data.append(
                     dict(chain(
-                        s.iteritems(),
-                        fragment.iteritems()
+                        iter(s.items()),
+                        iter(fragment.items())
                     ))
                 )
         context['flat_data'] = json.dumps(flat_data)
@@ -211,7 +211,7 @@ class DescriptiveStatsView(ScenarioDetail):
         context = super(DescriptiveStatsView, self).get_context_data(**kwargs)
 
         tenses = self.object.mds_labels
-        languages = Language.objects.filter(iso__in=tenses.keys())
+        languages = Language.objects.filter(iso__in=list(tenses.keys()))
 
         counters_tenses = dict()
         counters_tensecats = dict()
@@ -247,18 +247,18 @@ class DescriptiveStatsView(ScenarioDetail):
         for l in languages:
             tensecat_counts = counters_tensecats[l]
             for tensecat in distinct_tensecats:
-                if tensecat in tensecat_counts.keys():
+                if tensecat in list(tensecat_counts.keys()):
                     tensecat_table[tensecat].append(tensecat_counts[tensecat])
                 else:
                     tensecat_table[tensecat].append(0)
 
         tensecat_table_ordered = OrderedDict(
-            sorted(tensecat_table.items(), key=lambda item: sum(item[1]) if item[0] else 0, reverse=True))
+            sorted(list(tensecat_table.items()), key=lambda item: sum(item[1]) if item[0] else 0, reverse=True))
 
         context['counters'] = counters_tenses
-        context['counters_json'] = json.dumps({language.iso: values for language, values in counters_tenses.items()})
+        context['counters_json'] = json.dumps({language.iso: values for language, values in list(counters_tenses.items())})
         context['tensecat_table'] = tensecat_table_ordered
-        context['tuples'] = Counter(tuples.values()).most_common()
+        context['tuples'] = Counter(list(tuples.values())).most_common()
         context['colors_json'] = json.dumps(colors)
         context['languages'] = languages
         context['languages_json'] = json.dumps({l.iso: l.title for l in languages})
@@ -325,7 +325,7 @@ class UpsetView(ScenarioDetail):
         tense_cache = {t.pk: t for t in Tense.objects.select_related('category')}
         for n, fragment_pk in enumerate(fragments):
             d = {'fragment_pk': fragment_pk}
-            for language, t in tenses.items():
+            for language, t in list(tenses.items()):
                 t = t[n]
 
                 if isinstance(t, numbers.Number):
@@ -370,7 +370,7 @@ class SankeyView(ScenarioDetail):
 
         # Retrieve nodes and links
         nodes = set()
-        for language, ls in labels.items():
+        for language, ls in list(labels.items()):
             if language in [language_from, language_to]:
                 for iterator, label in enumerate(ls):
                     nodes.add(label)
@@ -428,7 +428,7 @@ class SankeyView(ScenarioDetail):
 
         # Convert the links into a dictionary
         new_links = []
-        for link, fragment_pks in links.items():
+        for link, fragment_pks in list(links.items()):
             for l1, l2 in zip(link, link[1:]):
                 l1_label, l1_color, _ = get_tense_properties_from_cache(l1, tense_cache)
                 l2_label, l2_color, _ = get_tense_properties_from_cache(l2, tense_cache)

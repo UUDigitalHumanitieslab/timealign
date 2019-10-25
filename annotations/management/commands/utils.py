@@ -1,7 +1,7 @@
 import codecs
 import contextlib
 import csv
-import cStringIO
+import io
 
 from xlsxwriter import Workbook
 
@@ -15,13 +15,13 @@ class UnicodeWriter:
 
     def __init__(self, f, dialect=csv.excel, encoding='utf-8', **kwds):
         # Redirect output to a queue
-        self.queue = cStringIO.StringIO()
+        self.queue = io.StringIO()
         self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
         self.stream = f
         self.encoder = codecs.getincrementalencoder(encoding)()
 
     def writerow(self, row, is_header=False):
-        self.writer.writerow([s.encode('utf-8') if type(s) == unicode else s for s in row])
+        self.writer.writerow([s.encode('utf-8') if type(s) == str else s for s in row])
         # Fetch UTF-8 output from the queue ...
         data = self.queue.getvalue()
         data = data.decode('utf-8')
@@ -66,7 +66,7 @@ class ExcelWriter:
 @contextlib.contextmanager
 def open_csv(filename):
     with open(filename, 'wb') as fileobj:
-        fileobj.write(u'\uFEFF'.encode('utf-8'))  # the UTF-8 BOM to hint Excel we are using that...
+        fileobj.write('\uFEFF'.encode('utf-8'))  # the UTF-8 BOM to hint Excel we are using that...
         yield UnicodeWriter(fileobj, delimiter=';')
 
 

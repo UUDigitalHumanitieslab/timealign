@@ -57,8 +57,7 @@ def export_pos_file(filename, format_, corpus, language, subcorpus=None,
             if add_indices:
                 header.extend(['index' + str(i + 1) for i in range(max_words)])
             header.extend(['comments', 'full fragment'])
-            header.extend(list(map(lambda x: 'source ' + x,
-                                   ['id', 'document', 'sentences', 'words', 'tense', 'other label', 'fragment'])))
+            header.extend(list(['source ' + x for x in ['id', 'document', 'sentences', 'words', 'tense', 'other label', 'fragment']]))
             writer.writerow(header, is_header=True)
 
             for annotation in annotations:
