@@ -26,12 +26,12 @@ urlpatterns = [
     url(r'^accounts/password/change/$', PasswordChangeView.as_view(), name='password_change'),
     url(r'^accounts/password/change/done/$', PasswordChangeDoneView.as_view(), name='password_change_done'),
 
-    url(r'^timealign/', include('annotations.urls', namespace='annotations')),
-    url(r'^preselect/', include('selections.urls', namespace='selections')),
-    url(r'^stats/', include('stats.urls', namespace='stats')),
-    url(r'^news/', include('news.urls', namespace='news')),
+    url(r'^timealign/', include(('annotations.urls', 'annotations'), namespace='annotations')),
+    url(r'^preselect/', include(('selections.urls', 'selections'), namespace='selections')),
+    url(r'^stats/', include(('stats.urls', 'stats'), namespace='stats')),
+    url(r'^news/', include(('news.urls', 'news'), namespace='news')),
 
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
 
     url(r'^$', views.flatpage, {'url': '/home/'}, name='home'),
     url(r'^project/$', views.flatpage, {'url': '/project/'}, name='project'),
