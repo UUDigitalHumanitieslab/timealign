@@ -4,11 +4,22 @@ TimeAlign allows you to easily annotate similar forms in aligned phrases.
 
 ## Installation
 
-TimeAlign is created with the [Django web framework](https://www.djangoproject.com/) and runs in both Python 2.7 and 3.5.
-You can install the required packages by calling `pip install -r requirements.txt.`
+TimeAlign is created with the [Django web framework](https://www.djangoproject.com/) and requires Python 3.
+After installing the dependencies for the MySQL database driver (see below), you can install the required python packages by running `pip install -r requirements.txt`
 
-Starting from an empty Ubuntu 16.04 installation, you will need the following to get you started:
+### MySQL Dependencies
+If you want to use MySQL as your database backend (recommended) use the following commands to install a database server and the required packages for the python client.
 
+#### Centos 7.7
+    sudo yum install mariadb-server mariadb-devel python3-devel
+    sudo yum groupinstall 'Development Tools'
+
+
+#### Ubuntu (TODO: update)
+    sudo apt-get install mysql-server libmysqlclient-dev
+
+
+### Setting up TimeAlign in a virtual environment
     # Clone the repository
     git clone [repository URL]
     cd timealign/
@@ -18,15 +29,13 @@ Starting from an empty Ubuntu 16.04 installation, you will need the following to
     virtualenv .env
     source .env/bin/activate
     pip install -r requirements.txt
-
-    # If you want to use MySQL as your database backend (recommended)
-    sudo apt-get install mysql-server libmysqlclient-dev
     # Create a database and change the databases section in timealign/settings.py accordingly
     # Migrate the database using:
     python manage.py migrate
-    
+
     # Run the tests
     python manage.py test
+
 
 If the test runs OK, you should be ready to roll! Run the webserver using:
 
