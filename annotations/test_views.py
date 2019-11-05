@@ -36,7 +36,7 @@ class ViewsTestCase(BaseTestCase):
 
         self.client.login(username=self.u2.username, password='secret')
         response = self.client.get(reverse('annotations:create', args=(self.c1.pk, self.alignment.pk,)))
-        self.assertEqual(response.status_code, 302)  # Permission required!
+        self.assertEqual(response.status_code, 403)  # Permission required!
 
         self.u2.user_permissions.add(Permission.objects.get(content_type__app_label='annotations',
                                                             codename='change_annotation'))

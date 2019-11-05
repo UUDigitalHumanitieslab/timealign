@@ -18,7 +18,7 @@ class SelectionTestCase(TestCase):
         self.u1 = User.objects.create_user(username='test1', email='test@test.com', password='secret')
         self.u2 = User.objects.create_user(username='test2', email='test@test.com', password='secret')
 
-        c.annotators = User.objects.all()
+        c.annotators.set(User.objects.all())
         c.save()
 
         self.f1 = PreProcessFragment.objects.create(language=self.en, document=self.d)
@@ -36,7 +36,7 @@ class SelectionTestCase(TestCase):
         self.assertEqual(2, get_open_fragments(self.u2, self.en).count())
 
         s1 = Selection.objects.create(fragment=self.f1, selected_by=self.u1)
-        s1.words = Word.objects.filter(sentence__fragment=self.f1, word='is')
+        s1.words.set(Word.objects.filter(sentence__fragment=self.f1, word='is'))
         s1.save()
 
         self.assertEqual(1, get_open_fragments(self.u1, self.en).count())
@@ -47,8 +47,8 @@ class SelectionTestCase(TestCase):
 
         o = get_selection_order(self.f2, self.u1)
         s2 = Selection.objects.create(fragment=self.f2, selected_by=self.u1, order=o, is_final=False)
-        s2.words = Word.objects.filter(sentence__fragment=self.f2, word='has') | \
-                  Word.objects.filter(sentence__fragment=self.f2, word='played')
+        s2.words.set(Word.objects.filter(sentence__fragment=self.f2, word='has') | \
+                  Word.objects.filter(sentence__fragment=self.f2, word='played'))
         s2.save()
 
         self.assertEqual(1, o)
@@ -57,7 +57,7 @@ class SelectionTestCase(TestCase):
 
         o = get_selection_order(self.f2, self.u1)
         s3 = Selection.objects.create(fragment=self.f2, selected_by=self.u1, order=o)
-        s3.words = Word.objects.filter(sentence__fragment=self.f2, word='said')
+        s3.words.set(Word.objects.filter(sentence__fragment=self.f2, word='said'))
         s3.save()
 
         self.assertEqual(2, o)
@@ -75,8 +75,8 @@ class SelectionTestCase(TestCase):
 
         o = get_selection_order(self.f3, self.u1)
         s4 = Selection.objects.create(fragment=self.f3, selected_by=self.u1, order=o, is_final=False)
-        s4.words = Word.objects.filter(sentence__fragment=self.f3, word='could') | \
-                  Word.objects.filter(sentence__fragment=self.f3, word='enter')
+        s4.words.set(Word.objects.filter(sentence__fragment=self.f3, word='could') | \
+                  Word.objects.filter(sentence__fragment=self.f3, word='enter'))
         s4.save()
 
         self.assertEqual(1, o)
@@ -85,8 +85,8 @@ class SelectionTestCase(TestCase):
 
         o = get_selection_order(self.f3, self.u1)
         s5 = Selection.objects.create(fragment=self.f3, selected_by=self.u1, order=o, is_final=True)
-        s5.words = Word.objects.filter(sentence__fragment=self.f3, word='could') | \
-                  Word.objects.filter(sentence__fragment=self.f3, word='leave')
+        s5.words.set(Word.objects.filter(sentence__fragment=self.f3, word='could') | \
+                  Word.objects.filter(sentence__fragment=self.f3, word='leave'))
         s5.save()
 
         self.assertEqual(2, o)
@@ -105,8 +105,7 @@ class SelectionTestCase(TestCase):
         w4 = Word.objects.create(word='w4', sentence=s, xml_id='w2.1.10')
 
         s1 = Selection.objects.create(fragment=self.f1, selected_by=self.u1)
-        s1.words = {w1, w2, w3, w4}
+        s1.words.set({w1, w2, w3, w4})
         s1.save()
 
         self.assertEqual(s1.annotated_words(), ' '.join([w1.word, w3.word, w2.word, w4.word]))
-

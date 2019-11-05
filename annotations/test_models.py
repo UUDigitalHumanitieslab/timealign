@@ -15,9 +15,9 @@ class BaseTestCase(TestCase):
         self.u1 = User.objects.create_user(username='test1', email='test@test.com', password='secret', is_superuser=True)
         self.u2 = User.objects.create_user(username='test2', email='test@test.com', password='secret')
 
-        self.c1.annotators = User.objects.filter(username='test1')
+        self.c1.annotators.set(User.objects.filter(username='test1'))
         self.c1.save()
-        self.c2.annotators = User.objects.filter(username='test2')
+        self.c2.annotators.set(User.objects.filter(username='test2'))
         self.c2.save()
 
         self.f_en = Fragment.objects.create(language=self.en, document=self.d)
@@ -42,7 +42,7 @@ class ModelsTestCase(BaseTestCase):
 
     # Testing models.py
     def test_get_languages(self):
-        self.c1.languages = Language.objects.filter(iso__in=['nl', 'en'])
+        self.c1.languages.set(Language.objects.filter(iso__in=['nl', 'en']))
         self.c1.save()
         self.assertEqual(self.c1.get_languages(), 'en, nl')
 
