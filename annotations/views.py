@@ -13,7 +13,7 @@ from django.template.loader import render_to_string
 from django.views import generic
 from django.utils.http import urlquote
 
-from braces.views import LoginRequiredMixin, PermissionRequiredMixin, SuperuserRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django_filters.views import FilterView
 
 from .exports import export_pos_file
@@ -488,12 +488,16 @@ class ExportPOSDownload(PermissionRequiredMixin, generic.View):
             return response
 
 
-class ImportLabelsView(LoginRequiredMixin, SuperuserRequiredMixin, generic.View):
+class ImportLabelsView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
     """
     Allows superusers to import labels to Annotations and Fragments
     """
     form_class = LabelImportForm
     template_name = 'annotations/label_form.html'
+
+    def test_func(self):
+        # limit access to superusers
+        return self.request.user.is_superuser
 
     def get(self, request, *args, **kwargs):
         form = self.form_class()

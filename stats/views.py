@@ -4,7 +4,7 @@ import random
 from collections import Counter, OrderedDict, defaultdict
 from itertools import chain
 
-from braces.views import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Case, When, Prefetch
 from django.http import Http404, HttpResponseRedirect
