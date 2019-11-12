@@ -415,6 +415,12 @@ def get_color(tense, seq=0):
     elif tense in [u'pronom réfléchi']:
         return '#00e686'
 
+    # Contraction
+    elif tense in ['contracted', 'bare noun']:
+        return '#2f5597'
+    elif tense in ['uncontracted', 'demonstrative']:
+        return '#fd8f8e'
+
     else:
         color_list = [
             '#1f77b4',
