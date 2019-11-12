@@ -125,6 +125,7 @@ class MDSView(ScenarioDetail):
         j = defaultdict(list)
         tense_cache = {t.pk: (t.title, t.category.color, t.category.title)
                        for t in Tense.objects.select_related('category')}
+        label_set = set()
         for n, embedding in enumerate(model):
             # Retrieve x/y dimensions, add some jitter
             x = embedding[d1 - 1] + random.uniform(-.5, .5) / 100
@@ -136,13 +137,14 @@ class MDSView(ScenarioDetail):
 
             # Retrieve the labels of all languages in this context
             ts = [tenses[language][n] for language in tenses.keys()]
-            labels = []
+            label_list = []
             for t in ts:
-                label, _, _ = get_tense_properties_from_cache(t, tense_cache, len(labels))
-                labels.append(label)
+                label, _, _ = get_tense_properties_from_cache(t, tense_cache, len(label_set))
+                label_list.append(label)
+                label_set.add(label)
 
             # Add all values to the dictionary
-            j[tenses[display_language][n]].append({'x': x, 'y': y, 'tenses': labels,
+            j[tenses[display_language][n]].append({'x': x, 'y': y, 'tenses': label_list,
                                                    'fragment_pk': fragment.pk, 'fragment': fragment.full(HTML)})
 
         # Transpose the dictionary to the correct format for nvd3.
