@@ -40,3 +40,7 @@ footer p {
 .progress {
     margin-bottom: 0px;
 }
+
+.endpoint {
+    background-color: lightblue;
+}
