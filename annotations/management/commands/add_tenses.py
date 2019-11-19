@@ -46,17 +46,17 @@ def get_tense_de(pos_tags):
 
     if len(pos_tags) == 1:
         if pos_tags[0] in ['VAFIN', 'VAINF', 'VVFIN', 'VVINF', 'VVIZU', 'VMFIN', 'VMINF']:
-            tense = u'Präsens'  # Präterium?
+            tense = 'Präsens'  # Präterium?
         if pos_tags[0] in ['ADJA', 'ADJD']:
             tense = 'Adjektiv'
     elif len(pos_tags) == 2:
         if ('VAFIN' in pos_tags or 'VAINF' in pos_tags) and ('VVPP' in pos_tags or 'VVFIN' in pos_tags or 'VAPP' in pos_tags):
-            tense = u'Perfect'
+            tense = 'Perfect'
     elif len(pos_tags) == 3:
         if set(pos_tags) == set(['VVPP', 'VAPP', 'VAFIN']):
-            tense = u'Perfect Passiv'
+            tense = 'Perfect Passiv'
         elif set(pos_tags) == set(['PRF', 'VVPP', 'VAFIN']):
-            tense = u'Perfect Reflexiv'
+            tense = 'Perfect Reflexiv'
 
     return tense
 
@@ -138,39 +138,39 @@ def get_tense_fr(pos_tags):
 
     if len(pos_tags) == 1:
         if pos_tags[0] in ['VER:pres', 'VER:subp']:
-            tense = u'présent'
+            tense = 'présent'
         elif pos_tags[0] in ['VER:impf', 'VER:subi']:  # does this happen?
-            tense = u'imparfait'
+            tense = 'imparfait'
         elif pos_tags[0] == 'VER:simp':
-            tense = u'passé simple'
+            tense = 'passé simple'
         elif pos_tags[0] == 'VER:futu':
-            tense = u'futur'
+            tense = 'futur'
         elif pos_tags[0] == 'VER:cond':
-            tense = u'conditionnel'
+            tense = 'conditionnel'
     elif len(pos_tags) == 2:
         if pos_tags[1] == 'VER:pper':
             if pos_tags[0] in ['VER:pres', 'VER:subp']:
-                tense = u'passé composé'
+                tense = 'passé composé'
             elif pos_tags[0] == 'VER:impf':
-                tense = u'plus-que-parfait'
+                tense = 'plus-que-parfait'
             elif pos_tags[0] == 'VER:simp':
-                tense = u'passé antérieur'
+                tense = 'passé antérieur'
             elif pos_tags[0] == 'VER:futu':
-                tense = u'futur antérieur'
+                tense = 'futur antérieur'
             elif pos_tags[0] == 'VER:cond':
-                tense = u'conditionnel passé'
+                tense = 'conditionnel passé'
     elif len(pos_tags) == 3:
         # Passive forms
         if pos_tags == ['VER:pres', 'VER:pper', 'VER:pper'] or pos_tags == ['VER:subp', 'VER:pper', 'VER:pper']:
-            tense = u'passé composé'
+            tense = 'passé composé'
         if pos_tags == ['VER:impf', 'VER:pper', 'VER:pper']:
-            tense = u'plus-que-parfait'
+            tense = 'plus-que-parfait'
         # Reflexives
         if pos_tags == ['PRO:PER', 'VER:pres', 'VER:pper'] or pos_tags == ['PRO:PER', 'VER:subp', 'VER:pper']:
-            tense = u'passé composé'
+            tense = 'passé composé'
         # Passé récent. Example: Je viens de chanter
         if pos_tags == ['VER:pres', 'PRP', 'VER:infi']:
-            tense = u'passé récent'
+            tense = 'passé récent'
 
     return tense
 

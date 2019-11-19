@@ -13,7 +13,7 @@ from django.template.loader import render_to_string
 from django.views import generic
 from django.utils.http import urlquote
 
-from braces.views import LoginRequiredMixin, PermissionRequiredMixin, SuperuserRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django_filters.views import FilterView
 
 from .exports import export_pos_file
@@ -261,7 +261,7 @@ class CorpusDetail(LoginRequiredMixin, generic.DetailView):
         # Retrieve all Documents and order them by title
         corpus = self.object
         documents = {d.pk: d.title for d in corpus.documents.all()}
-        documents_sorted = sorted(documents.items(), key=lambda x: natural_sort_key(x[1]))
+        documents_sorted = sorted(list(documents.items()), key=lambda x: natural_sort_key(x[1]))
         document_pks = [d[0] for d in documents_sorted]
 
         # Create a list of Languages
@@ -441,7 +441,7 @@ class TenseCategoryList(PermissionRequiredMixin, generic.ListView):
                 tense = tense_cache.get((tc.title, language.iso), '')
                 tenses[tc].append(tense)
 
-        context['tenses'] = sorted(tenses.items(), key=lambda item: item[0].pk)
+        context['tenses'] = sorted(list(tenses.items()), key=lambda item: item[0].pk)
         context['languages'] = languages
 
         return context
@@ -488,12 +488,16 @@ class ExportPOSDownload(PermissionRequiredMixin, generic.View):
             return response
 
 
-class ImportLabelsView(LoginRequiredMixin, SuperuserRequiredMixin, generic.View):
+class ImportLabelsView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
     """
     Allows superusers to import labels to Annotations and Fragments
     """
     form_class = LabelImportForm
     template_name = 'annotations/label_form.html'
+
+    def test_func(self):
+        # limit access to superusers
+        return self.request.user.is_superuser
 
     def get(self, request, *args, **kwargs):
         form = self.form_class()
@@ -505,10 +509,10 @@ class ImportLabelsView(LoginRequiredMixin, SuperuserRequiredMixin, generic.View)
             try:
                 form.save()
                 messages.success(
-                    self.request, u'Successfully imported the labels!')
+                    self.request, 'Successfully imported the labels!')
             except ValueError as e:
                 messages.error(
-                    self.request, u'Error during import: {}'.format(e.message))
+                    self.request, 'Error during import: {}'.format(e.message))
             return redirect(reverse('annotations:import-labels'))
         else:
             return render(request, self.template_name, {'form': form})

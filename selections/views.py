@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.views import generic
 from django.utils.http import urlquote
 
-from braces.views import PermissionRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django_filters.views import FilterView
 
 from annotations.models import Language, Corpus, Document

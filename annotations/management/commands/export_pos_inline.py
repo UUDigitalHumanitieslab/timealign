@@ -131,6 +131,6 @@ def generate_header(languages, max_words):
     for language in languages:
         language_details = ['sentence', 'tense']
         language_details.extend(['w' + str(i + 1) for i in range(max_words)])
-        header.extend(map(lambda x: '{}-{}'.format(language.iso, x), language_details))
+        header.extend(['{}-{}'.format(language.iso, x) for x in language_details])
 
     return header

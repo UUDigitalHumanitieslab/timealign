@@ -56,4 +56,4 @@ def create_subsentence(corpus, subcorpus, row):
         document = Document.objects.get(corpus=corpus, title=row[0])
         SubSentence.objects.create(subcorpus=subcorpus, document=document, xml_id=row[1])
     except Document.DoesNotExist:
-        raise ValueError(u'Document with title {} not found.'.format(row[0]))
+        raise ValueError('Document with title {} not found.'.format(row[0]))

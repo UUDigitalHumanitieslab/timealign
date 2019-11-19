@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import migrations, models
 from django.conf import settings
@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='PreProcessFragment',
             fields=[
-                ('fragment_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='annotations.Fragment')),
+                ('fragment_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='annotations.Fragment', on_delete=models.CASCADE)),
             ],
             bases=('annotations.fragment',),
         ),
@@ -30,9 +30,9 @@ class Migration(migrations.Migration):
                 ('selected_at', models.DateTimeField(auto_now_add=True)),
                 ('last_modified_at', models.DateTimeField(auto_now=True)),
                 ('tense', models.CharField(max_length=200, verbose_name=b'Tense', blank=True)),
-                ('fragment', models.ForeignKey(to='selections.PreProcessFragment')),
-                ('last_modified_by', models.ForeignKey(related_name='selection_last_modified_by', to=settings.AUTH_USER_MODEL, null=True)),
-                ('selected_by', models.ForeignKey(related_name='selected_by', to=settings.AUTH_USER_MODEL)),
+                ('fragment', models.ForeignKey(to='selections.PreProcessFragment', on_delete=models.CASCADE)),
+                ('last_modified_by', models.ForeignKey(related_name='selection_last_modified_by', to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)),
+                ('selected_by', models.ForeignKey(related_name='selected_by', to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)),
                 ('words', models.ManyToManyField(to='annotations.Word', blank=True)),
             ],
         ),

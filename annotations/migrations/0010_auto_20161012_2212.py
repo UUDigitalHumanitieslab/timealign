@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import migrations, models
 
@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='document',
             name='corpus',
-            field=models.ForeignKey(default=1, to='annotations.Corpus'),
+            field=models.ForeignKey(default=1, to='annotations.Corpus', on_delete=models.CASCADE),
             preserve_default=False,
         ),
     ]

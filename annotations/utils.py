@@ -132,7 +132,7 @@ def sort_key(xml_id, xml_tag):
         result = int(xml_id)
     else:
         if xml_id[0] == xml_tag and xml_id[1:].split('.'):
-            result = map(int, xml_id[1:].split('.'))
+            result = list(map(int, xml_id[1:].split('.')))
 
     return result
 
@@ -236,7 +236,7 @@ def add_element(el, current_fragment, related_fragments, position):
             sentence = {
                 'xml_id': xml_id,
                 'fragment_pks': fragment_pks,
-                'words': words.values(),
+                'words': list(words.values()),
             }
 
         # If the Sentence is not there, create a mock Sentence from the XML

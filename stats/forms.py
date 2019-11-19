@@ -10,7 +10,7 @@ class ScenarioForm(forms.ModelForm):
         if self.instance.corpus_id:
             document_field.queryset = document_field.queryset.filter(corpus=self.instance.corpus)
 
-        # Select the Corpus to prevent queries being fired on the __unicode__ method
+        # Select the Corpus to prevent queries being fired on the __str__ method
         document_field.queryset = document_field.queryset.select_related('corpus')
 
 

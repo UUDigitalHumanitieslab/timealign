@@ -139,7 +139,7 @@ class Command(BaseCommand):
                                 for fragment in fragments:
                                     languages = languages_to
                                     for alignment in Alignment.objects.filter(original_fragment=fragment):
-                                        languages = {key: val for key, val in languages.items()
+                                        languages = {key: val for key, val in list(languages.items())
                                                      if val != alignment.translated_fragment.language}
 
                                     create_to_fragments(doc, fragment, languages, row)

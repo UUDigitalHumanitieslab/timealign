@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import migrations, models
 import datetime
@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='annotation',
             name='last_modified_by',
-            field=models.ForeignKey(related_name='last_modified_by', to=settings.AUTH_USER_MODEL, null=True),
+            field=models.ForeignKey(related_name='last_modified_by', to=settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE),
         ),
         migrations.AlterField(
             model_name='annotation',
@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='annotation',
             name='annotated_by',
-            field=models.ForeignKey(related_name='annotated_by', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(related_name='annotated_by', to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE),
         ),
         migrations.AlterField(
             model_name='annotation',

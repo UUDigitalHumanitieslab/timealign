@@ -43,7 +43,7 @@ def process_file(f, language, use_other_label, model='annotation'):
             elif model == 'fragment':
                 update_fragment(language, encoded, use_other_label)
             else:
-                raise ValueError(u'Unknown model {}'.format(model))
+                raise ValueError('Unknown model {}'.format(model))
 
 
 def update_annotation(language, row, use_other_label=False):
@@ -64,9 +64,9 @@ def update_annotation(language, row, use_other_label=False):
         # Save Annotation
         annotation.save()
     except Annotation.DoesNotExist:
-        raise ValueError(u'Annotation with pk {} not found.'.format(row[0]))
+        raise ValueError('Annotation with pk {} not found.'.format(row[0]))
     except Tense.DoesNotExist:
-        raise ValueError(u'Tense with title "{}" not found.'.format(row[1]))
+        raise ValueError('Tense with title "{}" not found.'.format(row[1]))
 
 
 def update_fragment(language, row, use_other_label=False):
@@ -83,6 +83,6 @@ def update_fragment(language, row, use_other_label=False):
         # Save Fragment
         fragment.save()
     except Fragment.DoesNotExist:
-        raise ValueError(u'Fragment with pk {} not found.'.format(row[0]))
+        raise ValueError('Fragment with pk {} not found.'.format(row[0]))
     except Tense.DoesNotExist:
-        raise ValueError(u'Tense with title "{}" not found.'.format(row[1]))
+        raise ValueError('Tense with title "{}" not found.'.format(row[1]))

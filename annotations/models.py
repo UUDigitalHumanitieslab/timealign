@@ -8,7 +8,7 @@ class Language(models.Model):
     iso = models.CharField(max_length=2, unique=True)
     title = models.CharField(max_length=200)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
 
@@ -19,7 +19,7 @@ class TenseCategory(models.Model):
     class Meta:
         verbose_name_plural = 'Tense categories'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
 
@@ -32,7 +32,7 @@ class Tense(models.Model):
     class Meta:
         unique_together = ('language', 'title', )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
 
@@ -54,7 +54,7 @@ class Corpus(models.Model):
     class Meta:
         verbose_name_plural = 'Corpora'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def get_languages(self):
@@ -81,7 +81,7 @@ class Document(models.Model):
     class Meta:
         unique_together = ('corpus', 'title', )
 
-    def __unicode__(self):
+    def __str__(self):
         return '{} - {}'.format(self.corpus.title, self.title)
 
 
@@ -214,14 +214,14 @@ class Fragment(models.Model):
         if self.document.corpus.check_structure:
             result = Fragment.SF_DECLARATIVE
 
-            if self.tense and self.tense.title == u'imperative':
+            if self.tense and self.tense.title == 'imperative':
                 result = Fragment.SF_IMPERATIVE
 
             for sentence in self.sentence_set.all():
                 for word in sentence.word_set.all():
-                    if word.word == u'?':
+                    if word.word == '?':
                         result = Fragment.SF_INTERROGATIVE
-                    if word.word == u'!':
+                    if word.word == '!':
                         result = Fragment.SF_EXCLAMATORY
 
         return result
@@ -244,7 +244,7 @@ class Fragment(models.Model):
         self.sentence_function = self.get_sentence_function()
         super(Fragment, self).save(*args, **kwargs)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.full()[:100]
 
 
@@ -287,7 +287,7 @@ class Sentence(models.Model):
                 words.append('<br>')
         return ' '.join(words)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.full()[:100] + '...'
 
 
@@ -315,7 +315,7 @@ class Word(models.Model):
         ]
 
     def to_html(self):
-        return u'<strong>{}</strong>'.format(self.word) if self.is_target else self.word
+        return '<strong>{}</strong>'.format(self.word) if self.is_target else self.word
 
     def index(self):
         """
@@ -329,7 +329,7 @@ class Word(models.Model):
                 result += len(word.word) + 1
         return result
 
-    def __unicode__(self):
+    def __str__(self):
         return self.word
 
 
@@ -421,7 +421,7 @@ class SubCorpus(models.Model):
 
         return fragments
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
 
@@ -447,5 +447,5 @@ class SubSentence(models.Model):
             document=self.document,
             sentence__xml_id=self.xml_id)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.xml_id
