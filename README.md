@@ -15,8 +15,9 @@ If you want to use MySQL as your database backend (recommended) use the followin
     sudo yum groupinstall 'Development Tools'
 
 
-#### Ubuntu (TODO: update)
-    sudo apt-get install mysql-server libmysqlclient-dev
+#### Ubuntu
+    pip install -U wheel
+    sudo apt-get install python-dev default-libmysqlclient-dev libssl-dev mysql-server
 
 
 ### Setting up TimeAlign in a virtual environment
