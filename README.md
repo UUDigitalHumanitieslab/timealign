@@ -10,14 +10,13 @@ After installing the dependencies for the MySQL database driver (see below), you
 ### MySQL Dependencies
 If you want to use MySQL as your database backend (recommended) use the following commands to install a database server and the required packages for the python client.
 
-#### Centos 7.7
+#### CentOS 7.7
     sudo yum install mariadb-server mariadb-devel python3-devel
     sudo yum groupinstall 'Development Tools'
 
 
-#### Ubuntu
-    pip install -U wheel
-    sudo apt-get install python-dev default-libmysqlclient-dev libssl-dev mysql-server
+#### Ubuntu 18.04
+    sudo apt-get install python3-dev default-libmysqlclient-dev libssl-dev mysql-server
 
 
 ### Setting up TimeAlign in a virtual environment
@@ -26,10 +25,12 @@ If you want to use MySQL as your database backend (recommended) use the followin
     cd timealign/
 
     # Create a virtual environment
-    sudo apt-get install python-dev virtualenv
+    sudo apt-get install virtualenv
     virtualenv .env
     source .env/bin/activate
+    pip install --upgrade pip wheel
     pip install -r requirements.txt
+    
     # Create a database and change the databases section in timealign/settings.py accordingly
     # Migrate the database using:
     python manage.py migrate
@@ -40,6 +41,7 @@ If you want to use MySQL as your database backend (recommended) use the followin
 
 If the test runs OK, you should be ready to roll! Run the webserver using:
 
+    # Start the (local) web server
     python manage.py runserver
 
 ## Documentation
