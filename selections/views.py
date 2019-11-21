@@ -87,6 +87,7 @@ class SelectionMixin(PermissionRequiredMixin):
         kwargs = super(SelectionMixin, self).get_form_kwargs()
         kwargs['fragment'] = self.get_fragment()
         kwargs['user'] = self.request.user
+        kwargs['select_segment'] = self.request.session.get('select_segment', False)
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -107,6 +108,11 @@ class SelectionMixin(PermissionRequiredMixin):
 
     def is_final(self):
         return 'is_final' in self.request.POST
+        
+    def form_valid(self, form):
+        # save user preferred selection tool on the session
+        self.request.session['select_segment'] = form.cleaned_data['select_segment']
+        return super().form_valid(form)
 
 
 class SelectionUpdateMixin(SelectionMixin):
