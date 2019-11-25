@@ -4,13 +4,25 @@ from .models import Annotation, Word, Language, Tense
 from .management.commands.import_tenses import process_file
 
 
+class LabelsField(forms.MultipleChoiceField):
+    # MultipleChoiceField only allows entering predefined choices
+    # however, we want users to be able to introduce new labels,
+    # which is why it's necessary to override the default clean() method
+    def clean(self, value):
+        return value
+
+
 class AnnotationForm(forms.ModelForm):
+    # a frontend field for adding multiple labels, which are saved as a
+    # comma separated string in other_label
+    labels = LabelsField()
+    
     class Meta:
         model = Annotation
         fields = [
             'is_no_target', 'is_translation',
             'is_not_labeled_structure', 'is_not_same_structure',
-            'tense', 'other_label',
+            'tense', 'labels', 'other_label',
             'comments', 'words',
         ]
         widgets = {
@@ -35,6 +47,19 @@ class AnnotationForm(forms.ModelForm):
         self.fields['is_not_labeled_structure'].label = self.fields['is_not_labeled_structure'].label.format(structure)
         self.fields['tense'].queryset = Tense.objects.filter(language=self.alignment.translated_fragment.language)
 
+        # auto-complete labels based on all the existing labels in the corpus
+        choices = set()
+        existing_labels = Annotation.objects.filter(
+            alignment__original_fragment__document__corpus=corpus).values_list('other_label', flat=True).distinct()
+        for labels in existing_labels:
+            for label in labels.split(','):
+                choices.add(label)
+        self.fields['labels'].choices = [(x, x) for x in choices if x]
+
+        # when editing an existing annotation, populate the labels field
+        if kwargs['instance']:
+            self.fields['labels'].initial = kwargs['instance'].other_label.split(',')
+
         if not corpus.check_structure:
             del self.fields['is_not_labeled_structure']
             del self.fields['is_not_same_structure']
@@ -54,6 +79,10 @@ class AnnotationForm(forms.ModelForm):
         if not cleaned_data['is_no_target'] and cleaned_data['is_translation']:
             if not cleaned_data['words']:
                 self.add_error('is_translation', 'Please select the words composing the translation.')
+
+    def clean_other_label(self):
+        # store the labels selected in the front-end only labels field
+        return ','.join(self.data.getlist('labels'))
 
 
 class LabelImportForm(forms.Form):
