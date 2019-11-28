@@ -229,18 +229,22 @@ class DescriptiveStatsView(ScenarioDetail):
             n = 0
             labels = set()
             for t in tenses[l.iso]:
-                tense_label, tense_color, tense_category = get_tense_properties_from_cache(t, tense_cache, len(labels))
+                tense_labels, tense_color, tense_category = get_tense_properties_from_cache(t, tense_cache, len(labels))
 
-                labels.add(tense_label)
+                # multiple labels are expexcted, handle single tense labels
+                if not isinstance(tense_labels, tuple):
+                    tense_labels = (tense_labels,)
+
+                for tense_label in tense_labels:
+                    labels.add(tense_label)
+                    c_tenses.update([tense_label])
+                    tuples[n] += (tense_label,)
+                                    
+                    if tense_label not in colors:
+                        colors[tense_label] = tense_color
                 distinct_tensecats.add(tense_category)
-
-                c_tenses.update([tense_label])
                 c_tensecats.update([tense_category])
-                tuples[n] += (tense_label,)
                 n += 1
-
-                if tense_label not in colors:
-                    colors[tense_label] = tense_color
 
             counters_tenses[l] = c_tenses.most_common()
             counters_tensecats[l] = c_tensecats

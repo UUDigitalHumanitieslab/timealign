@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-
 import numbers
 from collections import defaultdict
 
@@ -104,7 +103,7 @@ def run_mds(scenario):
                 if language_annotations:
                     a = language_annotations[0]  # TODO: For now, we only have one Annotation per Fragment. This might change in the future.
                     a_language = language_to.language.iso
-                    a_label = get_label(a, language_to)
+                    a_label = get_labels(a, language_to)
                     if a_label:
                         annotated_labels[a_language] = a_label
 
@@ -114,7 +113,7 @@ def run_mds(scenario):
                 fragment_pks.append(fragment.pk)
 
                 # store label of source language
-                fragment_labels[fragment.language.iso].append(get_label(fragment, language_from))
+                fragment_labels[fragment.language.iso].extend(get_labels(fragment, language_from))
 
                 # store label(s) of target language(s)
                 for language in languages_to:
@@ -162,16 +161,16 @@ def run_mds(scenario):
     scenario.save()
 
 
-def get_label(model, scenario_language):
+def get_labels(model, scenario_language):
     result = ''
     if scenario_language.use_other_label:
         # Special case for Scenario's that have 'le-combine' in the title. TODO: remove this hack.
         if 'le-combine' in scenario_language.scenario.title and model.other_label in ['le1', 'le12']:
-            result = 'le'
+            result = ['le']
         else:
-            result = model.other_label
+            result = tuple(sorted(model.other_label.split(',')))
     elif model.tense:
-        result = model.tense.pk
+        result = [model.tense.pk]
     return result
 
 
