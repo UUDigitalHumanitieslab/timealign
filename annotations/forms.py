@@ -82,7 +82,7 @@ class AnnotationForm(forms.ModelForm):
 
     def clean_other_label(self):
         # store the labels selected in the front-end only labels field
-        return ','.join(self.data.getlist('labels'))
+        return ','.join(sorted(self.data.getlist('labels')))
 
 
 class LabelImportForm(forms.Form):
