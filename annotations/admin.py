@@ -105,6 +105,8 @@ class AnnotationAdmin(admin.ModelAdmin):
                     'annotated_by', 'annotated_at', )
     list_filter = ('is_no_target', 'is_translation', 'annotated_by', )
 
+    readonly_fields = ('words', 'alignment')
+
 
 class SubSentenceInline(admin.TabularInline):
     model = SubSentence
