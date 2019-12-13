@@ -13,6 +13,7 @@ media/
 ### IDE settings
 .idea/
 .vscode/
+TAGS
 
 ### Unit test / coverage reports
 .coverage
