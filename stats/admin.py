@@ -10,6 +10,9 @@ from .models import Scenario, ScenarioLanguage
 from .utils import run_mds, copy_scenario
 
 
+logger = logging.getLogger()
+
+
 class ScenarioLanguageInline(admin.TabularInline):
     model = ScenarioLanguage
     form = ScenarioLanguageForm
@@ -53,6 +56,8 @@ class ScenarioAdmin(DjangoObjectActions, admin.ModelAdmin):
         except ValueError:
             message = 'Something went wrong while running scenario {}'.format(obj.title)
             self.message_user(request, message, level=messages.ERROR)
+            logger.exception('Error running scenario {}'.format(obj.title))
+
     run_mds.label = '(Re)run Multidimensional Scaling'
     run_mds.short_description = '(Re)run Multidimensional Scaling'
 
