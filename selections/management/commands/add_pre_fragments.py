@@ -34,7 +34,7 @@ class Command(BaseCommand):
             PreProcessFragment.objects.filter(document__corpus=corpus).delete()
 
         for filename in options['filenames']:
-            with open(filename, 'rb') as f:
+            with open(filename, 'r') as f:
                 csv_reader = csv.reader(f, delimiter=';')
                 for n, row in enumerate(csv_reader):
                     # Retrieve language from header row

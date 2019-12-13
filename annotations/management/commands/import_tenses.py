@@ -21,7 +21,7 @@ class Command(BaseCommand):
             raise CommandError('Language {} does not exist'.format(options['language']))
 
         for filename in options['filenames']:
-            with open(filename, 'rb') as csvfile:
+            with open(filename, 'r') as csvfile:
                 try:
                     process_file(csvfile, language, options['use_other_label'], options['model'])
                     self.stdout.write('Successfully imported labels')

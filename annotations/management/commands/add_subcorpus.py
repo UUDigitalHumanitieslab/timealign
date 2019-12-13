@@ -31,7 +31,7 @@ class Command(BaseCommand):
         if options['delete']:
             SubSentence.objects.filter(subcorpus=subcorpus).delete()
 
-        with open(options['filename'], 'rb') as f:
+        with open(options['filename'], 'r') as f:
             try:
                 process_file(corpus, subcorpus, f)
                 self.stdout.write(self.style.SUCCESS('Successfully created SubCorpus {}'.format(subcorpus.title)))

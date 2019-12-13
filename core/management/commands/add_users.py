@@ -17,7 +17,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for filename in options['filenames']:
-            with codecs.open(filename, 'rb', 'utf-8') as csvfile:
+            with codecs.open(filename, 'r', 'utf-8') as csvfile:
                 csv_reader = unicode_csv_reader(csvfile, delimiter=';')
                 next(csv_reader)  # skip header
 

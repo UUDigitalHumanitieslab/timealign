@@ -118,7 +118,7 @@ class Command(BaseCommand):
                     fragment_cache[(fragment.document.pk, sentence.xml_id)].append(fragment)
 
         for filename in options['filenames']:
-            with open(filename, 'rb') as f:
+            with open(filename, 'r') as f:
                 csv_reader = csv.reader(f, delimiter=';')
                 languages_to = dict()
                 for n, row in enumerate(csv_reader):
