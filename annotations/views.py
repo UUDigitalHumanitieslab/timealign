@@ -110,6 +110,7 @@ class AnnotationMixin(SuccessMessageMixin, PermissionRequiredMixin):
         kwargs = super(AnnotationMixin, self).get_form_kwargs()
         kwargs['user'] = self.request.user
         kwargs['alignment'] = self.get_alignment()
+        kwargs['select_segment'] = self.request.session.get('select_segment', False)
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -124,6 +125,12 @@ class AnnotationMixin(SuccessMessageMixin, PermissionRequiredMixin):
     def get_alignments(self):
         """Retrieve related fields on Alignment to prevent extra queries"""
         return Alignment.objects.select_related('original_fragment', 'translated_fragment')
+
+    def form_valid(self, form):
+        # save user preferred selection tool on the session
+        self.request.session['select_segment'] = form.cleaned_data['select_segment']
+        return super().form_valid(form)
+
 
 
 class AnnotationUpdateMixin(AnnotationMixin):

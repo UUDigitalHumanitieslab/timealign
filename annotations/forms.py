@@ -16,7 +16,11 @@ class AnnotationForm(forms.ModelForm):
     # a frontend field for adding multiple labels, which are saved as a
     # comma separated string in other_label
     labels = LabelsField()
-    
+
+    # a hidden field used to remember the user's prefered selection tool
+    select_segment = forms.BooleanField(widget=forms.HiddenInput(),
+                                        required=False)
+
     class Meta:
         model = Annotation
         fields = [
@@ -24,6 +28,7 @@ class AnnotationForm(forms.ModelForm):
             'is_not_labeled_structure', 'is_not_same_structure',
             'tense', 'labels', 'other_label',
             'comments', 'words',
+            'select_segment'
         ]
         widgets = {
             'comments': forms.Textarea(attrs={'rows': 2}),
@@ -40,12 +45,14 @@ class AnnotationForm(forms.ModelForm):
         structure = self.alignment.original_fragment.get_formal_structure_display()
 
         self.user = kwargs.pop('user', None)
+        select_segment = kwargs.pop('select_segment', False)
 
         super(AnnotationForm, self).__init__(*args, **kwargs)
         self.fields['words'].queryset = Word.objects.filter(sentence__fragment=translated_fragment)
         self.fields['is_no_target'].label = self.fields['is_no_target'].label.format(label)
         self.fields['is_not_labeled_structure'].label = self.fields['is_not_labeled_structure'].label.format(structure)
         self.fields['tense'].queryset = Tense.objects.filter(language=self.alignment.translated_fragment.language)
+        self.fields['select_segment'].initial = select_segment
 
         # auto-complete labels based on all the existing labels in the corpus
         choices = set()

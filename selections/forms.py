@@ -7,11 +7,15 @@ from .models import Selection, Word
 
 class SelectionForm(forms.ModelForm):
     already_complete = forms.BooleanField(label='All targets have already been selected in this fragment', required=False)
+    # a hidden field used to remember the user's prefered selection tool
+    select_segment = forms.BooleanField(widget=forms.HiddenInput(),
+                                        required=False)
 
     class Meta:
         model = Selection
         fields = [
             'is_no_target', 'already_complete', 'tense', 'other_label', 'comments', 'words',
+            'select_segment'
         ]
         widgets = {
             'tense': forms.Select(),
@@ -26,9 +30,11 @@ class SelectionForm(forms.ModelForm):
         self.user = kwargs.pop('user', None)
 
         selected_words = self.fragment.selected_words()
+        select_segment = kwargs.pop('select_segment', False)
 
         super(SelectionForm, self).__init__(*args, **kwargs)
         self.fields['words'].queryset = Word.objects.filter(sentence__fragment=self.fragment)
+        self.fields['select_segment'].initial = select_segment
 
         # Allow to select for tense if the Corpus is tense/aspect-based.
         if self.fragment.document.corpus.tense_based:
