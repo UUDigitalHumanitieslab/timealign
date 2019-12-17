@@ -44,7 +44,7 @@ class Corpus(models.Model):
         'SubCorpus', blank=True, null=True, related_name='current_subcorpus', on_delete=models.SET_NULL)
 
     tense_based = models.BooleanField(
-        'Whether this Corpus is annotated for tense/aspect, or something else',
+        'Check this to use tenses for annotation, Uncheck to configure lables',
         default=True)
 
     check_structure = models.BooleanField(
@@ -83,6 +83,38 @@ class Document(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.corpus.title, self.title)
+
+
+class LabelCategory(models.Model):
+    """Used to define what kind of labels should be used per corpus,
+    and to group labels from different languages"""
+    title = models.CharField(max_length=200)
+    color = models.CharField(max_length=10)
+
+    # this could be changed into a many-to-many field to allow sharing labels between corpora
+    corpus = models.ForeignKey(Corpus, related_name='label_categories', on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = 'Label Categories'
+        unique_together = ('corpus', 'title', )
+
+    def symbol(self):
+        return self.title.lower()
+
+    def __str__(self):
+        return self.title
+
+
+class Label(models.Model):
+    """freeform annotation labels"""
+    title = models.CharField(max_length=200)
+    category = models.ForeignKey(LabelCategory, related_name='labels', on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('category', 'title', )
+
+    def __str__(self):
+        return self.title
 
 
 def corpus_path(instance, filename):
@@ -125,6 +157,8 @@ class Fragment(models.Model):
 
     tense = models.ForeignKey(Tense, null=True, on_delete=models.SET_NULL)
     other_label = models.CharField(max_length=200, blank=True)
+    labels = models.ManyToManyField(Label)
+
     formal_structure = models.PositiveIntegerField(
         'Formal structure', choices=FORMAL_STRUCTURES, default=FS_NONE)
     sentence_function = models.PositiveIntegerField(
@@ -373,6 +407,7 @@ class Annotation(models.Model):
 
     tense = models.ForeignKey(Tense, blank=True, null=True, on_delete=models.SET_NULL)
     other_label = models.CharField(max_length=200, blank=True)
+    labels = models.ManyToManyField(Label)
 
     class Meta:
         unique_together = ('alignment', 'annotated_by', )
@@ -392,11 +427,16 @@ class Annotation(models.Model):
         ordered_words = sorted(self.words.all(), key=lambda w: sort_key(w.xml_id, w.XML_TAG))
         return ' '.join([word.word for word in ordered_words])
 
-    def label(self, as_pk=False):
-        result = self.other_label
+    def labels_pretty(self):
+        labels = []
         if self.tense:
-            result = self.tense.pk if as_pk else self.tense.title
-        return result
+            labels.append(self.tense.title)
+        labels.extend(self.labels.values_list('title', flat=True))
+        return ', '.join(labels)
+
+    def label(self, as_pk=False):
+        # TODO: figure out as_pk, this probably breaks DocumentView and SourceView
+        return self.labels_pretty()
 
 
 class SubCorpus(models.Model):
