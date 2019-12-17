@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from django.urls import reverse
 from django.http import HttpResponseRedirect
@@ -7,7 +8,8 @@ import nested_admin
 
 from .forms import SubSentenceFormSet, SubSentenceForm
 from .models import Language, TenseCategory, Tense, Corpus, Document, Source, Fragment, \
-    Sentence, Word, Alignment, Annotation, SubCorpus, SubSentence
+    Sentence, Word, Alignment, Annotation, SubCorpus, SubSentence, Label, LabelCategory
+from stats.utils import COLOR_LIST
 
 
 @admin.register(Language)
@@ -24,12 +26,6 @@ class TenseCategoryAdmin(admin.ModelAdmin):
 class TenseAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'language', )
     list_filter = ('language', 'category', )
-
-
-@admin.register(Corpus)
-class CorpusAdmin(admin.ModelAdmin):
-    list_display = ('title', 'get_languages', 'get_annotators',
-                    'tense_based', 'check_structure', )
 
 
 class SourceInline(admin.TabularInline):
@@ -129,3 +125,37 @@ class SubCorpusAdmin(admin.ModelAdmin):
 class SubSentenceAdmin(admin.ModelAdmin):
     list_display = ('subcorpus', 'document', 'xml_id', )
     list_filter = ('subcorpus__corpus', )
+
+
+class CustomLabelCategoryForm(forms.ModelForm):
+    class Meta:
+        model = LabelCategory
+        fields = ('title', 'color')
+        widgets = {
+            'color': forms.Select(choices=zip(COLOR_LIST, COLOR_LIST))
+        }
+
+
+class LabelCategoryInline(admin.TabularInline):
+    model = LabelCategory
+    show_change_link = True
+    form = CustomLabelCategoryForm
+    extra = 0
+
+
+@admin.register(Corpus)
+class CorpusAdmin(admin.ModelAdmin):
+    list_display = ('title', 'get_languages', 'get_annotators',
+                    'tense_based', 'check_structure', )
+    inlines = [LabelCategoryInline]
+
+
+class LabelInline(admin.TabularInline):
+    model = Label
+
+
+@admin.register(LabelCategory)
+class LabelCategoryAdmin(admin.ModelAdmin):
+    list_display = ('corpus', 'title')
+    list_filter = ('corpus',)
+    inlines = [LabelInline]

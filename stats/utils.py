@@ -12,6 +12,32 @@ from django.db.models import Q
 from annotations.models import Fragment, Annotation, Tense
 
 
+COLOR_LIST = [
+    '#1f77b4',
+    '#ff7f0e',
+    '#2ca02c',
+    '#d62728',
+    '#9467bd',
+    '#8c564b',
+    '#e377c2',
+    '#7f7f7f',
+    '#bcbd22',
+    '#17becf',
+    '#aec7e8',
+    '#ffbb78',
+    '#98df8a',
+    '#ff9896',
+    '#c5b0d5',
+    '#c49c94',
+    '#f7b6d2',
+    '#f7b6d2',
+    '#dbdb8d',
+    '#9edae5',
+]
+
+
+
+
 def run_mds(scenario):
     corpus = scenario.corpus
     languages_from = scenario.languages(as_from=True).prefetch_related('tenses')
@@ -421,26 +447,4 @@ def get_color(tense, seq=0):
         return '#fd8f8e'
 
     else:
-        color_list = [
-            '#1f77b4',
-            '#ff7f0e',
-            '#2ca02c',
-            '#d62728',
-            '#9467bd',
-            '#8c564b',
-            '#e377c2',
-            '#7f7f7f',
-            '#bcbd22',
-            '#17becf',
-            '#aec7e8',
-            '#ffbb78',
-            '#98df8a',
-            '#ff9896',
-            '#c5b0d5',
-            '#c49c94',
-            '#f7b6d2',
-            '#f7b6d2',
-            '#dbdb8d',
-            '#9edae5',
-        ]
-        return color_list[seq % len(color_list)]
+        return COLOR_LIST[seq % len(COLOR_LIST)]
