@@ -9,7 +9,7 @@ from sklearn import manifold
 
 from django.db.models import Q
 
-from annotations.models import Fragment, Annotation, Tense
+from annotations.models import Fragment, Annotation, Tense, Label, LabelCategory
 
 
 COLOR_LIST = [
@@ -36,6 +36,11 @@ COLOR_LIST = [
 ]
 
 
+def exclude_incomplete_annotaions(annotations, scenario):
+    # we only check if there are enough labels, and don't actually check
+    # if there is exactly one label per label category. should be good enough for now.
+    target_length = LabelCategory.objects.filter(corpus=scenario.corpus).count()
+    return filter(lambda a: a.labels.count() == target_length, annotations)
 
 
 def run_mds(scenario):
@@ -78,7 +83,7 @@ def run_mds(scenario):
 
         # Fetch the Annotations
         annotations = Annotation.objects \
-            .exclude(Q(tense=None) & Q(other_label='')) \
+            .exclude(Q(tense=None) & Q(labels=None)) \
             .filter(is_no_target=False, is_translation=True) \
             .filter(alignment__original_fragment__in=fragments) \
             .select_related('alignment__original_fragment',
@@ -105,6 +110,8 @@ def run_mds(scenario):
                                                  Q(other_label__in=other_labels))
 
         annotations.filter(alignment__translated_fragment__language__in=languages)
+
+        annotations = exclude_incomplete_annotaions(annotations, scenario)
 
         # Create a dict of Fragment -> Annotations for lookup in the for-loop below
         annotations_dict = defaultdict(list)
@@ -136,10 +143,11 @@ def run_mds(scenario):
             # ... but only allow Fragments that have Annotations in all languages
             # unless the scenario allows partial tuples.
             if scenario.mds_allow_partial or len(annotated_labels) == len(languages_to):
+                labels = get_labels(fragment, language_from)
                 fragment_pks.append(fragment.pk)
 
                 # store label of source language
-                fragment_labels[fragment.language.iso].extend(get_labels(fragment, language_from))
+                fragment_labels[fragment.language.iso].append(labels)
 
                 # store label(s) of target language(s)
                 for language in languages_to:
@@ -188,16 +196,16 @@ def run_mds(scenario):
 
 
 def get_labels(model, scenario_language):
-    result = ''
+    result = []
     if scenario_language.use_other_label:
         # Special case for Scenario's that have 'le-combine' in the title. TODO: remove this hack.
         if 'le-combine' in scenario_language.scenario.title and model.other_label in ['le1', 'le12']:
             result = ['le']
         else:
-            result = tuple(sorted(model.other_label.split(',')))
-    elif model.tense:
-        result = [model.tense.pk]
-    return result
+            result = ['Label:{}'.format(label.pk) for label in model.labels.all()]
+    if model.tense:
+        result.append(['Tense:{}'.format(model.tense.pk)])
+    return tuple(result)
 
 
 def get_distance(array1, array2):
@@ -291,9 +299,18 @@ def get_tense_properties_from_cache(tense_identifier, tense_cache, seq=0):
     if tense_identifier in tense_cache:
         tense_label, tense_color, tense_category = tense_cache[tense_identifier]
     else:
-        tense_label, tense_color, tense_category = get_tense_properties(tense_identifier, seq)
+        _, tense_color, tense_category = get_tense_properties(tense_identifier, seq)
+        tense_label = ','.join(tense_cache[t][0] for t in tense_identifier)
         tense_cache[tense_identifier] = (tense_label, tense_color, tense_category)
     return tense_label, tense_color, tense_category
+
+
+def prepare_label_cache(corpus):
+    cache = {'Tense:{}'.format(t.pk): (t.title, t.category.color, t.category.title)
+             for t in Tense.objects.select_related('category')}
+    for i, label in enumerate(Label.objects.filter(category__in=corpus.label_categories.all())):
+        cache['Label:{}'.format(label.pk)] = get_tense_properties(label.title, i)
+    return cache
 
 
 def get_color(tense, seq=0):

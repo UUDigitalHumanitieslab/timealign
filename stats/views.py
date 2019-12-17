@@ -20,7 +20,7 @@ from core.utils import HTML
 
 from .filters import ScenarioFilter, FragmentFilter
 from .models import Scenario, ScenarioLanguage
-from .utils import get_tense_properties_from_cache
+from .utils import get_tense_properties_from_cache, prepare_label_cache
 
 
 class ScenarioList(LoginRequiredMixin, FilterView):
@@ -113,18 +113,14 @@ class MDSView(ScenarioDetail):
         tenses = scenario.mds_labels
         fragment_pks = scenario.mds_fragments
 
-        # Retrieve Fragments, but keep order intact
-        # Solution taken from https://stackoverflow.com/a/38390480
-        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(fragment_pks)])
-        fragments = list(Fragment.objects.filter(pk__in=fragment_pks).
-                         order_by(preserved).
-                         prefetch_related('sentence_set', 'sentence_set__word_set'))
+        # TODO: This is not an efficient solution, but it works. Will get back to the previous
+        # query.
+        fragments = [Fragment.objects.get(pk=pk) for pk in fragment_pks]
 
         # Turn the pickled model into a scatterplot dictionary
         random.seed(scenario.pk)  # Fixed seed for random jitter
-        j = defaultdict(list)
-        tense_cache = {t.pk: (t.title, t.category.color, t.category.title)
-                       for t in Tense.objects.select_related('category')}
+        points = defaultdict(list)
+        tense_cache = prepare_label_cache(self.object.corpus)
         label_set = set()
         for n, embedding in enumerate(model):
             # Retrieve x/y dimensions, add some jitter
@@ -137,6 +133,8 @@ class MDSView(ScenarioDetail):
 
             # Retrieve the labels of all languages in this context
             ts = [tenses[language][n] for language in list(tenses.keys())]
+            # flatten
+            ts = sum(map(list, ts), [])
             label_list = []
             for t in ts:
                 label, _, _ = get_tense_properties_from_cache(t, tense_cache, len(label_set))
@@ -144,14 +142,14 @@ class MDSView(ScenarioDetail):
                 label_set.add(label)
 
             # Add all values to the dictionary
-            j[tenses[display_language][n]].append({'x': x, 'y': y, 'tenses': label_list,
-                                                   'fragment_pk': fragment.pk, 'fragment': fragment.full(HTML)})
+            points[tenses[display_language][n]].append(
+                {'x': x, 'y': y, 'tenses': label_list, 'fragment_pk': fragment.pk, 'fragment': fragment.full(HTML)})
 
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
         matrix = []
         labels = set()
-        for tense, values in list(j.items()):
+        for tense, values in list(points.items()):
             tense_label, tense_color, _ = get_tense_properties_from_cache(tense, tense_cache, len(labels))
             labels.add(tense_label)
 
@@ -221,17 +219,17 @@ class DescriptiveStatsView(ScenarioDetail):
         colors = dict()
         distinct_tensecats = set()
 
-        tense_cache = {t.pk: (t.title, t.category.color, t.category.title)
-                       for t in Tense.objects.select_related('category')}
+        cache = prepare_label_cache(self.object.corpus)
+
         for l in languages:
             c_tenses = Counter()
             c_tensecats = Counter()
             n = 0
             labels = set()
             for t in tenses[l.iso]:
-                tense_labels, tense_color, tense_category = get_tense_properties_from_cache(t, tense_cache, len(labels))
+                tense_labels, tense_color, tense_category = get_tense_properties_from_cache(t, cache, len(labels))
 
-                # multiple labels are expexcted, handle single tense labels
+                # multiple labels are expected, handle single tense labels
                 if not isinstance(tense_labels, tuple):
                     tense_labels = (tense_labels,)
 
@@ -239,7 +237,7 @@ class DescriptiveStatsView(ScenarioDetail):
                     labels.add(tense_label)
                     c_tenses.update([tense_label])
                     tuples[n] += (tense_label,)
-                                    
+
                     if tense_label not in colors:
                         colors[tense_label] = tense_color
                 distinct_tensecats.add(tense_category)
