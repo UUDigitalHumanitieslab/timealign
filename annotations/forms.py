@@ -1,22 +1,33 @@
 from django import forms
 
-from .models import Annotation, Word, Language, Tense
+from .models import Annotation, Word, Language, Tense, Label
 from .management.commands.import_tenses import process_file
 
 
-class LabelsField(forms.MultipleChoiceField):
+class LabelField(forms.ModelChoiceField):
+    """A text field for labels with auto completion (provided by select2 in JS).
+    Tied to a specific LabelCategory"""
+
+    def __init__(self, category, *args, **kwargs):
+        self._category = category
+        kwargs['queryset'] = category.labels.all()
+        super().__init__(*args, **kwargs)
+        self.widget.attrs['class'] = 'labels-field'
+
     # MultipleChoiceField only allows entering predefined choices
     # however, we want users to be able to introduce new labels,
     # which is why it's necessary to override the default clean() method
     def clean(self, value):
-        return value
+        if value.isdigit():
+            # it's a pk of an existing label
+            return Label.objects.get(pk=int(value))
+        label, created = Label.objects.get_or_create(title=value, category=self._category)
+        if created:
+            label.save()
+        return label
 
 
 class AnnotationForm(forms.ModelForm):
-    # a frontend field for adding multiple labels, which are saved as a
-    # comma separated string in other_label
-    labels = LabelsField()
-
     # a hidden field used to remember the user's prefered selection tool
     select_segment = forms.BooleanField(widget=forms.HiddenInput(),
                                         required=False)
@@ -26,7 +37,7 @@ class AnnotationForm(forms.ModelForm):
         fields = [
             'is_no_target', 'is_translation',
             'is_not_labeled_structure', 'is_not_same_structure',
-            'tense', 'labels', 'other_label',
+            'tense', 'labels',
             'comments', 'words',
             'select_segment'
         ]
@@ -40,7 +51,6 @@ class AnnotationForm(forms.ModelForm):
         """
         self.alignment = kwargs.pop('alignment', None)
         translated_fragment = self.alignment.translated_fragment
-        corpus = self.alignment.original_fragment.document.corpus
         label = self.alignment.original_fragment.label()
         structure = self.alignment.original_fragment.get_formal_structure_display()
 
@@ -54,27 +64,32 @@ class AnnotationForm(forms.ModelForm):
         self.fields['tense'].queryset = Tense.objects.filter(language=self.alignment.translated_fragment.language)
         self.fields['select_segment'].initial = select_segment
 
-        # auto-complete labels based on all the existing labels in the corpus
-        choices = set()
-        existing_labels = Annotation.objects.filter(
-            alignment__original_fragment__document__corpus=corpus).values_list('other_label', flat=True).distinct()
-        for labels in existing_labels:
-            for label in labels.split(','):
-                choices.add(label)
-        self.fields['labels'].choices = [(x, x) for x in choices if x]
+        # add a label field for each label category
+        if self.instance.id:
+            for cat in self.corpus.label_categories.all():
+                existing_label = self.instance.labels.filter(category=cat).first()
+                field = LabelField(category=cat, initial=existing_label)
+                self.fields[cat.symbol()] = field
 
-        # when editing an existing annotation, populate the labels field
-        if kwargs['instance']:
-            self.fields['labels'].initial = kwargs['instance'].other_label.split(',')
+        # hide the original field for labels.
+        # we still need this field defined in AnnotationForm.fields, otherwise
+        # the value set in AnnotationForm.clean() will not be used when submitting the form.
+        del self.fields['labels']
 
-        if not corpus.check_structure:
+        if not self.corpus.check_structure:
             del self.fields['is_not_labeled_structure']
             del self.fields['is_not_same_structure']
 
         # Only allow to edit tense/other_label if the current User has this permission
         if not self.user.has_perm('annotations.edit_labels_in_interface'):
             del self.fields['tense']
-            del self.fields['other_label']
+
+        # Comments should be the last form field
+        self.fields.move_to_end('comments')
+
+    @property
+    def corpus(self):
+        return self.alignment.original_fragment.document.corpus
 
     def clean(self):
         """
@@ -82,14 +97,13 @@ class AnnotationForm(forms.ModelForm):
         - If is_translation is set, make sure Words have been selected
         """
         cleaned_data = super(AnnotationForm, self).clean()
+        # construct a value for Annotation.labels based on the individual label fields
+        fields = [cat.symbol() for cat in self.corpus.label_categories.all()]
+        cleaned_data['labels'] = [cleaned_data[field] for field in fields]
 
         if not cleaned_data['is_no_target'] and cleaned_data['is_translation']:
             if not cleaned_data['words']:
                 self.add_error('is_translation', 'Please select the words composing the translation.')
-
-    def clean_other_label(self):
-        # store the labels selected in the front-end only labels field
-        return ','.join(sorted(self.data.getlist('labels')))
 
 
 class LabelImportForm(forms.Form):
