@@ -71,7 +71,7 @@ class FragmentAdmin(DjangoObjectActions, nested_admin.NestedModelAdmin):
             'fields': ('language', 'document', )
         }),
         ('Annotation', {
-            'fields': ('tense', 'other_label', 'formal_structure', 'sentence_function', )
+            'fields': ('tense', 'labels', 'formal_structure', 'sentence_function', )
         }),
     )
 

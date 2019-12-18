@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 
-from annotations.models import Fragment, Word
+from annotations.models import Fragment, Word, Label
 
 
 class PreProcessFragment(Fragment):
@@ -41,6 +41,7 @@ class Selection(models.Model):
 
     tense = models.CharField('Tense', max_length=200, blank=True)
     other_label = models.CharField(max_length=200, blank=True)
+    labels = models.ManyToManyField(Label)
 
     resulting_fragment = models.ForeignKey(Fragment, related_name='fragment_preprocess', null=True,
                                            on_delete=models.SET_NULL)
