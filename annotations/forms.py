@@ -65,11 +65,10 @@ class AnnotationForm(forms.ModelForm):
         self.fields['select_segment'].initial = select_segment
 
         # add a label field for each label category
-        if self.instance.id:
-            for cat in self.corpus.label_categories.all():
-                existing_label = self.instance.labels.filter(category=cat).first()
-                field = LabelField(category=cat, initial=existing_label)
-                self.fields[cat.symbol()] = field
+        for cat in self.corpus.label_categories.all():
+            existing_label = self.instance.labels.filter(category=cat).first() if self.instance.id else None
+            field = LabelField(category=cat, initial=existing_label)
+            self.fields[cat.symbol()] = field
 
         # hide the original field for labels.
         # we still need this field defined in AnnotationForm.fields, otherwise
