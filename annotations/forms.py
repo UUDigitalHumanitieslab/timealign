@@ -67,7 +67,7 @@ class AnnotationForm(forms.ModelForm):
         # add a label field for each label category
         for cat in self.corpus.label_categories.all():
             existing_label = self.instance.labels.filter(category=cat).first() if self.instance.id else None
-            field = LabelField(category=cat, initial=existing_label)
+            field = LabelField(required=False, category=cat, initial=existing_label)
             self.fields[cat.symbol()] = field
 
         # hide the original field for labels.
