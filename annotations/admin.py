@@ -127,9 +127,9 @@ class SubSentenceAdmin(admin.ModelAdmin):
     list_filter = ('subcorpus__corpus', )
 
 
-class CustomLabelCategoryForm(forms.ModelForm):
+class CustomLabelForm(forms.ModelForm):
     class Meta:
-        model = LabelCategory
+        model = Label
         fields = ('title', 'color')
         widgets = {
             'color': forms.Select(choices=zip(COLOR_LIST, COLOR_LIST))
@@ -139,7 +139,6 @@ class CustomLabelCategoryForm(forms.ModelForm):
 class LabelCategoryInline(admin.TabularInline):
     model = LabelCategory
     show_change_link = True
-    form = CustomLabelCategoryForm
     extra = 0
 
 
@@ -152,6 +151,8 @@ class CorpusAdmin(admin.ModelAdmin):
 
 class LabelInline(admin.TabularInline):
     model = Label
+    form = CustomLabelForm
+    extra = 0
 
 
 @admin.register(LabelCategory)

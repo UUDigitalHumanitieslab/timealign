@@ -89,7 +89,6 @@ class LabelCategory(models.Model):
     """Used to define what kind of labels should be used per corpus,
     and to group labels from different languages"""
     title = models.CharField(max_length=200)
-    color = models.CharField(max_length=10)
 
     # this could be changed into a many-to-many field to allow sharing labels between corpora
     corpus = models.ForeignKey(Corpus, related_name='label_categories', on_delete=models.CASCADE)
@@ -109,6 +108,7 @@ class Label(models.Model):
     """freeform annotation labels"""
     title = models.CharField(max_length=200)
     category = models.ForeignKey(LabelCategory, related_name='labels', on_delete=models.CASCADE)
+    color = models.CharField(max_length=10, null=True)
 
     class Meta:
         unique_together = ('category', 'title', )
