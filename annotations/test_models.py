@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from .models import Language, Corpus, Document, Fragment, Sentence, Word, \
-    Alignment, Annotation, Tense, Label, LabelCategory
+    Alignment, Annotation, Tense, Label, LabelKey
 
 
 class BaseTestCase(TestCase):
@@ -81,8 +81,9 @@ class ModelsTestCase(BaseTestCase):
         self.assertEqual(annotation.selected_words(), 'has been')
 
     def test_label(self):
-        label_category = LabelCategory.objects.create(title='category', corpus=self.alignment.original_fragment.document.corpus)
-        label = Label.objects.create(title='other', category=label_category)
+        label_key = LabelKey.objects.create(title='key')
+        label_key.corpora.add(self.alignment.original_fragment.document.corpus)
+        label = Label.objects.create(title='other', key=label_key)
         annotation = Annotation.objects.create(alignment=self.alignment)
         annotation.labels.add(label)
         annotation.save()

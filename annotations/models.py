@@ -85,17 +85,17 @@ class Document(models.Model):
         return '{} - {}'.format(self.corpus.title, self.title)
 
 
-class LabelCategory(models.Model):
+class LabelKey(models.Model):
     """Used to define what kind of labels should be used per corpus,
     and to group labels from different languages"""
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200, unique=True)
 
     # this could be changed into a many-to-many field to allow sharing labels between corpora
-    corpus = models.ForeignKey(Corpus, related_name='label_categories', on_delete=models.CASCADE)
+    # corpus = models.ForeignKey(Corpus, related_name='label_keys', on_delete=models.CASCADE)
+    corpora = models.ManyToManyField(Corpus, related_name='label_keys')
 
     class Meta:
-        verbose_name_plural = 'Label Categories'
-        unique_together = ('corpus', 'title', )
+        verbose_name_plural = 'Label Keys'
 
     def symbol(self):
         return self.title.lower()
@@ -107,11 +107,11 @@ class LabelCategory(models.Model):
 class Label(models.Model):
     """freeform annotation labels"""
     title = models.CharField(max_length=200)
-    category = models.ForeignKey(LabelCategory, related_name='labels', on_delete=models.CASCADE)
+    key = models.ForeignKey(LabelKey, related_name='labels', on_delete=models.CASCADE)
     color = models.CharField(max_length=10, null=True)
 
     class Meta:
-        unique_together = ('category', 'title', )
+        unique_together = ('key', 'title', )
 
     def __str__(self):
         return self.title

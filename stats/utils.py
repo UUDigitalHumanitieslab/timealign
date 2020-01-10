@@ -9,7 +9,7 @@ from sklearn import manifold
 
 from django.db.models import Q
 
-from annotations.models import Fragment, Annotation, Tense, Label, LabelCategory
+from annotations.models import Fragment, Annotation, Tense, Label, LabelKey
 
 
 COLOR_LIST = [
@@ -38,8 +38,8 @@ COLOR_LIST = [
 
 def exclude_incomplete_annotaions(annotations, scenario):
     # we only check if there are enough labels, and don't actually check
-    # if there is exactly one label per label category. should be good enough for now.
-    target_length = LabelCategory.objects.filter(corpus=scenario.corpus).count()
+    # if there is exactly one label per label key. should be good enough for now.
+    target_length = LabelKey.objects.filter(corpora=scenario.corpus).count()
     return filter(lambda a: a.labels.count() == target_length, annotations)
 
 
@@ -296,11 +296,17 @@ def get_tense_properties(tense_identifier, seq=0):
 
 
 def get_tense_properties_from_cache(tense_identifier, tense_cache, seq=0):
+    if isinstance(tense_identifier, tuple) and len(tense_identifier) == 1:
+        tense_identifier = tense_identifier[0]
+
     if tense_identifier in tense_cache:
         tense_label, tense_color, tense_category = tense_cache[tense_identifier]
     else:
         _, tense_color, tense_category = get_tense_properties(tense_identifier, seq)
-        tense_label = ','.join(tense_cache[t][0] for t in tense_identifier)
+        if isinstance(tense_identifier, tuple):
+            tense_label = '<{}>'.format(','.join(tense_cache[t][0] for t in tense_identifier))
+        else:
+            tense_label = tense_cache[tense_identifier][0]
         tense_cache[tense_identifier] = (tense_label, tense_color, tense_category)
     return tense_label, tense_color, tense_category
 
@@ -308,8 +314,8 @@ def get_tense_properties_from_cache(tense_identifier, tense_cache, seq=0):
 def prepare_label_cache(corpus):
     cache = {'Tense:{}'.format(t.pk): (t.title, t.category.color, t.category.title)
              for t in Tense.objects.select_related('category')}
-    for i, label in enumerate(Label.objects.filter(category__in=corpus.label_categories.all())):
-        cache['Label:{}'.format(label.pk)] = get_tense_properties(label.title, i)
+    for i, label in enumerate(Label.objects.filter(key__corpora=corpus)):
+        cache['Label:{}'.format(label.pk)] = label.title, label.color, None
     return cache
 
 

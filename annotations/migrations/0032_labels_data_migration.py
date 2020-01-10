@@ -5,16 +5,17 @@ def migrate_labels(apps, schema_editor):
     Annotation = apps.get_model('annotations', 'Annotation')
     Fragment = apps.get_model('annotations', 'Fragment')
     Label = apps.get_model('annotations', 'Label')
-    LabelCategory = apps.get_model('annotations', 'LabelCategory')
+    LabelKey = apps.get_model('annotations', 'LabelKey')
 
     for f in Fragment.objects.exclude(other_label=None).exclude(other_label=''):
-        category, created = LabelCategory.objects.get_or_create(title='Other',
-                                                                corpus=f.document.corpus)
+        corpus = f.document.corpus
+        key, created = LabelKey.objects.get_or_create(title='Other ({})'.format(corpus.title))
+        key.corpora.add(corpus)
         if created:
-            category.save()
+            key.save()
 
         label, created = Label.objects.get_or_create(title=f.other_label,
-                                                     category=category)
+                                                     key=key)
         if created:
             label.save()
         f.labels.add(label)
@@ -22,13 +23,13 @@ def migrate_labels(apps, schema_editor):
 
     for a in Annotation.objects.exclude(other_label=None).exclude(other_label=''):
         corpus = a.alignment.original_fragment.document.corpus
-        category, created = LabelCategory.objects.get_or_create(title='Other',
-                                                                corpus=corpus)
+        key, created = LabelKey.objects.get_or_create(title='Other ({})'.format(corpus.title))
+        key.corpora.add(corpus)
         if created:
-            category.save()
+            key.save()
 
         label, created = Label.objects.get_or_create(title=a.other_label,
-                                                     category=category)
+                                                     key=key)
 
         if created:
             label.save()
@@ -39,20 +40,20 @@ def migrate_labels(apps, schema_editor):
 def remove_labels(apps, schema_editor):
     Annotation = apps.get_model('annotations', 'Annotation')
     Label = apps.get_model('annotations', 'Label')
-    LabelCategory = apps.get_model('annotations', 'LabelCategory')
+    LabelKey = apps.get_model('annotations', 'LabelKey')
 
     for a in Annotation.objects.exclude(labels=None):
         a.labels.set([])
         a.save()
 
     Label.objects.all().delete()
-    LabelCategory.objects.all().delete()
+    LabelKey.objects.all().delete()
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('annotations', '0031_auto_20191212_1106'),
+        ('annotations', '0031_auto_20200107_2217'),
     ]
 
     operations = [

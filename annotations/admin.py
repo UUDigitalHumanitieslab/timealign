@@ -8,7 +8,7 @@ import nested_admin
 
 from .forms import SubSentenceFormSet, SubSentenceForm
 from .models import Language, TenseCategory, Tense, Corpus, Document, Source, Fragment, \
-    Sentence, Word, Alignment, Annotation, SubCorpus, SubSentence, Label, LabelCategory
+    Sentence, Word, Alignment, Annotation, SubCorpus, SubSentence, Label, LabelKey
 from stats.utils import COLOR_LIST
 
 
@@ -136,8 +136,8 @@ class CustomLabelForm(forms.ModelForm):
         }
 
 
-class LabelCategoryInline(admin.TabularInline):
-    model = LabelCategory
+class LabelKeyInline(admin.TabularInline):
+    model = LabelKey
     show_change_link = True
     extra = 0
 
@@ -146,7 +146,6 @@ class LabelCategoryInline(admin.TabularInline):
 class CorpusAdmin(admin.ModelAdmin):
     list_display = ('title', 'get_languages', 'get_annotators',
                     'tense_based', 'check_structure', )
-    inlines = [LabelCategoryInline]
 
 
 class LabelInline(admin.TabularInline):
@@ -155,8 +154,8 @@ class LabelInline(admin.TabularInline):
     extra = 0
 
 
-@admin.register(LabelCategory)
-class LabelCategoryAdmin(admin.ModelAdmin):
-    list_display = ('corpus', 'title')
-    list_filter = ('corpus',)
+@admin.register(LabelKey)
+class LabelKeyAdmin(admin.ModelAdmin):
+    list_display = ('title',)
+    list_filter = ('corpora',)
     inlines = [LabelInline]

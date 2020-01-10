@@ -2,7 +2,7 @@ import numpy as np
 
 
 from annotations.test_models import BaseTestCase
-from annotations.models import Alignment, Annotation, Label, LabelCategory, Sentence, Fragment, Word
+from annotations.models import Alignment, Annotation, Label, LabelKey, Sentence, Fragment, Word
 from .models import Scenario, ScenarioLanguage
 from .utils import run_mds
 
@@ -35,9 +35,10 @@ class ScenarioTest(BaseTestCase):
         )
         l2.save()
 
-        self.label_category = LabelCategory.objects.create(title='Label Category', corpus=self.c1)
-        self.label_1 = Label.objects.create(title='Label1 (en)', category=self.label_category)
-        self.label_2 = Label.objects.create(title='Label2 (nl)', category=self.label_category)
+        self.label_key = LabelKey.objects.create(title='Label Key')
+        self.label_key.corpora.add(self.c1)
+        self.label_1 = Label.objects.create(title='Label1 (en)', key=self.label_key)
+        self.label_2 = Label.objects.create(title='Label2 (nl)', key=self.label_key)
 
         # assign label to fragment
         self.f_en.labels.add(self.label_1)
@@ -74,7 +75,7 @@ class ScenarioTest(BaseTestCase):
         self.assertEqual(self.scenario.mds_model, [[0.0, 0.0, 0.0, 0.0, 0.0]])  # 5 dimensions by default
 
     def test_mds_two_points(self):
-        label_3 = Label.objects.create(title='Label3 (nl)', category=self.label_category)
+        label_3 = Label.objects.create(title='Label3 (nl)', key=self.label_key)
 
         self.make_annotation_with_alignment(
             self.make_fragment('Another sentence', self.en, 'sentence', self.label_1),
@@ -92,9 +93,10 @@ class ScenarioTest(BaseTestCase):
         self.assertAlmostEqual(np.linalg.norm(points[0] - points[1]), 0.5)
 
     def test_mds_two_points_multiple_target_labels(self):
-        second_category = LabelCategory.objects.create(title='Second Label Category', corpus=self.c1)
-        label_3 = Label.objects.create(title='Label3 (nl)', category=second_category)
-        label_4 = Label.objects.create(title='Label4 (nl)', category=second_category)
+        second_key = LabelKey.objects.create(title='Second Label Key')
+        second_key.corpora.add(self.c1)
+        label_3 = Label.objects.create(title='Label3 (nl)', key=second_key)
+        label_4 = Label.objects.create(title='Label4 (nl)', key=second_key)
 
         self.annotation.labels.add(label_3)
         self.annotation.save()
@@ -118,15 +120,16 @@ class ScenarioTest(BaseTestCase):
         self.assertAlmostEqual(np.linalg.norm(points[0] - points[1]), 0.5)
 
     def test_ignore_incomplete_annotations(self):
-        # each annotation should have exactly one label assigned in each label categroy.
+        # each annotation should have exactly one label assigned in each label key.
         # we should avoid annotations that don't satisify that requirement.
-        second_category = LabelCategory.objects.create(title='Second Label Category', corpus=self.c1)
-        second_category.save()
+        second_key = LabelKey.objects.create(title='Second Label Key')
+        second_key.corpora.add(self.c1)
+        second_key.save()
 
         # this scenario contains two annotations: self.annotation from setUp and the one below.
         # the first annotation has a single label assigned in the translated language,
-        # while the second annotation has two labels assigned (from two different categories)
-        label_3 = Label.objects.create(title='Label3 (nl)', category=second_category)
+        # while the second annotation has two labels assigned (from two different keys)
+        label_3 = Label.objects.create(title='Label3 (nl)', key=second_key)
         annotation = self.make_annotation_with_alignment(
             self.make_fragment('Another sentence', self.en, 'sentence', self.label_1),
             self.make_fragment('Nog een zin', self.nl, 'zin'),

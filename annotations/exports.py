@@ -5,14 +5,14 @@ from .management.commands.utils import open_csv, open_xlsx, pad_list
 from core.utils import XLSX
 
 
-def labels_fixed(annotation, label_categories):
+def labels_fixed(annotation, label_keys):
     """
     Always returns as many labels as configured in the corpus.
     If the annotation is missing any of the required labels it will is replaced
     with an empty string.
     """
-    labels = dict(annotation.labels.order_by('category').values_list('category', 'title'))
-    return [labels.get(cat, '') for cat in label_categories]
+    labels = dict(annotation.labels.order_by('key').values_list('key', 'title'))
+    return [labels.get(cat, '') for cat in label_keys]
 
 
 def export_pos_file(filename, format_, corpus, language, subcorpus=None,
@@ -43,8 +43,8 @@ def export_pos_file(filename, format_, corpus, language, subcorpus=None,
                 annotations = annotations.filter(alignment__original_fragment__formal_structure=Fragment.FS_DIALOGUE)
 
         max_words = annotations.annotate(selected_words=Count('words')).aggregate(Max('selected_words'))['selected_words__max']
-        label_categories = corpus.label_categories.values_list('id', flat=True)
-        label_categories_titles = corpus.label_categories.values_list('title', flat=True)
+        label_keys = corpus.label_keys.values_list('id', flat=True)
+        label_keys_titles = corpus.label_keys.values_list('title', flat=True)
 
         annotations = annotations. \
             select_related('alignment__original_fragment',
@@ -62,7 +62,7 @@ def export_pos_file(filename, format_, corpus, language, subcorpus=None,
 
         if annotations:
             header = ['id', 'tense']
-            header.extend(label_categories_titles)
+            header.extend(label_keys_titles)
             header.extend(['is correct target?', 'is correct translation?'])
             header.extend(['w' + str(i + 1) for i in range(max_words)])
             header.extend(['pos' + str(i + 1) for i in range(max_words)])
@@ -84,7 +84,7 @@ def export_pos_file(filename, format_, corpus, language, subcorpus=None,
                               of.tense.title if of.tense else '', of.other_label, of.full(format_)]
                 writer.writerow([annotation.pk,
                                  annotation.tense.title if annotation.tense else ''] +
-                                labels_fixed(annotation, label_categories) +
+                                labels_fixed(annotation, label_keys) +
                                 ['no' if annotation.is_no_target else 'yes',
                                  'yes' if annotation.is_translation else 'no'] +
                                 pad_list(w, max_words) +

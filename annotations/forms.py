@@ -6,11 +6,11 @@ from .management.commands.import_tenses import process_file
 
 class LabelField(forms.ModelChoiceField):
     """A text field for labels with auto completion (provided by select2 in JS).
-    Tied to a specific LabelCategory"""
+    Tied to a specific LabelKey"""
 
-    def __init__(self, category, *args, **kwargs):
-        self._category = category
-        kwargs['queryset'] = category.labels.all()
+    def __init__(self, label_key, *args, **kwargs):
+        self._key = label_key
+        kwargs['queryset'] = label_key.labels.all()
         super().__init__(*args, **kwargs)
         self.widget.attrs['class'] = 'labels-field'
 
@@ -21,7 +21,7 @@ class LabelField(forms.ModelChoiceField):
         if value.isdigit():
             # it's a pk of an existing label
             return Label.objects.get(pk=int(value))
-        label, created = Label.objects.get_or_create(title=value, category=self._category)
+        label, created = Label.objects.get_or_create(title=value, key=self._key)
         if created:
             label.save()
         return label
@@ -64,11 +64,11 @@ class AnnotationForm(forms.ModelForm):
         self.fields['tense'].queryset = Tense.objects.filter(language=self.alignment.translated_fragment.language)
         self.fields['select_segment'].initial = select_segment
 
-        # add a label field for each label category
-        for cat in self.corpus.label_categories.all():
-            existing_label = self.instance.labels.filter(category=cat).first() if self.instance.id else None
-            field = LabelField(required=False, category=cat, initial=existing_label)
-            self.fields[cat.symbol()] = field
+        # add a label field for each label key
+        for key in self.corpus.label_keys.all():
+            existing_label = self.instance.labels.filter(key=key).first() if self.instance.id else None
+            field = LabelField(required=False, label_key=key, initial=existing_label)
+            self.fields[key.symbol()] = field
 
         # hide the original field for labels.
         # we still need this field defined in AnnotationForm.fields, otherwise
@@ -97,7 +97,7 @@ class AnnotationForm(forms.ModelForm):
         """
         cleaned_data = super(AnnotationForm, self).clean()
         # construct a value for Annotation.labels based on the individual label fields
-        fields = [cat.symbol() for cat in self.corpus.label_categories.all()]
+        fields = [cat.symbol() for cat in self.corpus.label_keys.all()]
         cleaned_data['labels'] = [cleaned_data[field] for field in fields]
 
         if not cleaned_data['is_no_target'] and cleaned_data['is_translation']:
