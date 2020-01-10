@@ -90,8 +90,6 @@ class LabelKey(models.Model):
     and to group labels from different languages"""
     title = models.CharField(max_length=200, unique=True)
 
-    # this could be changed into a many-to-many field to allow sharing labels between corpora
-    # corpus = models.ForeignKey(Corpus, related_name='label_keys', on_delete=models.CASCADE)
     corpora = models.ManyToManyField(Corpus, related_name='label_keys')
 
     class Meta:

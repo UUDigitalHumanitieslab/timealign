@@ -12,7 +12,7 @@ def labels_fixed(annotation, label_keys):
     with an empty string.
     """
     labels = dict(annotation.labels.order_by('key').values_list('key', 'title'))
-    return [labels.get(cat, '') for cat in label_keys]
+    return [labels.get(key, '') for key in label_keys]
 
 
 def export_pos_file(filename, format_, corpus, language, subcorpus=None,

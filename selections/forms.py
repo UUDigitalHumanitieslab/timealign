@@ -44,10 +44,10 @@ class SelectionForm(forms.ModelForm):
         else:
             del self.fields['tense']
             # add a label field for each label key
-            for cat in self.corpus.label_keys.all():
-                existing_label = self.instance.labels.filter(key=cat).first() if self.instance.id else None
-                field = LabelField(label_key=cat, initial=existing_label)
-                self.fields[cat.symbol()] = field
+            for key in self.corpus.label_keys.all():
+                existing_label = self.instance.labels.filter(key=key).first() if self.instance.id else None
+                field = LabelField(label_key=key, initial=existing_label)
+                self.fields[key.symbol()] = field
 
         # hide the original field for labels.
         # we still need this field defined in AnnotationForm.fields, otherwise
@@ -71,7 +71,7 @@ class SelectionForm(forms.ModelForm):
         """
         cleaned_data = super(SelectionForm, self).clean()
         # construct a value for Annotation.labels based on the individual label fields
-        fields = [cat.symbol() for cat in self.corpus.label_keys.all()]
+        fields = [key.symbol() for key in self.corpus.label_keys.all()]
         cleaned_data['labels'] = [cleaned_data[field] for field in fields]
 
         if not (cleaned_data.get('is_no_target', False) or cleaned_data.get('already_complete', False)):

@@ -97,7 +97,7 @@ class AnnotationForm(forms.ModelForm):
         """
         cleaned_data = super(AnnotationForm, self).clean()
         # construct a value for Annotation.labels based on the individual label fields
-        fields = [cat.symbol() for cat in self.corpus.label_keys.all()]
+        fields = [key.symbol() for key in self.corpus.label_keys.all()]
         cleaned_data['labels'] = [cleaned_data[field] for field in fields]
 
         if not cleaned_data['is_no_target'] and cleaned_data['is_translation']:
