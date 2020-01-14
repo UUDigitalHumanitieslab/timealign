@@ -87,11 +87,11 @@ class ModelsTestCase(BaseTestCase):
         annotation = Annotation.objects.create(alignment=self.alignment)
         annotation.labels.add(label)
         annotation.save()
-        self.assertEqual(annotation.label(), 'other')
+        self.assertEqual(annotation.get_labels(), 'other')
 
         annotation.tense = Tense.objects.get(language=self.nl, title='vtt')
         annotation.save()
-        self.assertEqual(annotation.label(), 'vtt, other')
+        self.assertEqual(annotation.get_labels(), 'vtt, other')
 
     def test_to_html(self):
         html = '<ul><li>This <strong>has</strong> always <strong>been</strong> hard to test </li></ul>'

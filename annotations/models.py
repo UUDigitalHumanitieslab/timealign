@@ -4,6 +4,28 @@ from django.db import models
 from core.utils import check_format, CSV, HTML, XLSX
 
 
+class HasLabelsMixin:
+    def labels_pretty(self):
+        labels = []
+        if self.tense:
+            labels.append(self.tense.title)
+        labels.extend(self.labels.values_list('title', flat=True))
+        return ', '.join(labels)
+
+    def get_labels(self, as_pk=False):
+        if as_pk:
+            if self.tense:
+                return ('Tense:{}'.format(self.tense.pk),)
+            else:
+                return tuple('Label:{}'.format(label.pk) for label in self.labels.all())
+        return self.labels_pretty()
+
+    @property
+    def label(self):
+        """used by admin views"""
+        return self.get_labels()
+
+
 class Language(models.Model):
     iso = models.CharField(max_length=2, unique=True)
     title = models.CharField(max_length=200)
@@ -127,7 +149,7 @@ class Source(models.Model):
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
 
 
-class Fragment(models.Model):
+class Fragment(models.Model, HasLabelsMixin):
     FS_NONE = 0
     FS_NARRATION = 1
     FS_DIALOGUE = 2
@@ -220,12 +242,6 @@ class Fragment(models.Model):
         check_format(format_)
 
         return '\n'.join([sentence.full(format_, annotation) for sentence in self.sentence_set.all()])
-
-    def label(self, as_pk=False):
-        result = self.other_label
-        if self.tense:
-            result = self.tense.pk if as_pk else self.tense.title
-        return result
 
     def get_formal_structure(self):
         result = Fragment.FS_NONE
@@ -374,7 +390,7 @@ class Alignment(models.Model):
         Fragment, null=True, related_name='translated', on_delete=models.CASCADE)
 
 
-class Annotation(models.Model):
+class Annotation(models.Model, HasLabelsMixin):
     is_no_target = models.BooleanField(
         'The selected words in the original fragment do not form an instance of (a/an) <em>{}</em>',
         default=False)
@@ -424,17 +440,6 @@ class Annotation(models.Model):
 
         ordered_words = sorted(self.words.all(), key=lambda w: sort_key(w.xml_id, w.XML_TAG))
         return ' '.join([word.word for word in ordered_words])
-
-    def labels_pretty(self):
-        labels = []
-        if self.tense:
-            labels.append(self.tense.title)
-        labels.extend(self.labels.values_list('title', flat=True))
-        return ', '.join(labels)
-
-    def label(self, as_pk=False):
-        # TODO: figure out as_pk, this probably breaks DocumentView and SourceView
-        return self.labels_pretty()
 
 
 class SubCorpus(models.Model):

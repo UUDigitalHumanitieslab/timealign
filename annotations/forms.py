@@ -51,7 +51,7 @@ class AnnotationForm(forms.ModelForm):
         """
         self.alignment = kwargs.pop('alignment', None)
         translated_fragment = self.alignment.translated_fragment
-        label = self.alignment.original_fragment.label()
+        label = self.alignment.original_fragment.get_labels()
         structure = self.alignment.original_fragment.get_formal_structure_display()
 
         self.user = kwargs.pop('user', None)

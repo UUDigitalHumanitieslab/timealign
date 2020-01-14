@@ -196,16 +196,12 @@ def run_mds(scenario):
 
 
 def get_labels(model, scenario_language):
-    result = []
     if scenario_language.use_other_label:
         # Special case for Scenario's that have 'le-combine' in the title. TODO: remove this hack.
         if 'le-combine' in scenario_language.scenario.title and model.other_label in ['le1', 'le12']:
-            result = ['le']
-        else:
-            result = ['Label:{}'.format(label.pk) for label in model.labels.all()]
-    if model.tense:
-        result.append(['Tense:{}'.format(model.tense.pk)])
-    return tuple(result)
+            return ['le']
+
+    return model.get_labels(as_pk=True)
 
 
 def get_distance(array1, array2):
