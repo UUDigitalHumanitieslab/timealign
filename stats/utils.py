@@ -315,7 +315,8 @@ def prepare_label_cache(corpus):
     cache = {'Tense:{}'.format(t.pk): (t.title, t.category.color, t.category.title)
              for t in Tense.objects.select_related('category')}
     for i, label in enumerate(Label.objects.filter(key__corpora=corpus)):
-        cache['Label:{}'.format(label.pk)] = label.title, label.color, None
+        color = label.color if label.color is not None else COLOR_LIST[i % len(COLOR_LIST)]
+        cache['Label:{}'.format(label.pk)] = label.title, color, None
     return cache
 
 
