@@ -113,9 +113,12 @@ class MDSView(ScenarioDetail):
         tenses = scenario.mds_labels
         fragment_pks = scenario.mds_fragments
 
-        # TODO: This is not an efficient solution, but it works. Will get back to the previous
+        # Solution taken from https://stackoverflow.com/a/38390480
         # query.
-        fragments = [Fragment.objects.get(pk=pk) for pk in fragment_pks]
+        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(fragment_pks)])
+        fragments = list(Fragment.objects.filter(pk__in=fragment_pks).
+                         order_by(preserved).
+                         prefetch_related('sentence_set', 'sentence_set__word_set'))
 
         # Turn the pickled model into a scatterplot dictionary
         random.seed(scenario.pk)  # Fixed seed for random jitter
