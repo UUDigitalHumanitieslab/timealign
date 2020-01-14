@@ -110,7 +110,7 @@ class MDSView(ScenarioDetail):
 
         # Retrieve pickled data
         model = scenario.mds_model
-        tenses = scenario.mds_labels
+        tenses = scenario.get_labels()
         fragment_pks = scenario.mds_fragments
 
         # Solution taken from https://stackoverflow.com/a/38390480
@@ -213,7 +213,7 @@ class DescriptiveStatsView(ScenarioDetail):
     def get_context_data(self, **kwargs):
         context = super(DescriptiveStatsView, self).get_context_data(**kwargs)
 
-        tenses = self.object.mds_labels
+        tenses = self.object.get_labels()
         languages = Language.objects.filter(iso__in=list(tenses.keys()))
 
         counters_tenses = dict()
@@ -320,7 +320,7 @@ class UpsetView(ScenarioDetail):
         context = super(UpsetView, self).get_context_data(**kwargs)
 
         scenario = self.object
-        tenses = scenario.mds_labels
+        tenses = scenario.get_labels()
         fragments = scenario.mds_fragments
 
         # Get the currently selected TenseCategory. We pick "Present Perfect" as the default here.
@@ -363,7 +363,7 @@ class SankeyView(ScenarioDetail):
         context = super(SankeyView, self).get_context_data(**kwargs)
 
         scenario = self.object
-        labels = scenario.mds_labels
+        labels = scenario.get_labels()
         fragment_pks = scenario.mds_fragments
         languages_from = scenario.languages(as_from=True)
         languages_to = scenario.languages(as_to=True)
@@ -422,8 +422,7 @@ class SankeyView(ScenarioDetail):
                 links[(link[0], link[1])].append(fragment_pks[n])
 
         # Convert the nodes into a dictionary
-        tense_cache = {t.pk: (t.title, t.category.color, t.category.title)
-                       for t in Tense.objects.select_related('category')}
+        tense_cache = prepare_label_cache(scenario.corpus)
         labels = set()
         new_nodes = []
         for node in nodes:

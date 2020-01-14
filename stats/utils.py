@@ -36,13 +36,6 @@ COLOR_LIST = [
 ]
 
 
-def exclude_incomplete_annotaions(annotations, scenario):
-    # we only check if there are enough labels, and don't actually check
-    # if there is exactly one label per label key. should be good enough for now.
-    target_length = LabelKey.objects.filter(corpora=scenario.corpus).count()
-    return filter(lambda a: a.labels.count() == target_length, annotations)
-
-
 def run_mds(scenario):
     corpus = scenario.corpus
     languages_from = scenario.languages(as_from=True).prefetch_related('tenses')
@@ -110,8 +103,6 @@ def run_mds(scenario):
                                                  Q(other_label__in=other_labels))
 
         annotations.filter(alignment__translated_fragment__language__in=languages)
-
-        annotations = exclude_incomplete_annotaions(annotations, scenario)
 
         # Create a dict of Fragment -> Annotations for lookup in the for-loop below
         annotations_dict = defaultdict(list)

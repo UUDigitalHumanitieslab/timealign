@@ -2,7 +2,7 @@ import numpy as np
 
 
 from annotations.test_models import BaseTestCase
-from annotations.models import Alignment, Annotation, Label, LabelKey, Sentence, Fragment, Word
+from annotations.models import Alignment, Annotation, Label, LabelKey, Sentence, Fragment, Word, Tense, TenseCategory
 from .models import Scenario, ScenarioLanguage
 from .utils import run_mds
 
@@ -11,7 +11,40 @@ def label_symbol(label):
     return 'Label:{}'.format(label.id)
 
 
-class ScenarioTest(BaseTestCase):
+class ScenarioTenseTest(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.scenario = Scenario.objects.create(title='Test Scenario',
+                                                description='Test Scenario', corpus=self.c1,)
+        self.scenario.documents.add(self.d)
+        self.scenario.save()
+
+        l1 = ScenarioLanguage(scenario=self.scenario, language=self.en,
+                              as_from=True, as_to=False, use_other_label=True)
+        l1.save()
+
+        l2 = ScenarioLanguage(scenario=self.scenario, language=self.nl,
+                              as_from=False, as_to=True, use_other_label=True)
+        l2.save()
+
+        self.tense_category = TenseCategory.objects.create(title='Tense Category')
+        self.tense_1 = Tense.objects.create(title='Source Tense', language=self.en, category=self.tense_category)
+        self.tense_2 = Tense.objects.create(title='Target Tense', language=self.nl, category=self.tense_category)
+
+        self.f_en.tense = self.tense_1
+        self.f_en.save()
+        self.annotation = Annotation.objects.create(alignment=self.alignment, tense=self.tense_2)
+        self.annotation.save()
+
+    def test_mds_single_point(self):
+        run_mds(self.scenario)
+        # expect one label per language
+        self.assertEqual(self.scenario.mds_labels['en'], [('Tense:{}'.format(self.tense_1.id),)])
+        self.assertEqual(self.scenario.mds_labels['nl'], [('Tense:{}'.format(self.tense_2.id),)])
+        self.assertEqual(self.scenario.mds_model, [[0.0, 0.0, 0.0, 0.0, 0.0]])  # 5 dimensions by default
+
+
+class ScenarioLabelsTest(BaseTestCase):
     def setUp(self):
         super().setUp()
         self.scenario = Scenario.objects.create(

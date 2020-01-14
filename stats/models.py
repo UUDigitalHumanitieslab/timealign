@@ -57,6 +57,13 @@ class Scenario(models.Model):
     def __str__(self):
         return self.title
 
+    def get_labels(self):
+        # format mds_labels in a way that works with the recent changes.
+        # this prevents us from having to rerun all existing scenarios.
+        if isinstance(next(iter(self.mds_labels.values()))[0], int):
+            return {key: [('Tense:{}'.format(x),) for x in value] for key, value in self.mds_labels.items()}
+        return self.mds_labels
+
 
 class ScenarioLanguage(models.Model):
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
