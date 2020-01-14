@@ -44,7 +44,7 @@ def export_pos_file(filename, format_, corpus, language, subcorpus=None,
 
         max_words = annotations.annotate(selected_words=Count('words')).aggregate(Max('selected_words'))['selected_words__max']
         label_keys = corpus.label_keys.values_list('id', flat=True)
-        label_keys_titles = corpus.label_keys.values_list('title', flat=True)
+        label_keys_titles = list(corpus.label_keys.values_list('title', flat=True))
 
         annotations = annotations. \
             select_related('alignment__original_fragment',
@@ -71,7 +71,7 @@ def export_pos_file(filename, format_, corpus, language, subcorpus=None,
             if add_indices:
                 header.extend(['index' + str(i + 1) for i in range(max_words)])
             header.extend(['comments', 'full fragment'])
-            header.extend(list(['source ' + x for x in ['id', 'document', 'sentences', 'words', 'tense', 'other label', 'fragment']]))
+            header.extend(list(['source ' + x for x in ['id', 'document', 'sentences', 'words', 'tense'] + label_keys_titles + ['fragment']]))
             writer.writerow(header, is_header=True)
 
             for annotation in annotations:
@@ -81,7 +81,7 @@ def export_pos_file(filename, format_, corpus, language, subcorpus=None,
                 tf = annotation.alignment.translated_fragment
                 of = annotation.alignment.original_fragment
                 of_details = [of.pk, of.document.title, of.xml_ids(), of.target_words(),
-                              of.tense.title if of.tense else '', of.other_label, of.full(format_)]
+                              of.tense.title if of.tense else ''] + labels_fixed(of, label_keys) + [of.full(format_)]
                 writer.writerow([annotation.pk,
                                  annotation.tense.title if annotation.tense else ''] +
                                 labels_fixed(annotation, label_keys) +
