@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from collections import defaultdict
+
 import rpy2.robjects as robjects
 from rpy2.robjects.packages import importr
 from rpy2.robjects import numpy2ri
@@ -37,13 +39,16 @@ class Command(BaseCommand):
         robjects.r.assign('mds_matrix', mds_matrix)
         robjects.r.assign('fragment_ids', robjects.StrVector(fragment_ids))
 
+        categories = defaultdict(list)
         for sl in scenario.languages().all():
             labels = []
             colors = []
             for tense in tenses[sl.language.iso]:
-                label, color, _ = get_tense_properties(tense, len(set(labels)))
+                label, color, category = get_tense_properties(tense, len(set(labels)))
                 labels.append(label)
                 colors.append(color)
+                print(tense)
+                categories[sl.language.iso].append(category)
 
             robjects.r.assign('labels_{}'.format(sl.language.iso), robjects.StrVector(labels))
             robjects.r.assign('colors_{}'.format(sl.language.iso), robjects.StrVector(colors))
@@ -53,6 +58,10 @@ class Command(BaseCommand):
             [('fragment_id', robjects.StrVector(fragment_ids))] +
             [(language, robjects.StrVector(tenses[language])) for language in language_keys])
         robjects.r.assign('df', robjects.DataFrame(df))
+        df_cat = container.OrdDict(
+            [('fragment_id', robjects.StrVector(fragment_ids))] +
+            [(language, robjects.StrVector(categories[language])) for language in language_keys])
+        robjects.r.assign('df_cat', robjects.DataFrame(df_cat))
 
         # Save the workspace
         filename = 's{}.RData'.format(scenario.pk)
