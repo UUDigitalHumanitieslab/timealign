@@ -281,6 +281,8 @@ def bind_annotations_to_xml(source):
     labels = set()
     failed_lookups = []
 
+    words_by_xml_id = dict()
+
     if annotations:
         # Attach Annotations to the XML tree
         for annotation in annotations:
@@ -290,12 +292,15 @@ def bind_annotations_to_xml(source):
 
             words = annotation.words.all()
             for w in words:
-                xml_w = tree.xpath('//w[@id="{}"]'.format(w.xml_id))
-                if len(xml_w) != 1:
-                    failed_lookups.append(annotation)
-                    continue
+                words_by_xml_id[w.xml_id] = dict(annotation=annotation, tense=tense_label, color=tense_color, found=False)
 
-                xml_w = xml_w[0]
+        for xml_w in tree.xpath('//w'):
+            word = words_by_xml_id.get(xml_w.get('id'))
+            if word:
+                word['found'] = True
+                annotation = word['annotation']
+                tense_label = word['tense']
+                tense_color = word['color']
                 xml_w.set('annotation-pk', str(annotation.pk))
                 xml_w.set('fragment-pk', str(annotation.alignment.original_fragment.pk))
                 xml_w.set('tense', tense_label)
@@ -320,14 +325,22 @@ def bind_annotations_to_xml(source):
             sentences = fragment.targets_prefetched
             for s in sentences:
                 for w in s.word_set.all():
-                    xml_w = tree.xpath('//w[@id="{}"]'.format(w.xml_id))
-                    if len(xml_w) != 1:
-                        failed_lookups.append(fragment)
-                        continue
+                    words_by_xml_id[w.xml_id] = dict(fragment=fragment, tense=tense_label, color=tense_color, found=False)
 
-                    xml_w = xml_w[0]
-                    xml_w.set('fragment-pk', str(fragment.pk))
-                    xml_w.set('tense', tense_label)
-                    xml_w.set('color', tense_color)
+
+        for xml_w in tree.xpath('//w'):
+            word = words_by_xml_id.get(xml_w.get('id'))
+            if word:
+                word['found'] = True
+                fragment = word['fragment']
+                tense_label = word['tense']
+                tense_color = word['color']
+                xml_w.set('fragment-pk', str(fragment.pk))
+                xml_w.set('tense', tense_label)
+                xml_w.set('color', tense_color)
+
+    for word in words_by_xml_id.values():
+        if not word['found']:
+            failed_lookups.append(word.get('fragment', word.get('annotation')))
 
     return tree, failed_lookups
