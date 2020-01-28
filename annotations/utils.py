@@ -282,6 +282,7 @@ def bind_annotations_to_xml(source):
     failed_lookups = []
 
     words_by_xml_id = dict()
+    all_w_elements = tree.xpath('//w')
 
     if annotations:
         # Attach Annotations to the XML tree
@@ -294,10 +295,9 @@ def bind_annotations_to_xml(source):
             for w in words:
                 words_by_xml_id[w.xml_id] = dict(annotation=annotation, tense=tense_label, color=tense_color, found=False)
 
-        for xml_w in tree.xpath('//w'):
+        for xml_w in all_w_elements:
             word = words_by_xml_id.get(xml_w.get('id'))
             if word:
-                word['found'] = True
                 annotation = word['annotation']
                 tense_label = word['tense']
                 tense_color = word['color']
@@ -305,6 +305,7 @@ def bind_annotations_to_xml(source):
                 xml_w.set('fragment-pk', str(annotation.alignment.original_fragment.pk))
                 xml_w.set('tense', tense_label)
                 xml_w.set('color', tense_color)
+                del words_by_xml_id[xml_w.get('id')]
     else:
         # Assume we are dealing with a source language here
         # Retrieve the fragments
@@ -328,19 +329,19 @@ def bind_annotations_to_xml(source):
                     words_by_xml_id[w.xml_id] = dict(fragment=fragment, tense=tense_label, color=tense_color, found=False)
 
 
-        for xml_w in tree.xpath('//w'):
+        for xml_w in all_w_elements:
             word = words_by_xml_id.get(xml_w.get('id'))
             if word:
-                word['found'] = True
                 fragment = word['fragment']
                 tense_label = word['tense']
                 tense_color = word['color']
                 xml_w.set('fragment-pk', str(fragment.pk))
                 xml_w.set('tense', tense_label)
                 xml_w.set('color', tense_color)
+                del words_by_xml_id[xml_w.get('id')]
 
     for word in words_by_xml_id.values():
-        if not word['found']:
-            failed_lookups.append(word.get('fragment', word.get('annotation')))
+        # all words that were assigned to the xml tree were removed from words_by_xml_id
+        failed_lookups.append(word.get('fragment', word.get('annotation')))
 
     return tree, failed_lookups
