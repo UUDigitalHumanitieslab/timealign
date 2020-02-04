@@ -82,7 +82,7 @@ def export_pos_file(filename, format_, corpus, language, subcorpus=None,
 
 
 def export_fragments_file(filename, format_, corpus, language,
-                          document=None, add_lemmata=False, add_indices=False):
+                          document=None, add_lemmata=False, add_indices=False, formal_structure=None):
     if format_ == XLSX:
         opener = open_xlsx
     else:
@@ -93,6 +93,12 @@ def export_fragments_file(filename, format_, corpus, language,
 
         if document is not None:
             fragments = fragments.filter(document__title=document)
+
+        if formal_structure:
+            if formal_structure == 'narration':
+                fragments = fragments.filter(formal_structure=Fragment.FS_NARRATION)
+            if formal_structure == 'dialogue':
+                fragments = fragments.filter(formal_structure=Fragment.FS_DIALOGUE)
 
         # Sort by document and sentence.xml_id
         fragments = sorted(fragments, key=lambda f: (f.document.title, f.sort_key()))

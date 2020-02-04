@@ -17,6 +17,7 @@ class Command(BaseCommand):
         parser.add_argument('--add_indices', action='store_true', dest='add_indices', default=False)
         parser.add_argument('--xlsx', action='store_true', dest='format_xlsx', default=False)
         parser.add_argument('--doc', dest='document')
+        parser.add_argument('--formal_structure')
 
     def handle(self, *args, **options):
         # Retrieve the Corpus from the database
@@ -34,4 +35,5 @@ class Command(BaseCommand):
             export_fragments_file(filename, format_, corpus, language,
                                   document=options['document'],
                                   add_lemmata=options['add_lemmata'],
-                                  add_indices=options['add_indices'])
+                                  add_indices=options['add_indices'],
+                                  formal_structure=options['formal_structure'])
