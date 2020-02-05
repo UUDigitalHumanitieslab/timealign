@@ -151,26 +151,3 @@ class ScenarioLabelsTest(BaseTestCase):
 
         points = [np.array(x) for x in self.scenario.mds_model]
         self.assertAlmostEqual(np.linalg.norm(points[0] - points[1]), 0.5)
-
-    def test_ignore_incomplete_annotations(self):
-        # each annotation should have exactly one label assigned in each label key.
-        # we should avoid annotations that don't satisify that requirement.
-        second_key = LabelKey.objects.create(title='Second Label Key')
-        second_key.corpora.add(self.c1)
-        second_key.save()
-
-        # this scenario contains two annotations: self.annotation from setUp and the one below.
-        # the first annotation has a single label assigned in the translated language,
-        # while the second annotation has two labels assigned (from two different keys)
-        label_3 = Label.objects.create(title='Label3 (nl)', key=second_key)
-        annotation = self.make_annotation_with_alignment(
-            self.make_fragment('Another sentence', self.en, 'sentence', self.label_1),
-            self.make_fragment('Nog een zin', self.nl, 'zin'),
-            self.label_2)
-        annotation.labels.add(label_3)
-        annotation.save()
-
-        run_mds(self.scenario)
-        self.assertEqual(self.scenario.mds_labels['en'], [(label_symbol(self.label_1),)])
-        self.assertEqual(self.scenario.mds_labels['nl'], [(label_symbol(self.label_2), label_symbol(label_3))])
-        self.assertEqual(self.scenario.mds_model, [[0.0, 0.0, 0.0, 0.0, 0.0]])
