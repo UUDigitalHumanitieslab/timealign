@@ -14,10 +14,11 @@ class HasLabelsMixin:
 
     def get_labels(self, as_pk=False):
         if as_pk:
+            out = []
             if self.tense:
-                return ('Tense:{}'.format(self.tense.pk),)
-            else:
-                return tuple('Label:{}'.format(label.pk) for label in self.labels.all())
+                out.append('Tense:{}'.format(self.tense.pk))
+            out.extend('Label:{}'.format(label.pk) for label in self.labels.all())
+            return tuple(out)
         return self.labels_pretty()
 
     @property
