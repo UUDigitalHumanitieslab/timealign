@@ -74,6 +74,11 @@ def run_mds(scenario):
         if language_from.tenses.exists():
             fragments = fragments.filter(tense__in=language_from.tenses.all())
 
+        # Filter on other_labels (if selected)
+        if language_from.use_other_label and language_from.other_labels:
+            other_labels = language_from.other_labels.split(',')
+            fragments = fragments.filter(other_label__in=other_labels)
+
         # Fetch the Annotations
         annotations = Annotation.objects \
             .exclude(Q(tense=None) & Q(labels=None)) \
