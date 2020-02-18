@@ -42,8 +42,9 @@ class Command(BaseCommand):
                 source = Source.objects.create(language=language, document=document)
 
                 path = corpus_path(source, document.title)
-                os.makedirs(os.path.split(path)[0], exist_ok=True)
-                shutil.copy(m, os.path.join(settings.MEDIA_ROOT, path))
+                media_path = os.path.join(settings.MEDIA_ROOT, path)
+                os.makedirs(os.path.split(media_path)[0], exist_ok=True)
+                shutil.copy(m, media_path)
                 source.xml_file = path
                 source.save()
                 print('Added {} for {}'.format(document.title, language.title))
