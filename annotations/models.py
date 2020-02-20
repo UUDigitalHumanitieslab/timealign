@@ -12,12 +12,13 @@ class HasLabelsMixin:
         labels.extend(self.labels.values_list('title', flat=True))
         return ', '.join(labels)
 
-    def get_labels(self, as_pk=False):
+    def get_labels(self, as_pk=False, include_tense=True, include_labels=False):
         if as_pk:
             out = []
-            if self.tense:
+            if include_tense and self.tense:
                 out.append('Tense:{}'.format(self.tense.pk))
-            out.extend('Label:{}'.format(label.pk) for label in self.labels.all())
+            if include_labels:
+                out.extend('Label:{}'.format(label.pk) for label in self.labels.all())
             return tuple(out)
         return self.labels_pretty()
 

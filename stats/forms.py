@@ -34,3 +34,6 @@ class ScenarioLanguageForm(forms.ModelForm):
 
         if not (cleaned_data['as_from'] or cleaned_data['as_to']):
             self.add_error('language', 'For each language in the Scenario, "as from" or "as to" has to be selected')
+
+        if not (cleaned_data['use_tenses'] or cleaned_data['use_labels']):
+            self.add_error('language', 'Please select at least one of "use tenses" and "use labels"')

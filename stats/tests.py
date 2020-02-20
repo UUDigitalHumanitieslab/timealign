@@ -20,11 +20,11 @@ class ScenarioTenseTest(BaseTestCase):
         self.scenario.save()
 
         l1 = ScenarioLanguage(scenario=self.scenario, language=self.en,
-                              as_from=True, as_to=False, use_other_label=True)
+                              as_from=True, as_to=False, use_labels=True)
         l1.save()
 
         l2 = ScenarioLanguage(scenario=self.scenario, language=self.nl,
-                              as_from=False, as_to=True, use_other_label=True)
+                              as_from=False, as_to=True, use_labels=True)
         l2.save()
 
         self.tense_category = TenseCategory.objects.create(title='Tense Category')
@@ -57,14 +57,14 @@ class ScenarioLabelsTest(BaseTestCase):
         l1 = ScenarioLanguage(
             scenario=self.scenario, language=self.en,
             as_from=True, as_to=False,
-            use_other_label=True
+            use_labels=True
         )
         l1.save()
 
         l2 = ScenarioLanguage(
             scenario=self.scenario, language=self.nl,
             as_from=False, as_to=True,
-            use_other_label=True
+            use_labels=True
         )
         l2.save()
 
