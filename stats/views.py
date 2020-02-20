@@ -137,11 +137,10 @@ class MDSView(ScenarioDetail):
             # Retrieve the labels of all languages in this context
             ts = [tenses[language][n] for language in list(tenses.keys())]
             # flatten
-            ts = sum(map(list, ts), [])
             label_list = []
             for t in ts:
                 label, _, _ = get_tense_properties_from_cache(t, tense_cache, len(label_set))
-                label_list.append(label)
+                label_list.append(label.replace('<', '&lt;').replace('>', '&gt;'))
                 label_set.add(label)
 
             # Add all values to the dictionary
