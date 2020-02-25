@@ -28,7 +28,7 @@
         {% if tenses %}
         {{ page_obj.paginator.count }} fragments with labels:
         <em>
-        {% for tense in tenses %} {{tense|safe|lower}}{%if not forloop.last%},{%endif%} {% endfor %}
+        {% for tense in tenses %} {{tense|safe}}{%if not forloop.last%},{%endif%} {% endfor %}
         </em>
         {% endif %}
     </p>

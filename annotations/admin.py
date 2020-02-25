@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from django.urls import reverse
 from django.http import HttpResponseRedirect
@@ -7,7 +8,8 @@ import nested_admin
 
 from .forms import SubSentenceFormSet, SubSentenceForm
 from .models import Language, TenseCategory, Tense, Corpus, Document, Source, Fragment, \
-    Sentence, Word, Alignment, Annotation, SubCorpus, SubSentence
+    Sentence, Word, Alignment, Annotation, SubCorpus, SubSentence, Label, LabelKey
+from stats.utils import COLOR_LIST
 
 
 @admin.register(Language)
@@ -24,12 +26,6 @@ class TenseCategoryAdmin(admin.ModelAdmin):
 class TenseAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'language', )
     list_filter = ('language', 'category', )
-
-
-@admin.register(Corpus)
-class CorpusAdmin(admin.ModelAdmin):
-    list_display = ('title', 'get_languages', 'get_annotators',
-                    'tense_based', 'check_structure', )
 
 
 class SourceInline(admin.TabularInline):
@@ -75,7 +71,7 @@ class FragmentAdmin(DjangoObjectActions, nested_admin.NestedModelAdmin):
             'fields': ('language', 'document', )
         }),
         ('Annotation', {
-            'fields': ('tense', 'other_label', 'formal_structure', 'sentence_function', )
+            'fields': ('tense', 'labels', 'formal_structure', 'sentence_function', )
         }),
     )
 
@@ -129,3 +125,37 @@ class SubCorpusAdmin(admin.ModelAdmin):
 class SubSentenceAdmin(admin.ModelAdmin):
     list_display = ('subcorpus', 'document', 'xml_id', )
     list_filter = ('subcorpus__corpus', )
+
+
+class CustomLabelForm(forms.ModelForm):
+    class Meta:
+        model = Label
+        fields = ('title', 'color')
+        widgets = {
+            'color': forms.Select(choices=zip(COLOR_LIST, COLOR_LIST))
+        }
+
+
+class LabelKeyInline(admin.TabularInline):
+    model = LabelKey
+    show_change_link = True
+    extra = 0
+
+
+@admin.register(Corpus)
+class CorpusAdmin(admin.ModelAdmin):
+    list_display = ('title', 'get_languages', 'get_annotators',
+                    'tense_based', 'check_structure', )
+
+
+class LabelInline(admin.TabularInline):
+    model = Label
+    form = CustomLabelForm
+    extra = 0
+
+
+@admin.register(LabelKey)
+class LabelKeyAdmin(admin.ModelAdmin):
+    list_display = ('title',)
+    list_filter = ('corpora',)
+    inlines = [LabelInline]

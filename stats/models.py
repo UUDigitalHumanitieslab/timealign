@@ -57,6 +57,13 @@ class Scenario(models.Model):
     def __str__(self):
         return self.title
 
+    def get_labels(self):
+        # format mds_labels in a way that works with the recent changes.
+        # this prevents us from having to rerun all existing scenarios.
+        if isinstance(next(iter(self.mds_labels.values()))[0], int):
+            return {key: [('Tense:{}'.format(x),) for x in value] for key, value in self.mds_labels.items()}
+        return self.mds_labels
+
 
 class ScenarioLanguage(models.Model):
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
@@ -66,8 +73,15 @@ class ScenarioLanguage(models.Model):
     as_to = models.BooleanField()
     tenses = models.ManyToManyField(Tense, blank=True)
 
-    use_other_label = models.BooleanField(default=False)  # if the Tense of a Fragment/Annotation is not used for the language
+    use_tenses = models.BooleanField(default=True)
+    use_labels = models.BooleanField(default=False)
+
     other_labels = models.CharField('Allowed labels, comma-separated', max_length=200, blank=True)
+
+    # backward compatability
+    @property
+    def use_other_label(self):
+        return self.use_labels
 
     def __str__(self):
         return 'Details for language {} in scenario {}'.format(self.language.title, self.scenario.title)

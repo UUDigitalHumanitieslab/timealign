@@ -1,7 +1,30 @@
 from django import forms
 
-from .models import Annotation, Word, Language, Tense
+from .models import Annotation, Word, Language, Tense, Label
 from .management.commands.import_tenses import process_file
+
+
+class LabelField(forms.ModelChoiceField):
+    """A text field for labels with auto completion (provided by select2 in JS).
+    Tied to a specific LabelKey"""
+
+    def __init__(self, label_key, *args, **kwargs):
+        self._key = label_key
+        kwargs['queryset'] = label_key.labels.all()
+        super().__init__(*args, **kwargs)
+        self.widget.attrs['class'] = 'labels-field'
+
+    # MultipleChoiceField only allows entering predefined choices
+    # however, we want users to be able to introduce new labels,
+    # which is why it's necessary to override the default clean() method
+    def clean(self, value):
+        if value.isdigit():
+            # it's a pk of an existing label
+            return Label.objects.get(pk=int(value))
+        label, created = Label.objects.get_or_create(title=value, key=self._key)
+        if created:
+            label.save()
+        return label
 
 
 class AnnotationForm(forms.ModelForm):
@@ -14,7 +37,7 @@ class AnnotationForm(forms.ModelForm):
         fields = [
             'is_no_target', 'is_translation',
             'is_not_labeled_structure', 'is_not_same_structure',
-            'tense', 'other_label',
+            'tense', 'labels',
             'comments', 'words',
             'select_segment'
         ]
@@ -28,8 +51,7 @@ class AnnotationForm(forms.ModelForm):
         """
         self.alignment = kwargs.pop('alignment', None)
         translated_fragment = self.alignment.translated_fragment
-        corpus = self.alignment.original_fragment.document.corpus
-        label = self.alignment.original_fragment.label()
+        label = self.alignment.original_fragment.get_labels()
         structure = self.alignment.original_fragment.get_formal_structure_display()
 
         self.user = kwargs.pop('user', None)
@@ -42,14 +64,31 @@ class AnnotationForm(forms.ModelForm):
         self.fields['tense'].queryset = Tense.objects.filter(language=self.alignment.translated_fragment.language)
         self.fields['select_segment'].initial = select_segment
 
-        if not corpus.check_structure:
+        # add a label field for each label key
+        for key in self.corpus.label_keys.all():
+            existing_label = self.instance.labels.filter(key=key).first() if self.instance.id else None
+            field = LabelField(required=False, label_key=key, initial=existing_label)
+            self.fields[key.symbol()] = field
+
+        # hide the original field for labels.
+        # we still need this field defined in AnnotationForm.fields, otherwise
+        # the value set in AnnotationForm.clean() will not be used when submitting the form.
+        del self.fields['labels']
+
+        if not self.corpus.check_structure:
             del self.fields['is_not_labeled_structure']
             del self.fields['is_not_same_structure']
 
         # Only allow to edit tense/other_label if the current User has this permission
         if not self.user.has_perm('annotations.edit_labels_in_interface'):
             del self.fields['tense']
-            del self.fields['other_label']
+
+        # Comments should be the last form field
+        self.fields.move_to_end('comments')
+
+    @property
+    def corpus(self):
+        return self.alignment.original_fragment.document.corpus
 
     def clean(self):
         """
@@ -57,6 +96,9 @@ class AnnotationForm(forms.ModelForm):
         - If is_translation is set, make sure Words have been selected
         """
         cleaned_data = super(AnnotationForm, self).clean()
+        # construct a value for Annotation.labels based on the individual label fields
+        fields = [key.symbol() for key in self.corpus.label_keys.all()]
+        cleaned_data['labels'] = [cleaned_data[field] for field in fields]
 
         if not cleaned_data['is_no_target'] and cleaned_data['is_translation']:
             if not cleaned_data['words']:

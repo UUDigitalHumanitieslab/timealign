@@ -1,5 +1,6 @@
 from django import forms
 
+from annotations.forms import LabelField
 from annotations.utils import get_tenses
 
 from .models import Selection, Word
@@ -14,7 +15,7 @@ class SelectionForm(forms.ModelForm):
     class Meta:
         model = Selection
         fields = [
-            'is_no_target', 'already_complete', 'tense', 'other_label', 'comments', 'words',
+            'is_no_target', 'already_complete', 'tense', 'labels', 'comments', 'words',
             'select_segment'
         ]
         widgets = {
@@ -42,10 +43,26 @@ class SelectionForm(forms.ModelForm):
             self.fields['tense'].widget.choices = tuple(zip(tenses, tenses))
         else:
             del self.fields['tense']
-            del self.fields['other_label']
+            # add a label field for each label key
+            for key in self.corpus.label_keys.all():
+                existing_label = self.instance.labels.filter(key=key).first() if self.instance.id else None
+                field = LabelField(label_key=key, initial=existing_label)
+                self.fields[key.symbol()] = field
+
+        # hide the original field for labels.
+        # we still need this field defined in AnnotationForm.fields, otherwise
+        # the value set in AnnotationForm.clean() will not be used when submitting the form.
+        del self.fields['labels']
 
         if not selected_words:
             del self.fields['already_complete']
+
+        # Comments should be the last form field
+        self.fields.move_to_end('comments')
+
+    @property
+    def corpus(self):
+        return self.fragment.document.corpus
 
     def clean(self):
         """
@@ -53,6 +70,9 @@ class SelectionForm(forms.ModelForm):
         - If is_no_target is not set, make sure Words have been selected
         """
         cleaned_data = super(SelectionForm, self).clean()
+        # construct a value for Annotation.labels based on the individual label fields
+        fields = [key.symbol() for key in self.corpus.label_keys.all()]
+        cleaned_data['labels'] = [cleaned_data[field] for field in fields]
 
         if not (cleaned_data.get('is_no_target', False) or cleaned_data.get('already_complete', False)):
             if not cleaned_data['words']:

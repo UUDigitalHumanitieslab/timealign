@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-
 import numbers
 from collections import defaultdict
 
@@ -10,7 +9,31 @@ from sklearn import manifold
 
 from django.db.models import Q
 
-from annotations.models import Fragment, Annotation, Tense
+from annotations.models import Fragment, Annotation, Tense, Label, LabelKey
+
+
+COLOR_LIST = [
+    '#1f77b4',
+    '#ff7f0e',
+    '#2ca02c',
+    '#d62728',
+    '#9467bd',
+    '#8c564b',
+    '#e377c2',
+    '#7f7f7f',
+    '#bcbd22',
+    '#17becf',
+    '#aec7e8',
+    '#ffbb78',
+    '#98df8a',
+    '#ff9896',
+    '#c5b0d5',
+    '#c49c94',
+    '#f7b6d2',
+    '#f7b6d2',
+    '#dbdb8d',
+    '#9edae5',
+]
 
 
 def run_mds(scenario):
@@ -48,12 +71,17 @@ def run_mds(scenario):
             fragments = fragments.filter(sentence_function=scenario.sentence_function)
 
         # Filter on Tenses (if selected)
-        if language_from.tenses.exists():
+        if language_from.use_tenses and language_from.tenses.exists():
             fragments = fragments.filter(tense__in=language_from.tenses.all())
+
+        # Filter on other_labels (if selected)
+        if language_from.use_labels and language_from.other_labels:
+            other_labels = language_from.other_labels.split(',')
+            fragments = fragments.filter(other_label__in=other_labels)
 
         # Fetch the Annotations
         annotations = Annotation.objects \
-            .exclude(Q(tense=None) & Q(other_label='')) \
+            .exclude(Q(tense=None) & Q(labels=None)) \
             .filter(is_no_target=False, is_translation=True) \
             .filter(alignment__original_fragment__in=fragments) \
             .select_related('alignment__original_fragment',
@@ -69,12 +97,12 @@ def run_mds(scenario):
         for language_to in languages_to:
             languages.append(language_to.language)
             # Filter on Tenses (if selected)
-            if language_to.tenses.exists():
+            if language_to.use_tenses and language_to.tenses.exists():
                 annotations = annotations.filter(~Q(alignment__translated_fragment__language=language_to.language) |
                                                  Q(tense__in=language_to.tenses.all()))
 
             # Filter on other_labels (if selected)
-            if language_to.use_other_label and language_to.other_labels:
+            if language_to.use_labels and language_to.other_labels:
                 other_labels = language_to.other_labels.split(',')
                 annotations = annotations.filter(~Q(alignment__translated_fragment__language=language_to.language) |
                                                  Q(other_label__in=other_labels))
@@ -104,17 +132,18 @@ def run_mds(scenario):
                 if language_annotations:
                     a = language_annotations[0]  # TODO: For now, we only have one Annotation per Fragment. This might change in the future.
                     a_language = language_to.language.iso
-                    a_label = get_label(a, language_to)
+                    a_label = get_labels(a, language_to)
                     if a_label:
                         annotated_labels[a_language] = a_label
 
             # ... but only allow Fragments that have Annotations in all languages
             # unless the scenario allows partial tuples.
             if scenario.mds_allow_partial or len(annotated_labels) == len(languages_to):
+                labels = get_labels(fragment, language_from)
                 fragment_pks.append(fragment.pk)
 
                 # store label of source language
-                fragment_labels[fragment.language.iso].append(get_label(fragment, language_from))
+                fragment_labels[fragment.language.iso].append(labels)
 
                 # store label(s) of target language(s)
                 for language in languages_to:
@@ -162,17 +191,13 @@ def run_mds(scenario):
     scenario.save()
 
 
-def get_label(model, scenario_language):
-    result = ''
-    if scenario_language.use_other_label:
+def get_labels(model, scenario_language):
+    if scenario_language.use_labels:
         # Special case for Scenario's that have 'le-combine' in the title. TODO: remove this hack.
         if 'le-combine' in scenario_language.scenario.title and model.other_label in ['le1', 'le12']:
-            result = 'le'
-        else:
-            result = model.other_label
-    elif model.tense:
-        result = model.tense.pk
-    return result
+            return ['le']
+
+    return model.get_labels(as_pk=True, include_tense=scenario_language.use_tenses, include_labels=scenario_language.use_labels)
 
 
 def get_distance(array1, array2):
@@ -263,12 +288,28 @@ def get_tense_properties(tense_identifier, seq=0):
 
 
 def get_tense_properties_from_cache(tense_identifier, tense_cache, seq=0):
+    if isinstance(tense_identifier, tuple) and len(tense_identifier) == 1:
+        tense_identifier = tense_identifier[0]
+
     if tense_identifier in tense_cache:
         tense_label, tense_color, tense_category = tense_cache[tense_identifier]
     else:
-        tense_label, tense_color, tense_category = get_tense_properties(tense_identifier, seq)
+        _, tense_color, tense_category = get_tense_properties(tense_identifier, seq)
+        if isinstance(tense_identifier, tuple):
+            tense_label = '<{}>'.format(','.join(tense_cache[t][0] for t in tense_identifier))
+        else:
+            tense_label = tense_cache[tense_identifier][0]
         tense_cache[tense_identifier] = (tense_label, tense_color, tense_category)
     return tense_label, tense_color, tense_category
+
+
+def prepare_label_cache(corpus):
+    cache = {'Tense:{}'.format(t.pk): (t.title, t.category.color, t.category.title)
+             for t in Tense.objects.select_related('category')}
+    for i, label in enumerate(Label.objects.filter(key__corpora=corpus)):
+        color = label.color if label.color is not None else COLOR_LIST[i % len(COLOR_LIST)]
+        cache['Label:{}'.format(label.pk)] = label.title, color, None
+    return cache
 
 
 def get_color(tense, seq=0):
@@ -422,26 +463,4 @@ def get_color(tense, seq=0):
         return '#fd8f8e'
 
     else:
-        color_list = [
-            '#1f77b4',
-            '#ff7f0e',
-            '#2ca02c',
-            '#d62728',
-            '#9467bd',
-            '#8c564b',
-            '#e377c2',
-            '#7f7f7f',
-            '#bcbd22',
-            '#17becf',
-            '#aec7e8',
-            '#ffbb78',
-            '#98df8a',
-            '#ff9896',
-            '#c5b0d5',
-            '#c49c94',
-            '#f7b6d2',
-            '#f7b6d2',
-            '#dbdb8d',
-            '#9edae5',
-        ]
-        return color_list[seq % len(color_list)]
+        return COLOR_LIST[seq % len(COLOR_LIST)]

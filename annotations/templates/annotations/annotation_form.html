@@ -130,11 +130,14 @@ $(function() {
     });
 
     $("select[name=words]").parent().hide();
+
     if ($("input[name=select_segment]").val() === "True") {
         clickHandler = selectSegment;
         $("#select-word").removeClass("active");
         $("#select-segment").addClass("active");
     }
+
+    $(".labels-field").select2({tags: true});
 });
 </script>
 {% endblock %}

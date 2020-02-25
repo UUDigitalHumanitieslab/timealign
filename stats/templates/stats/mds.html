@@ -342,7 +342,7 @@
                 var f = circle.__data__
                 if (f != undefined) {
                     if (within_distance(origin, f, distance)) {
-                        if (_.isEqual(f.tenses.sort(), origin.tenses.sort())) {
+                        if (_.isEqual(f.tenses.concat().sort(), origin.tenses.concat().sort())) {
                             brushedNodes.push(f.fragment_pk)
                             circle.className.baseVal = 'selected'
                             circle.className.animVal = 'selected'

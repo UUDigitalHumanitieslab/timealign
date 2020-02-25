@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from .models import Language, Corpus, Document, Fragment, Sentence, Word, Alignment, Annotation, Tense
+from .models import Language, Corpus, Document, Fragment, Sentence, Word, \
+    Alignment, Annotation, Tense, Label, LabelKey
 
 
 class BaseTestCase(TestCase):
@@ -80,14 +81,17 @@ class ModelsTestCase(BaseTestCase):
         self.assertEqual(annotation.selected_words(), 'has been')
 
     def test_label(self):
+        label_key = LabelKey.objects.create(title='key')
+        label_key.corpora.add(self.alignment.original_fragment.document.corpus)
+        label = Label.objects.create(title='other', key=label_key)
         annotation = Annotation.objects.create(alignment=self.alignment)
-        annotation.other_label = 'other'
+        annotation.labels.add(label)
         annotation.save()
-        self.assertEqual(annotation.label(), 'other')
+        self.assertEqual(annotation.get_labels(), 'other')
 
         annotation.tense = Tense.objects.get(language=self.nl, title='vtt')
         annotation.save()
-        self.assertEqual(annotation.label(), 'vtt')
+        self.assertEqual(annotation.get_labels(), 'vtt, other')
 
     def test_to_html(self):
         html = '<ul><li>This <strong>has</strong> always <strong>been</strong> hard to test </li></ul>'

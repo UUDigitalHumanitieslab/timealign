@@ -98,7 +98,7 @@ def generate_results(source_language, languages, corpus, documents, formal_struc
         row.append(fragment.document.title)
         row.append(fragment.first_sentence().xml_id)
         row.append(fragment.full(CSV))
-        row.append(fragment.label())
+        row.append(fragment.get_labels())
         row.append(' '.join([word.word for word in words]))
 
         # Retrieve the Annotations for this Fragment...
@@ -113,7 +113,7 @@ def generate_results(source_language, languages, corpus, documents, formal_struc
                 if annotation.alignment.translated_fragment.language == language:
                     w = [word.word for word in annotation.words.all()]
                     row.append(annotation.alignment.translated_fragment.full(CSV, annotation=annotation))
-                    row.append(annotation.label())
+                    row.append(annotation.get_labels())
                     row.extend(pad_list(w, max_words))
                     has_annotation = True
                     break

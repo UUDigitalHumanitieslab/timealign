@@ -5,6 +5,16 @@ from .management.commands.utils import open_csv, open_xlsx, pad_list
 from core.utils import XLSX
 
 
+def labels_fixed(annotation, label_keys):
+    """
+    Always returns as many labels as configured in the corpus.
+    If the annotation is missing any of the required labels it will is replaced
+    with an empty string.
+    """
+    labels = dict(annotation.labels.order_by('key').values_list('key', 'title'))
+    return [labels.get(key, '') for key in label_keys]
+
+
 def export_pos_file(filename, format_, corpus, language, subcorpus=None,
                     document=None, include_non_targets=False, add_lemmata=False, add_indices=False, formal_structure=None):
     if format_ == XLSX:
@@ -33,6 +43,8 @@ def export_pos_file(filename, format_, corpus, language, subcorpus=None,
                 annotations = annotations.filter(alignment__original_fragment__formal_structure=Fragment.FS_DIALOGUE)
 
         max_words = annotations.annotate(selected_words=Count('words')).aggregate(Max('selected_words'))['selected_words__max']
+        label_keys = corpus.label_keys.values_list('id', flat=True)
+        label_keys_titles = list(corpus.label_keys.values_list('title', flat=True))
 
         annotations = annotations. \
             select_related('alignment__original_fragment',
@@ -49,7 +61,9 @@ def export_pos_file(filename, format_, corpus, language, subcorpus=None,
                                                          a.alignment.original_fragment.sort_key()))
 
         if annotations:
-            header = ['id', 'tense', 'other label', 'is correct target?', 'is correct translation?']
+            header = ['id', 'tense']
+            header.extend(label_keys_titles)
+            header.extend(['is correct target?', 'is correct translation?'])
             header.extend(['w' + str(i + 1) for i in range(max_words)])
             header.extend(['pos' + str(i + 1) for i in range(max_words)])
             if add_lemmata:
@@ -57,7 +71,7 @@ def export_pos_file(filename, format_, corpus, language, subcorpus=None,
             if add_indices:
                 header.extend(['index' + str(i + 1) for i in range(max_words)])
             header.extend(['comments', 'full fragment'])
-            header.extend(list(['source ' + x for x in ['id', 'document', 'sentences', 'words', 'tense', 'other label', 'fragment']]))
+            header.extend(list(['source ' + x for x in ['id', 'document', 'sentences', 'words', 'tense'] + label_keys_titles + ['fragment']]))
             writer.writerow(header, is_header=True)
 
             for annotation in annotations:
@@ -67,11 +81,11 @@ def export_pos_file(filename, format_, corpus, language, subcorpus=None,
                 tf = annotation.alignment.translated_fragment
                 of = annotation.alignment.original_fragment
                 of_details = [of.pk, of.document.title, of.xml_ids(), of.target_words(),
-                              of.tense.title if of.tense else '', of.other_label, of.full(format_)]
+                              of.tense.title if of.tense else ''] + labels_fixed(of, label_keys) + [of.full(format_)]
                 writer.writerow([annotation.pk,
-                                 annotation.tense.title if annotation.tense else '',
-                                 annotation.other_label,
-                                 'no' if annotation.is_no_target else 'yes',
+                                 annotation.tense.title if annotation.tense else ''] +
+                                labels_fixed(annotation, label_keys) +
+                                ['no' if annotation.is_no_target else 'yes',
                                  'yes' if annotation.is_translation else 'no'] +
                                 pad_list(w, max_words) +
                                 pad_list(pos, max_words) +

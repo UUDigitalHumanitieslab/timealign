@@ -20,7 +20,7 @@ from core.utils import HTML
 
 from .filters import ScenarioFilter, FragmentFilter
 from .models import Scenario, ScenarioLanguage
-from .utils import get_tense_properties_from_cache
+from .utils import get_tense_properties_from_cache, prepare_label_cache
 
 
 class ScenarioList(LoginRequiredMixin, FilterView):
@@ -110,11 +110,11 @@ class MDSView(ScenarioDetail):
 
         # Retrieve pickled data
         model = scenario.mds_model
-        tenses = scenario.mds_labels
+        tenses = scenario.get_labels()
         fragment_pks = scenario.mds_fragments
 
-        # Retrieve Fragments, but keep order intact
         # Solution taken from https://stackoverflow.com/a/38390480
+        # query.
         preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(fragment_pks)])
         fragments = list(Fragment.objects.filter(pk__in=fragment_pks).
                          order_by(preserved).
@@ -122,9 +122,8 @@ class MDSView(ScenarioDetail):
 
         # Turn the pickled model into a scatterplot dictionary
         random.seed(scenario.pk)  # Fixed seed for random jitter
-        j = defaultdict(list)
-        tense_cache = {t.pk: (t.title, t.category.color, t.category.title)
-                       for t in Tense.objects.select_related('category')}
+        points = defaultdict(list)
+        tense_cache = prepare_label_cache(self.object.corpus)
         label_set = set()
         for n, embedding in enumerate(model):
             # Retrieve x/y dimensions, add some jitter
@@ -137,21 +136,22 @@ class MDSView(ScenarioDetail):
 
             # Retrieve the labels of all languages in this context
             ts = [tenses[language][n] for language in list(tenses.keys())]
+            # flatten
             label_list = []
             for t in ts:
                 label, _, _ = get_tense_properties_from_cache(t, tense_cache, len(label_set))
-                label_list.append(label)
+                label_list.append(label.replace('<', '&lt;').replace('>', '&gt;'))
                 label_set.add(label)
 
             # Add all values to the dictionary
-            j[tenses[display_language][n]].append({'x': x, 'y': y, 'tenses': label_list,
-                                                   'fragment_pk': fragment.pk, 'fragment': fragment.full(HTML)})
+            points[tenses[display_language][n]].append(
+                {'x': x, 'y': y, 'tenses': label_list, 'fragment_pk': fragment.pk, 'fragment': fragment.full(HTML)})
 
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
         matrix = []
         labels = set()
-        for tense, values in list(j.items()):
+        for tense, values in list(points.items()):
             tense_label, tense_color, _ = get_tense_properties_from_cache(tense, tense_cache, len(labels))
             labels.add(tense_label)
 
@@ -212,7 +212,7 @@ class DescriptiveStatsView(ScenarioDetail):
     def get_context_data(self, **kwargs):
         context = super(DescriptiveStatsView, self).get_context_data(**kwargs)
 
-        tenses = self.object.mds_labels
+        tenses = self.object.get_labels()
         languages = Language.objects.filter(iso__in=list(tenses.keys()))
 
         counters_tenses = dict()
@@ -221,26 +221,30 @@ class DescriptiveStatsView(ScenarioDetail):
         colors = dict()
         distinct_tensecats = set()
 
-        tense_cache = {t.pk: (t.title, t.category.color, t.category.title)
-                       for t in Tense.objects.select_related('category')}
+        cache = prepare_label_cache(self.object.corpus)
+
         for l in languages:
             c_tenses = Counter()
             c_tensecats = Counter()
             n = 0
             labels = set()
             for t in tenses[l.iso]:
-                tense_label, tense_color, tense_category = get_tense_properties_from_cache(t, tense_cache, len(labels))
+                tense_labels, tense_color, tense_category = get_tense_properties_from_cache(t, cache, len(labels))
 
-                labels.add(tense_label)
+                # multiple labels are expected, handle single tense labels
+                if not isinstance(tense_labels, tuple):
+                    tense_labels = (tense_labels,)
+
+                for tense_label in tense_labels:
+                    labels.add(tense_label)
+                    c_tenses.update([tense_label])
+                    tuples[n] += (tense_label,)
+
+                    if tense_label not in colors:
+                        colors[tense_label] = tense_color
                 distinct_tensecats.add(tense_category)
-
-                c_tenses.update([tense_label])
                 c_tensecats.update([tense_category])
-                tuples[n] += (tense_label,)
                 n += 1
-
-                if tense_label not in colors:
-                    colors[tense_label] = tense_color
 
             counters_tenses[l] = c_tenses.most_common()
             counters_tensecats[l] = c_tensecats
@@ -315,7 +319,7 @@ class UpsetView(ScenarioDetail):
         context = super(UpsetView, self).get_context_data(**kwargs)
 
         scenario = self.object
-        tenses = scenario.mds_labels
+        tenses = scenario.get_labels()
         fragments = scenario.mds_fragments
 
         # Get the currently selected TenseCategory. We pick "Present Perfect" as the default here.
@@ -358,7 +362,7 @@ class SankeyView(ScenarioDetail):
         context = super(SankeyView, self).get_context_data(**kwargs)
 
         scenario = self.object
-        labels = scenario.mds_labels
+        labels = scenario.get_labels()
         fragment_pks = scenario.mds_fragments
         languages_from = scenario.languages(as_from=True)
         languages_to = scenario.languages(as_to=True)
@@ -417,8 +421,7 @@ class SankeyView(ScenarioDetail):
                 links[(link[0], link[1])].append(fragment_pks[n])
 
         # Convert the nodes into a dictionary
-        tense_cache = {t.pk: (t.title, t.category.color, t.category.title)
-                       for t in Tense.objects.select_related('category')}
+        tense_cache = prepare_label_cache(scenario.corpus)
         labels = set()
         new_nodes = []
         for node in nodes:

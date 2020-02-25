@@ -4,6 +4,30 @@ from django.db import models
 from core.utils import check_format, CSV, HTML, XLSX
 
 
+class HasLabelsMixin:
+    def labels_pretty(self):
+        labels = []
+        if self.tense:
+            labels.append(self.tense.title)
+        labels.extend(self.labels.values_list('title', flat=True))
+        return ', '.join(labels)
+
+    def get_labels(self, as_pk=False, include_tense=True, include_labels=False):
+        if as_pk:
+            out = []
+            if include_tense and self.tense:
+                out.append('Tense:{}'.format(self.tense.pk))
+            if include_labels:
+                out.extend('Label:{}'.format(label.pk) for label in self.labels.all())
+            return tuple(out)
+        return self.labels_pretty()
+
+    @property
+    def label(self):
+        """used by admin views"""
+        return self.get_labels()
+
+
 class Language(models.Model):
     iso = models.CharField(max_length=2, unique=True)
     title = models.CharField(max_length=200)
@@ -44,7 +68,7 @@ class Corpus(models.Model):
         'SubCorpus', blank=True, null=True, related_name='current_subcorpus', on_delete=models.SET_NULL)
 
     tense_based = models.BooleanField(
-        'Whether this Corpus is annotated for tense/aspect, or something else',
+        'Check this to use tenses for annotation, Uncheck to configure lables',
         default=True)
 
     check_structure = models.BooleanField(
@@ -85,6 +109,36 @@ class Document(models.Model):
         return '{} - {}'.format(self.corpus.title, self.title)
 
 
+class LabelKey(models.Model):
+    """Used to define what kind of labels should be used per corpus,
+    and to group labels from different languages"""
+    title = models.CharField(max_length=200, unique=True)
+
+    corpora = models.ManyToManyField(Corpus, related_name='label_keys')
+
+    class Meta:
+        verbose_name_plural = 'Label Keys'
+
+    def symbol(self):
+        return self.title.lower()
+
+    def __str__(self):
+        return self.title
+
+
+class Label(models.Model):
+    """freeform annotation labels"""
+    title = models.CharField(max_length=200)
+    key = models.ForeignKey(LabelKey, related_name='labels', on_delete=models.CASCADE)
+    color = models.CharField(max_length=10, null=True)
+
+    class Meta:
+        unique_together = ('key', 'title', )
+
+    def __str__(self):
+        return self.title
+
+
 def corpus_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/<corpus>/<language>/<filename>
     return 'documents/{0}/{1}/{2}'.format(instance.document.corpus.pk, instance.language.iso, filename)
@@ -97,7 +151,7 @@ class Source(models.Model):
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
 
 
-class Fragment(models.Model):
+class Fragment(models.Model, HasLabelsMixin):
     FS_NONE = 0
     FS_NARRATION = 1
     FS_DIALOGUE = 2
@@ -125,6 +179,8 @@ class Fragment(models.Model):
 
     tense = models.ForeignKey(Tense, null=True, on_delete=models.SET_NULL)
     other_label = models.CharField(max_length=200, blank=True)
+    labels = models.ManyToManyField(Label)
+
     formal_structure = models.PositiveIntegerField(
         'Formal structure', choices=FORMAL_STRUCTURES, default=FS_NONE)
     sentence_function = models.PositiveIntegerField(
@@ -188,12 +244,6 @@ class Fragment(models.Model):
         check_format(format_)
 
         return '\n'.join([sentence.full(format_, annotation) for sentence in self.sentence_set.all()])
-
-    def label(self, as_pk=False):
-        result = self.other_label
-        if self.tense:
-            result = self.tense.pk if as_pk else self.tense.title
-        return result
 
     def get_formal_structure(self):
         result = Fragment.FS_NONE
@@ -342,7 +392,7 @@ class Alignment(models.Model):
         Fragment, null=True, related_name='translated', on_delete=models.CASCADE)
 
 
-class Annotation(models.Model):
+class Annotation(models.Model, HasLabelsMixin):
     is_no_target = models.BooleanField(
         'The selected words in the original fragment do not form an instance of (a/an) <em>{}</em>',
         default=False)
@@ -373,6 +423,7 @@ class Annotation(models.Model):
 
     tense = models.ForeignKey(Tense, blank=True, null=True, on_delete=models.SET_NULL)
     other_label = models.CharField(max_length=200, blank=True)
+    labels = models.ManyToManyField(Label)
 
     class Meta:
         unique_together = ('alignment', 'annotated_by', )
@@ -391,12 +442,6 @@ class Annotation(models.Model):
 
         ordered_words = sorted(self.words.all(), key=lambda w: sort_key(w.xml_id, w.XML_TAG))
         return ' '.join([word.word for word in ordered_words])
-
-    def label(self, as_pk=False):
-        result = self.other_label
-        if self.tense:
-            result = self.tense.pk if as_pk else self.tense.title
-        return result
 
 
 class SubCorpus(models.Model):
