@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 <xsl:template match="p | head">
-    <p>
+    <td>
     <xsl:for-each select="s">
         <xsl:for-each select="w">
             <xsl:choose>
@@ -48,6 +48,6 @@
             <xsl:text> </xsl:text>
         </xsl:for-each>
     </xsl:for-each>
-    </p>
+    </td>
 </xsl:template>
 </xsl:stylesheet>
