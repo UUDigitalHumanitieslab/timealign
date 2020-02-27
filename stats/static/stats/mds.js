@@ -320,6 +320,7 @@ function MDSView(flat_data, series_list) {
         scalingContainer.selectAll('.dot')
             .attr('cx', function (d) { return xMap(clusters[d.cluster]); })
             .attr('cy', function (d) { return yMap(clusters[d.cluster]); });
+        update_location_hash();
     }
 
     function rescale(a, b) {
@@ -329,7 +330,22 @@ function MDSView(flat_data, series_list) {
             .attr("r", function (d) { return cluster_size(clusters[d.cluster]); })
     }
 
+    function update_location_hash() {
+        window.location.hash = zoom.scale() + ',' + zoom.translate();
+    }
+
+    function configure_from_hash(hash) {
+        var parts = hash.split(',');
+        if (parts.length < 3) return;
+        var scale = parseFloat(parts[0]);
+        var translate = [parseFloat(parts[1]), parseFloat(parts[2])];
+
+        zoom.scale(scale).translate(translate);
+        zoomed();
+    }
+
     return {
-        rescale: rescale
+        rescale: rescale,
+        configure_from_hash: configure_from_hash
     };
 };

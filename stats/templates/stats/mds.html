@@ -105,6 +105,10 @@
         }
         $('#scale_a').change(rescale);
         $('#scale_b').change(rescale);
+
+        if (window.location.hash) {
+            mds.configure_from_hash(window.location.hash.substring(1));
+        }
     </script>
 
     <script>
@@ -118,7 +122,7 @@
                 var d1 = $("#d1 > .btn.active > input").val();
                 var d2 = $("#d2 > .btn.active > input").val();
                 var url = "{% url 'stats:mds' scenario.pk 'language' 1111 2222 %}";
-                window.location = url.replace("language", l).replace('1111', d1).replace('2222', d2);
+                window.location = url.replace("language", l).replace('1111', d1).replace('2222', d2) + window.location.hash;
             });
         });
 
