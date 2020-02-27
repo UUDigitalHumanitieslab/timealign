@@ -1,6 +1,7 @@
 import json
 import numbers
 import random
+import math
 from collections import Counter, OrderedDict, defaultdict
 from itertools import chain
 
@@ -125,10 +126,9 @@ class MDSView(ScenarioDetail):
         random.seed(scenario.pk)  # Fixed seed for random jitter
         points = defaultdict(list)
         clusters = []
-        cluster_coord_to_id = dict()
         tense_cache = prepare_label_cache(self.object.corpus)
         label_set = set()
-        for n, embedding in enumerate(model):
+        for n, embedding, cluster_size in self.reduce_model(model, tenses):
             # Retrieve x/y dimensions, add some jitter
             x = embedding[d1 - 1]
             y = 0
@@ -138,29 +138,80 @@ class MDSView(ScenarioDetail):
             if d2 > 0:  # Only add y if it's been requested
                 y += embedding[d2 - 1]
 
-            if (x, y) in cluster_coord_to_id:
-                cluster_id = cluster_coord_to_id[(x, y)]
-                clusters[cluster_id]['count'] += 1
-            else:
-                cluster_id = len(clusters)
-                clusters.append(dict(x=x, y=y, count=1))
-                cluster_coord_to_id[(x, y)] = cluster_id
+            cluster_id = len(clusters)
+            clusters.append(dict(x=x, y=y, count=cluster_size))
 
-                fragment = fragments[n]
+            fragment = fragments[n]
 
-                # Retrieve the labels of all languages in this context
-                ts = [tenses[language][n] for language in list(tenses.keys())]
-                # flatten
-                label_list = []
-                for t in ts:
-                    label, _, _ = get_tense_properties_from_cache(t, tense_cache, len(label_set))
-                    label_list.append(label.replace('<', '&lt;').replace('>', '&gt;'))
-                    label_set.add(label)
+            # Retrieve the labels of all languages in this context
+            ts = [tenses[language][n] for language in list(tenses.keys())]
+            # flatten
+            label_list = []
+            for t in ts:
+                label, _, _ = get_tense_properties_from_cache(t, tense_cache, len(label_set))
+                label_list.append(label.replace('<', '&lt;').replace('>', '&gt;'))
+                label_set.add(label)
 
-                # Add all values to the dictionary
-                points[tenses[display_language][n]].append(
-                    {'cluster': cluster_id, 'x': x, 'y': y, 'tenses': label_list, 'fragment_pk': fragment.pk, 'fragment': fragment.full(HTML)})
+            # Add all values to the dictionary
+            points[tenses[display_language][n]].append(
+                {'cluster': cluster_id, 'x': x, 'y': y, 'tenses': label_list, 'fragment_pk': fragment.pk, 'fragment': fragment.full(HTML)})
 
+        context['language'] = display_language
+        context['languages'] = Language.objects.filter(iso__in=list(tenses.keys())).order_by('iso')
+        context['d1'] = d1
+        context['d2'] = d2
+        context['max_dimensions'] = list(range(1, len(model[0]) + 1))  # We choose dimensions to be 1-based
+        context['stress'] = scenario.mds_stress
+
+        # flat data representation for d3
+        flat_data, series_list = self.prepare_flat_data(points, tense_cache)
+        context['flat_data'] = json.dumps(flat_data)
+        context['series_list'] = json.dumps(series_list)
+        context['clusters'] = json.dumps(clusters)
+
+        return context
+
+    def reduce_model(self, model, tenses):
+        cluster_count = defaultdict(int)
+        collect = dict()
+        # First, reduce points which overlap exactly
+        for n, embedding in enumerate(model):
+            t = tuple(embedding)
+            collect[t] = (n, t)
+            cluster_count[t] += 1
+
+        # Reduce points which are very close
+        skip = set()
+
+        # Distance helper function
+        def distance(origin):
+            def _distance(other):
+                d = 0
+                for a, b in zip(origin, other):
+                    d += (a - b) ** 2
+                d = math.sqrt(d)
+                return d < 0.1 and d > 0
+            return _distance
+
+        # Look among close points for overlap in label tuples
+        for coord, point in collect.items():
+            if coord in skip:
+                continue
+            close_by = filter(distance(coord), collect.keys())
+            for other_coord in close_by:
+                sequence = point[0]
+                tenses_a = tuple(tenses[language][sequence] for language in list(tenses.keys()))
+                other_sequence = collect[other_coord][0]
+                tenses_b = tuple(tenses[language][other_sequence] for language in list(tenses.keys()))
+
+                if tenses_a == tenses_b:
+                    skip.add(other_coord)
+                    # merge clusters
+                    cluster_count[coord] += cluster_count[other_coord]
+
+        return [(n, embedding, cluster_count[embedding]) for n, embedding in collect.values() if embedding not in skip]
+
+    def prepare_flat_data(self, points, tense_cache):
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
         matrix = []
@@ -174,15 +225,6 @@ class MDSView(ScenarioDetail):
             d['color'] = tense_color
             d['values'] = values
             matrix.append(d)
-
-        # Add all variables to the context
-        context['matrix'] = json.dumps(matrix)
-        context['language'] = display_language
-        context['languages'] = Language.objects.filter(iso__in=list(tenses.keys())).order_by('iso')
-        context['d1'] = d1
-        context['d2'] = d2
-        context['max_dimensions'] = list(range(1, len(model[0]) + 1))  # We choose dimensions to be 1-based
-        context['stress'] = scenario.mds_stress
 
         # flat data representation for d3
         flat_data = []
@@ -199,11 +241,7 @@ class MDSView(ScenarioDetail):
                         iter(fragment.items())
                     ))
                 )
-        context['flat_data'] = json.dumps(flat_data)
-        context['series_list'] = json.dumps(series_list)
-        context['clusters'] = json.dumps(clusters)
-
-        return context
+        return flat_data, series_list
 
     def post(self, request, pk, *args, **kwargs):
         request.session['scenario_pk'] = pk
