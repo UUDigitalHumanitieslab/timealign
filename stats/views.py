@@ -121,31 +121,45 @@ class MDSView(ScenarioDetail):
                          prefetch_related('sentence_set', 'sentence_set__word_set'))
 
         # Turn the pickled model into a scatterplot dictionary
+        jitter = self.request.GET.get('jitter', 'no') == 'yes'
         random.seed(scenario.pk)  # Fixed seed for random jitter
         points = defaultdict(list)
+        clusters = []
+        cluster_coord_to_id = dict()
         tense_cache = prepare_label_cache(self.object.corpus)
         label_set = set()
         for n, embedding in enumerate(model):
             # Retrieve x/y dimensions, add some jitter
-            x = embedding[d1 - 1] + random.uniform(-.5, .5) / 100
-            y = random.uniform(-.5, .5) / 100
+            x = embedding[d1 - 1]
+            y = 0
+            if jitter:
+                x += random.uniform(-.5, .5) / 100
+                y += random.uniform(-.5, .5) / 100
             if d2 > 0:  # Only add y if it's been requested
                 y += embedding[d2 - 1]
 
-            fragment = fragments[n]
+            if (x, y) in cluster_coord_to_id:
+                cluster_id = cluster_coord_to_id[(x, y)]
+                clusters[cluster_id]['count'] += 1
+            else:
+                cluster_id = len(clusters)
+                clusters.append(dict(x=x, y=y, count=1))
+                cluster_coord_to_id[(x, y)] = cluster_id
 
-            # Retrieve the labels of all languages in this context
-            ts = [tenses[language][n] for language in list(tenses.keys())]
-            # flatten
-            label_list = []
-            for t in ts:
-                label, _, _ = get_tense_properties_from_cache(t, tense_cache, len(label_set))
-                label_list.append(label.replace('<', '&lt;').replace('>', '&gt;'))
-                label_set.add(label)
+                fragment = fragments[n]
 
-            # Add all values to the dictionary
-            points[tenses[display_language][n]].append(
-                {'x': x, 'y': y, 'tenses': label_list, 'fragment_pk': fragment.pk, 'fragment': fragment.full(HTML)})
+                # Retrieve the labels of all languages in this context
+                ts = [tenses[language][n] for language in list(tenses.keys())]
+                # flatten
+                label_list = []
+                for t in ts:
+                    label, _, _ = get_tense_properties_from_cache(t, tense_cache, len(label_set))
+                    label_list.append(label.replace('<', '&lt;').replace('>', '&gt;'))
+                    label_set.add(label)
+
+                # Add all values to the dictionary
+                points[tenses[display_language][n]].append(
+                    {'cluster': cluster_id, 'x': x, 'y': y, 'tenses': label_list, 'fragment_pk': fragment.pk, 'fragment': fragment.full(HTML)})
 
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
@@ -187,6 +201,7 @@ class MDSView(ScenarioDetail):
                 )
         context['flat_data'] = json.dumps(flat_data)
         context['series_list'] = json.dumps(series_list)
+        context['clusters'] = json.dumps(clusters)
 
         return context
 

@@ -57,7 +57,8 @@ td {
 }
 
 .dot {
-  stroke: #000;
+  stroke: #555;
+  stroke-width: .8;
 }
 
 .grid {

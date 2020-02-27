@@ -7,7 +7,7 @@ function MDSView(flat_data, series_list) {
     // calculate axis boundaries
     calculate_domain(flat_data)
 
-    // setup x 
+    // setup x
     var xValue = function (d) { return d.x; }, // data -> value
         xScale = d3.scale.linear()
             .domain(calculate_domain(flat_data))
@@ -35,8 +35,14 @@ function MDSView(flat_data, series_list) {
     // add the graph canvas to the encapsulating div
     var svg = d3.select("#chart").append("svg")
         .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
+        .attr("height", height + margin.top + margin.bottom);
+
+    var clipPath = svg.append('clipPath').attr('id', 'clip')
+        .append('rect').attr('x', -margin.left).attr('y', -margin.top).attr('width', width).attr('height', height);
+
+    var container = svg
         .append("g")
+        .attr("class", "chart-container")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
         .on("mouseout", function (d) {
             tooltip.style("opacity", 0);
@@ -48,39 +54,43 @@ function MDSView(flat_data, series_list) {
         .style("opacity", 0);
 
     // x-axis
-    svg.append("g")
+    container.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
         .call(xAxis);
 
     // y-axis
-    svg.append("g")
+    container.append("g")
         .attr("class", "y axis")
         .call(yAxis);
 
     //Draw a grid
-    var yAxisGrid = yAxis.ticks(xScale.ticks().length)
+    var yAxisGrid = d3.svg.axis()
+        .scale(yScale)
+        .tickFormat(d3.format('.02f')).ticks(xScale.ticks().length)
         .tickSize(width, 0)
         .tickFormat("")
         .orient("right");
 
-    var xAxisGrid = xAxis.ticks(yScale.ticks().length)
+    var xAxisGrid = d3.svg.axis()
+        .scale(xScale)
+        .tickFormat(d3.format('.02f')).ticks(yScale.ticks().length)
         .tickSize(-height, 0)
         .tickFormat("")
         .orient("top");
 
-    svg.append("g")
+    container.append("g")
         .classed('y', true)
         .classed('grid', true)
         .call(yAxisGrid);
 
-    svg.append("g")
+    container.append("g")
         .classed('x', true)
         .classed('grid', true)
         .call(xAxisGrid);
 
     //always show top grid line
-    svg.append("line")
+    container.append("line")
         .classed('grid', true)
         .attr("x1", 0)
         .attr("y1", 0)
@@ -88,7 +98,7 @@ function MDSView(flat_data, series_list) {
         .attr("y2", 0);
 
     //always show right grid line
-    svg.append("line")
+    container.append("line")
         .classed('grid', true)
         .attr("x1", width)
         .attr("y1", 0)
@@ -193,34 +203,23 @@ function MDSView(flat_data, series_list) {
         .style("color", function (d) { return d.color; })
         .text(function (d) { return d.key; })
 
+
+    var scalingContainer = container
+        .append('g')
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        .attr("class", "scaling-container")
+        .attr("clip-path", "url(#clip)");
     //add data points
-    svg.selectAll(".dot")
+    scalingContainer.selectAll(".dot")
         .data(flat_data)
         .enter()
         .append("circle")
         .attr("class", "dot")
-        .attr("r", 3.5)
-        .attr("cx", xMap)
-        .attr("cy", yMap)
+        .attr("r", function (d) { return cluster_size(clusters[d.cluster]); })
+        .attr("cx", function (d) { return xMap(clusters[d.cluster]); })
+        .attr("cy", function (d) { return yMap(clusters[d.cluster]); })
         .style("fill", function (d) { return cValue(d); })
-        .style("stroke", function (d) { return cValue(d); })
-        .on("mouseover", function (d) {
-            // highlight node
-            d3.select(this).style("fill-opacity", .5);
-            // activate tooltip
-            tooltip.transition()
-                .duration(100)
-                .style("opacity", .9);
-            tooltip.html(
-                '<strong>' +
-                d.fragment_pk +
-                '</strong>: <em>' +
-                d.fragment +
-                '</em><br>' +
-                d.tenses)
-                .style("left", (d3.event.pageX + 10) + "px")
-                .style("top", (d3.event.pageY - 28) + "px");
-        })
+        .on("mouseover", show_tooltip)
         .on("mouseout", function (d) {
             d3.select(this).style("fill-opacity", 1);
             tooltip.style("opacity", 0);
@@ -228,7 +227,34 @@ function MDSView(flat_data, series_list) {
         .on("click", function (d) {
             $('.loading-overlay').show();
             select_neighbours(d);
-        })
+        });
+
+    function show_tooltip(d) {
+        // highlight node
+        d3.select(this).style("fill-opacity", .5);
+        // activate tooltip
+        tooltip.transition()
+            .duration(100)
+            .style("opacity", .9);
+        tooltip.html(
+            clusters[d.cluster].count + ' fragments<br/>' +
+            '<strong>' +
+            d.fragment_pk +
+            '</strong>: <em>' +
+            d.fragment +
+            '</em><br>' +
+            d.tenses)
+            .style("left", (d3.event.pageX + 10) + "px")
+            .style("top", (d3.event.pageY - 28) + "px");
+    }
+
+    var cluster_size_a;
+    var cluster_size_b;
+    function cluster_size(cluster) {
+        cluster_size_a = cluster_size_a || 0.5;
+        cluster_size_b = cluster_size_b || 1;
+        return Math.max(3, Math.pow(cluster.count, cluster_size_a) * cluster_size_b);
+    }
 
     function calculate_domain(dataset) {
         min = Math.min(
@@ -251,7 +277,7 @@ function MDSView(flat_data, series_list) {
     function select_neighbours(origin, distance = .1) {
         var brushedNodes = [];
 
-        var data = d3.selectAll('.dot')
+        var data = d3.selectAll('.dot');
         for (circle of data[0]) {
             var f = circle.__data__
             if (f != undefined) {
@@ -269,4 +295,41 @@ function MDSView(flat_data, series_list) {
         $('input[name="fragment_ids"]').val(JSON.stringify(brushedNodes));
         $('form[name="fragmentform"]').submit();
     }
+
+    var zoom = d3.behavior.zoom()
+        .x(xScale)
+        .y(yScale)
+        .scaleExtent([1, 10])
+        .on("zoom", zoomed);
+
+    // override d3's mouse position handler, to take our margins into account
+    var d3_mouse = d3.mouse;
+    d3.mouse = function (container) {
+        var loc = d3_mouse(container);
+        loc[0] -= margin.left;
+        loc[1] -= margin.top;
+        return loc;
+    }
+
+    d3.select('svg').call(zoom);
+    function zoomed() {
+        d3.select('.x.axis').call(xAxis);
+        d3.select('.y.axis').call(yAxis);
+        d3.select('.x.grid').call(xAxisGrid);
+        d3.select('.y.grid').call(yAxisGrid);
+        scalingContainer.selectAll('.dot')
+            .attr('cx', function (d) { return xMap(clusters[d.cluster]); })
+            .attr('cy', function (d) { return yMap(clusters[d.cluster]); });
+    }
+
+    function rescale(a, b) {
+        cluster_size_a = a;
+        cluster_size_b = b;
+        d3.selectAll('.dot')
+            .attr("r", function (d) { return cluster_size(clusters[d.cluster]); })
+    }
+
+    return {
+        rescale: rescale
+    };
 };

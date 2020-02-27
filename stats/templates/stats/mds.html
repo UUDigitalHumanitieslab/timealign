@@ -28,8 +28,12 @@
     <a href="{% url 'project' %}" class="alert-link">project summary</a> for more details.
 </div>
 
+
 <div id="chartLegend"></div>
 <div id="chart"></div>
+<h4>Scaling</h4>
+<input type="range" min="1" max="100" value="50" class="slider" id="scale_a">
+<input type="range" min="1" max="6" value="1" class="slider" id="scale_b">
 
 <h2>Filters</h2>
 
@@ -87,12 +91,20 @@
         </div>
     </div>
 
-    
 
     <script>
         var flat_data = {{ flat_data | safe}};
         var series_list = {{ series_list | safe}};
-        MDSView(flat_data, series_list);
+        var clusters = {{ clusters | safe }};
+        var mds = MDSView(flat_data, series_list, clusters);
+
+        function rescale() {
+            var a = $('#scale_a').val() / 100;
+            var b = $('#scale_b').val();
+            mds.rescale(a, b);
+        }
+        $('#scale_a').change(rescale);
+        $('#scale_b').change(rescale);
     </script>
 
     <script>
@@ -128,4 +140,5 @@
 
             return d <= distance
         }
-    </script> {% endblock %}
+    </script>
+{% endblock %}
