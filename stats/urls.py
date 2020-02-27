@@ -3,7 +3,7 @@ from django.conf.urls import url
 from .views import ScenarioList, ScenarioDetail, ScenarioManual, \
     MDSView, MDSViewOld, \
     DescriptiveStatsView, FragmentTableView, \
-    UpsetView, SankeyView, SankeyManual
+    FragmentTableViewMDS, UpsetView, SankeyView, SankeyManual
 
 urlpatterns = [
 
@@ -24,7 +24,8 @@ urlpatterns = [
     url(r'^mds_old/(?P<pk>\d+)/(?P<language>\w+)/(?P<d1>\d+)/(?P<d2>\d+)/$', MDSViewOld.as_view(), name='mds_old'),
 
     # Fragment Table
-    url(r'^mds/fragment_table/$', FragmentTableView.as_view(), name='fragment_table'),
+    url(r'^fragment_table/$', FragmentTableView.as_view(), name='fragment_table'),
+    url(r'^mds/fragment_table/$', FragmentTableViewMDS.as_view(), name='fragment_table_mds'),
 
     # Upset
     url(r'upset/(?P<pk>\d+)/$', UpsetView.as_view(), name='upset'),

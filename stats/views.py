@@ -247,7 +247,7 @@ class MDSView(ScenarioDetail):
         request.session['scenario_pk'] = pk
         request.session['fragment_pks'] = json.loads(request.POST['fragment_ids'])
         request.session['tenses'] = json.loads(request.POST['tenses'])
-        return HttpResponseRedirect(reverse('stats:fragment_table'))
+        return HttpResponseRedirect(reverse('stats:fragment_table_mds'))
 
 
 class MDSViewOld(MDSView):
@@ -333,6 +333,7 @@ class FragmentTableView(LoginRequiredMixin, FilterView):
 
     def get_queryset(self):
         fragment_pks = self.request.session.get('fragment_pks', [])
+
         target_words = Sentence.objects. \
             prefetch_related(Prefetch('word_set', queryset=Word.objects.filter(is_target=True)))
 
@@ -362,6 +363,38 @@ class FragmentTableView(LoginRequiredMixin, FilterView):
         context['tenses'] = tenses
 
         return context
+
+
+class FragmentTableViewMDS(FragmentTableView):
+    def get_queryset(self):
+        fragment_pks = self.request.session.get('fragment_pks', [])
+        scenario_pk = self.request.session.get('scenario_pk')
+
+        # Include all fragments whose label set matches that of the selected fragment
+        fragment = int(fragment_pks[0])
+        fragment_pks = []
+        scenario = Scenario.objects.get(pk=scenario_pk)
+        tenses = scenario.get_labels()
+        scenario_fragments = scenario.mds_fragments
+        sequence = scenario_fragments.index(fragment)
+        languages = tenses.keys()
+        label_key = tuple(tenses[lang][sequence] for lang in languages)
+
+        for seq, frag in enumerate(scenario_fragments):
+            labels = tuple(tenses[lang][seq] for lang in languages)
+            if labels == label_key:
+                fragment_pks.append(frag)
+
+        target_words = Sentence.objects. \
+            prefetch_related(Prefetch('word_set', queryset=Word.objects.filter(is_target=True)))
+
+        return Fragment.objects \
+            .filter(pk__in=fragment_pks) \
+            .select_related('document') \
+            .prefetch_related('sentence_set',
+                              'sentence_set__word_set',
+                              Prefetch('sentence_set', queryset=target_words, to_attr='targets_prefetched')) \
+            .order_by('pk')
 
 
 class UpsetView(ScenarioDetail):
