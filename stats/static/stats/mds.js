@@ -224,7 +224,7 @@ function MDSView(flat_data, series_list) {
             d3.select(this).style("fill-opacity", 1);
             tooltip.style("opacity", 0);
         })
-        .on("click", function (d) {
+        .on("dblclick", function (d) {
             $('.loading-overlay').show();
             select_neighbours(d);
         });
