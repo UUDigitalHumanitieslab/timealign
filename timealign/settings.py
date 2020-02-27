@@ -25,7 +25,12 @@ SECRET_KEY = 'bseaauw*m9wd2_h-&!+73yig@qd$r+th25k%*!79ckbvat)e3j'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
 ALLOWED_HOSTS = []
+if DEBUG:
+    from subprocess import Popen, PIPE
+    hostname = Popen(('hostname'), stdout=PIPE).communicate()[0].decode().strip()
+    ALLOWED_HOSTS.append(hostname)
 
 
 # Application definition
