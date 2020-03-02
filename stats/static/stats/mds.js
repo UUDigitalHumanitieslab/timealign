@@ -328,10 +328,11 @@ function MDSView(flat_data, series_list) {
         cluster_size_b = b;
         d3.selectAll('.dot')
             .attr("r", function (d) { return cluster_size(clusters[d.cluster]); })
+        update_location_hash();
     }
 
     function update_location_hash() {
-        window.location.hash = zoom.scale() + ',' + zoom.translate();
+        window.location.hash = [zoom.scale(), zoom.translate(), cluster_size_a, cluster_size_b].join(',');
     }
 
     function configure_from_hash(hash) {
@@ -339,7 +340,9 @@ function MDSView(flat_data, series_list) {
         if (parts.length < 3) return;
         var scale = parseFloat(parts[0]);
         var translate = [parseFloat(parts[1]), parseFloat(parts[2])];
+        var cluster_size = [parseFloat(parts[3]), parseFloat(parts[4])];
 
+        rescale.apply({}, cluster_size);
         zoom.scale(scale).translate(translate);
         zoomed();
     }
