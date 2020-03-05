@@ -31,6 +31,7 @@ if DEBUG:
     from subprocess import Popen, PIPE
     hostname = Popen(('hostname'), stdout=PIPE).communicate()[0].decode().strip()
     ALLOWED_HOSTS.append(hostname)
+    ALLOWED_HOSTS.append('127.0.0.1')
 
 
 # Application definition
