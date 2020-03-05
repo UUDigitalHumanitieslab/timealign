@@ -46,36 +46,51 @@
 </div>
 
 <div class="row">
-    Language:
-    <div id="language" class="btn-group" data-toggle="buttons">
-        {% for l in languages %}
-        <label class="btn btn-primary">
-            <input type="radio" name="options" value="{{ l.iso }}" autocomplete="off">{{ l.title }}
-        </label>
-        {% endfor %}
+    <div class="col-md-12">
+        <p>
+            Language:
+            <div id="language" class="btn-group" data-toggle="buttons">
+                {% for l in languages %}
+                <label class="btn btn-primary">
+                    <input type="radio" name="options" value="{{ l.iso }}" autocomplete="off">{{ l.title }}
+                </label>
+                {% endfor %}
+            </div>
+            Dimension on x-axis:
+            <div id="d1" class="btn-group" data-toggle="buttons">
+                {% for d in max_dimensions %}
+                <label class="btn btn-primary">
+                    <input type="radio" name="options" value="{{ d }}" autocomplete="off">{{ d }}
+                </label>
+                {% endfor %}
+            </div>
+            Dimension on y-axis:
+            <div id="d2" class="btn-group" data-toggle="buttons">
+                <label class="btn btn-primary">
+                    <input type="radio" name="options" value="0" autocomplete="off">&empty;
+                </label>
+                {% for d in max_dimensions %}
+                <label class="btn btn-primary">
+                    <input type="radio" name="options" value="{{ d }}" autocomplete="off">{{ d }}
+                </label>
+                {% endfor %}
+            </div>
+        </p>
+        <p>
+            Clustering:
+            <div id="clustering" class="btn-group" data-toggle="buttons">
+                <label class="btn btn-primary">
+                    <input type="radio" name="options" value="yes" autocomplete="off">Yes
+                </label>
+                <label class="btn btn-primary">
+                    <input type="radio" name="options" value="no" autocomplete="off">No
+                </label>
+            </div>
+            <button type="submit" class="btn btn-success">
+                {% bootstrap_icon "ok" %} Go!
+            </button>
+        </p>
     </div>
-    Dimension on x-axis:
-    <div id="d1" class="btn-group" data-toggle="buttons">
-        {% for d in max_dimensions %}
-        <label class="btn btn-primary">
-            <input type="radio" name="options" value="{{ d }}" autocomplete="off">{{ d }}
-        </label>
-        {% endfor %}
-    </div>
-    Dimension on y-axis:
-    <div id="d2" class="btn-group" data-toggle="buttons">
-        <label class="btn btn-primary">
-            <input type="radio" name="options" value="0" autocomplete="off">&empty;
-        </label>
-        {% for d in max_dimensions %}
-        <label class="btn btn-primary">
-            <input type="radio" name="options" value="{{ d }}" autocomplete="off">{{ d }}
-        </label>
-        {% endfor %}
-    </div>
-    <button type="submit" class="btn btn-success">
-        {% bootstrap_icon "ok" %} Go!
-    </button>
 </div>
 
     <!-- Form for posting data to server -->
@@ -116,13 +131,15 @@
             $("#language input[value='{{ language }}'").closest(".btn").addClass("active");
             $("#d1 input[value='{{ d1 }}'").closest(".btn").addClass("active");
             $("#d2 input[value='{{ d2 }}'").closest(".btn").addClass("active");
+            $("#clustering input[value='{{ clustering }}'").closest(".btn").addClass("active");
 
             $("button[type='submit']").click(function () {
                 var l = $("#language > .btn.active > input").val();
                 var d1 = $("#d1 > .btn.active > input").val();
                 var d2 = $("#d2 > .btn.active > input").val();
                 var url = "{% url 'stats:mds' scenario.pk 'language' 1111 2222 %}";
-                window.location = url.replace("language", l).replace('1111', d1).replace('2222', d2) + window.location.hash;
+                var clustering = $("#clustering > .btn.active > input").val();
+                window.location = url.replace("language", l).replace('1111', d1).replace('2222', d2) + '?clustering=' + clustering + window.location.hash;
             });
         });
 

@@ -3,7 +3,7 @@ import numbers
 import random
 import math
 from collections import Counter, OrderedDict, defaultdict
-from itertools import chain
+from itertools import chain, repeat, count
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
@@ -122,17 +122,25 @@ class MDSView(ScenarioDetail):
                          prefetch_related('sentence_set', 'sentence_set__word_set'))
 
         # Turn the pickled model into a scatterplot dictionary
-        jitter = self.request.GET.get('jitter', 'no') == 'yes'
-        random.seed(scenario.pk)  # Fixed seed for random jitter
         points = defaultdict(list)
         clusters = []
         tense_cache = prepare_label_cache(self.object.corpus)
         label_set = set()
-        for n, embedding, cluster_size in self.reduce_model(model, tenses):
+
+        clustering = self.request.GET.get('clustering', 'yes') == 'yes'
+        if clustering:
+            reduced = self.reduce_model(model, tenses)
+        else:
+            # Keep original data points as-is
+            # (which is the same as having all clusters as size 1)
+            reduced = zip(count(), model, repeat(1))
+            random.seed(scenario.pk)  # Fixed seed for random jitter
+
+        for n, embedding, cluster_size in reduced:
             # Retrieve x/y dimensions, add some jitter
             x = embedding[d1 - 1]
             y = 0
-            if jitter:
+            if not clustering:
                 x += random.uniform(-.5, .5) / 100
                 y += random.uniform(-.5, .5) / 100
             if d2 > 0:  # Only add y if it's been requested
@@ -160,6 +168,7 @@ class MDSView(ScenarioDetail):
         context['languages'] = Language.objects.filter(iso__in=list(tenses.keys())).order_by('iso')
         context['d1'] = d1
         context['d2'] = d2
+        context['clustering'] = 'yes' if clustering else 'no'
         context['max_dimensions'] = list(range(1, len(model[0]) + 1))  # We choose dimensions to be 1-based
         context['stress'] = scenario.mds_stress
 
