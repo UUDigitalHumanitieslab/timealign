@@ -1,3 +1,4 @@
+import os
 from collections import defaultdict
 from tempfile import NamedTemporaryFile
 
@@ -8,6 +9,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count, Prefetch
 from django.urls import reverse
 from django.http import HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.template.loader import render_to_string
 from django.views import generic
@@ -130,7 +132,6 @@ class AnnotationMixin(SuccessMessageMixin, PermissionRequiredMixin):
         # save user preferred selection tool on the session
         self.request.session['select_segment'] = form.cleaned_data['select_segment']
         return super().form_valid(form)
-
 
 
 class AnnotationUpdateMixin(AnnotationMixin):
@@ -300,6 +301,8 @@ class CorpusDetail(LoginRequiredMixin, generic.DetailView):
 ############
 # CRUD Document
 ############
+
+
 class DocumentDetail(LoginRequiredMixin, generic.DetailView):
     model = Document
 
@@ -473,7 +476,7 @@ class PrepareDownload(generic.TemplateView):
         return context
 
 
-class ExportPOSDownload(PermissionRequiredMixin, generic.View):
+class ExportPOSPrepare(PermissionRequiredMixin, generic.View):
     permission_required = 'annotations.change_annotation'
 
     def get(self, request, *args, **kwargs):
@@ -483,18 +486,35 @@ class ExportPOSDownload(PermissionRequiredMixin, generic.View):
         document_id = self.request.GET['document']
         include_non_targets = 'include_non_targets' in self.request.GET
 
-        with NamedTemporaryFile() as file_:
-            corpus = Corpus.objects.get(pk=int(corpus_id))
-            subcorpus = SubCorpus.objects.get(pk=int(subcorpus_id)) if subcorpus_id != 'all' else None
-            document = Document.objects.get(pk=int(document_id)) if document_id != 'all' else None
-            document_title = document.title if document_id != 'all' else 'all'
-            export_pos_file(file_.name, XLSX, corpus, language, include_non_targets=include_non_targets,
-                            subcorpus=subcorpus, document=document)
+        pos_file = NamedTemporaryFile(delete=False)
+        self.request.session['pos_file'] = pos_file.name
 
-            filename = '{}-{}-{}.xlsx'.format(urlquote(corpus.title), urlquote(document_title), language)
-            response = HttpResponse(file_, content_type='application/xlsx')
-            response['Content-Disposition'] = 'attachment; filename={}'.format(filename)
-            return response
+        corpus = Corpus.objects.get(pk=int(corpus_id))
+        subcorpus = SubCorpus.objects.get(pk=int(subcorpus_id)) if subcorpus_id != 'all' else None
+        document = Document.objects.get(pk=int(document_id)) if document_id != 'all' else None
+        document_title = document.title if document_id != 'all' else 'all'
+
+        filename = '{}-{}-{}.xlsx'.format(urlquote(corpus.title), urlquote(document_title), language)
+        self.request.session['pos_filename'] = filename
+        export_pos_file(pos_file.name, XLSX, corpus, language, include_non_targets=include_non_targets,
+                        subcorpus=subcorpus, document=document)
+
+        return JsonResponse(dict(done=True))
+
+
+class ExportPOSDownload(PermissionRequiredMixin, generic.View):
+    permission_required = 'annotations.change_annotation'
+
+    def get(self, request, *args, **kwargs):
+        pos_file = self.request.session['pos_file']
+        pos_filename = self.request.session['pos_filename']
+
+        with open(pos_file, 'rb') as f:
+            contents = f.read()
+        os.unlink(pos_file)
+        response = HttpResponse(contents, content_type='application/xlsx')
+        response['Content-Disposition'] = 'attachment; filename={}'.format(pos_filename)
+        return response
 
 
 class ImportLabelsView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
