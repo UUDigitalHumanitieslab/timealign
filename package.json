@@ -7,7 +7,8 @@
     "repository": "https://github.com/UUDigitalHumanitieslab/timealign",
     "scripts": {
         "preinstall": "pip install pip-tools",
-        "install": "pip install -r requirements.txt",
+        "install-back": "pip install -r requirements.txt",
+        "install": "yarn install-back",
         "test": "python manage.py test",
         "start": "python manage.py runserver",
         "collectstatic": "python manage.py collectstatic"
