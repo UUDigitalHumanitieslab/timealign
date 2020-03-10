@@ -9,9 +9,10 @@
         "preinstall": "pip install pip-tools",
         "install-back": "pip install -r requirements.txt",
         "install": "yarn install-back",
-        "test": "python manage.py test",
-        "start": "python manage.py runserver",
-        "collectstatic": "python manage.py collectstatic"
+        "django": "python manage.py",
+        "test": "yarn django test",
+        "start": "yarn django runserver",
+        "collectstatic": "yarn django collectstatic"
     }
 }
 
