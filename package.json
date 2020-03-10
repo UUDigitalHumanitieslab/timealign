@@ -1,0 +1,16 @@
+{
+    "name": "timealign",
+    "version": "0.0.0",
+    "description": "This web application allows easy selection of aligned verb phrases",
+    "author": "m.h.vanderklis@uu.nl",
+    "license": "MIT",
+    "repository": "https://github.com/UUDigitalHumanitieslab/timealign",
+    "scripts": {
+        "preinstall": "pip install pip-tools",
+        "install": "pip install -r requirements.txt",
+        "test": "python manage.py test",
+        "start": "python manage.py runserver",
+        "collectstatic": "python manage.py collectstatic"
+    }
+}
+
