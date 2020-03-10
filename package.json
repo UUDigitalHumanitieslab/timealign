@@ -12,7 +12,8 @@
         "django": "python manage.py",
         "test": "yarn django test",
         "start": "yarn django runserver",
-        "collectstatic": "yarn django collectstatic"
+        "fyarn": "true",
+        "build-p": "true"
     }
 }
 
