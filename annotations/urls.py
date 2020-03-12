@@ -2,7 +2,7 @@ from django.conf.urls import url
 
 from .views import InstructionsView, IntroductionView, StatusView, \
     AnnotationCreate, AnnotationUpdate, AnnotationDelete, AnnotationChoose, FragmentDetail, FragmentDetailPlain, \
-    AnnotationList, FragmentList, ExportPOSDownload, PrepareDownload, TenseCategoryList, \
+    AnnotationList, FragmentList, ExportPOSDownload, ExportPOSPrepare, PrepareDownload, TenseCategoryList, \
     ImportLabelsView, CorpusList, CorpusDetail, DocumentDetail, SourceDetail
 
 urlpatterns = [
@@ -42,7 +42,8 @@ urlpatterns = [
     # Downloads
     url(r'^prepare_download/(?P<language>\w+)/(?P<corpus>\w+)$', PrepareDownload.as_view(), name='prepare_download'),
     url(r'^prepare_download/(?P<language>\w+)$', PrepareDownload.as_view(), name='prepare_download'),
-    url(r'^download$', ExportPOSDownload.as_view(), name='download'),
+    url(r'^download$', ExportPOSPrepare.as_view(), name='download_start'),
+    url(r'^download_ready$', ExportPOSDownload.as_view(), name='download_ready'),
 
     # Importing of labels
     url(r'^import_labels/$', ImportLabelsView.as_view(), name='import-labels'),
