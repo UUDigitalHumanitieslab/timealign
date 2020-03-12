@@ -1,4 +1,4 @@
-function MDSView(flat_data, series_list) {
+function MDSView(flat_data, series_list, clusters, clustered) {
     var containerWidth = d3.select(".container").node().getBoundingClientRect().width,
         margin = { top: 20, right: 20, bottom: 30, left: 40 },
         width = containerWidth - margin.left - margin.right,
@@ -214,7 +214,7 @@ function MDSView(flat_data, series_list) {
         .data(flat_data)
         .enter()
         .append("circle")
-        .attr("class", "dot")
+        .attr("class", clustered ? "dot clustered" : "dot")
         .attr("r", function (d) { return cluster_size(clusters[d.cluster]); })
         .attr("cx", function (d) { return xMap(clusters[d.cluster]); })
         .attr("cy", function (d) { return yMap(clusters[d.cluster]); })
@@ -237,7 +237,7 @@ function MDSView(flat_data, series_list) {
             .duration(100)
             .style("opacity", .9);
         tooltip.html(
-            clusters[d.cluster].count + ' fragments<br/>' +
+            (clustered ? clusters[d.cluster].count + ' fragments, for example:<br/>' : '') +
             '<strong>' +
             d.fragment_pk +
             '</strong>: <em>' +

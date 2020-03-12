@@ -56,7 +56,7 @@ td {
   shape-rendering: crispEdges;
 }
 
-.dot {
+.dot.clustered {
   stroke: #555;
   stroke-width: .8;
 }
