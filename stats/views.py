@@ -1,8 +1,9 @@
 import json
 import numbers
 import random
+import math
 from collections import Counter, OrderedDict, defaultdict
-from itertools import chain
+from itertools import chain, repeat, count
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
@@ -121,16 +122,32 @@ class MDSView(ScenarioDetail):
                          prefetch_related('sentence_set', 'sentence_set__word_set'))
 
         # Turn the pickled model into a scatterplot dictionary
-        random.seed(scenario.pk)  # Fixed seed for random jitter
         points = defaultdict(list)
+        clusters = []
         tense_cache = prepare_label_cache(self.object.corpus)
         label_set = set()
-        for n, embedding in enumerate(model):
+
+        clustering = self.request.GET.get('clustering', 'yes') == 'yes'
+        if clustering:
+            reduced = self.reduce_model(model, tenses)
+        else:
+            # Keep original data points as-is
+            # (which is the same as having all clusters as size 1)
+            reduced = zip(count(), model, repeat(1))
+            random.seed(scenario.pk)  # Fixed seed for random jitter
+
+        for n, embedding, cluster_size in reduced:
             # Retrieve x/y dimensions, add some jitter
-            x = embedding[d1 - 1] + random.uniform(-.5, .5) / 100
-            y = random.uniform(-.5, .5) / 100
+            x = embedding[d1 - 1]
+            y = 0
+            if not clustering:
+                x += random.uniform(-.5, .5) / 100
+                y += random.uniform(-.5, .5) / 100
             if d2 > 0:  # Only add y if it's been requested
                 y += embedding[d2 - 1]
+
+            cluster_id = len(clusters)
+            clusters.append(dict(x=x, y=y, count=cluster_size))
 
             fragment = fragments[n]
 
@@ -145,8 +162,65 @@ class MDSView(ScenarioDetail):
 
             # Add all values to the dictionary
             points[tenses[display_language][n]].append(
-                {'x': x, 'y': y, 'tenses': label_list, 'fragment_pk': fragment.pk, 'fragment': fragment.full(HTML)})
+                {'cluster': cluster_id, 'x': x, 'y': y, 'tenses': label_list, 'fragment_pk': fragment.pk, 'fragment': fragment.full(HTML)})
 
+        context['language'] = display_language
+        context['languages'] = Language.objects.filter(iso__in=list(tenses.keys())).order_by('iso')
+        context['d1'] = d1
+        context['d2'] = d2
+        context['clustering'] = 'yes' if clustering else 'no'
+        context['max_dimensions'] = list(range(1, len(model[0]) + 1))  # We choose dimensions to be 1-based
+        context['stress'] = scenario.mds_stress
+
+        # flat data representation for d3
+        flat_data, series_list = self.prepare_flat_data(points, tense_cache)
+        context['flat_data'] = json.dumps(flat_data)
+        context['series_list'] = json.dumps(series_list)
+        context['clusters'] = json.dumps(clusters)
+
+        return context
+
+    def reduce_model(self, model, tenses):
+        cluster_count = defaultdict(int)
+        collect = dict()
+        # First, reduce points which overlap exactly
+        for n, embedding in enumerate(model):
+            t = tuple(embedding)
+            collect[t] = (n, t)
+            cluster_count[t] += 1
+
+        # Reduce points which are very close
+        skip = set()
+
+        # Distance helper function
+        def distance(origin):
+            def _distance(other):
+                d = 0
+                for a, b in zip(origin, other):
+                    d += (a - b) ** 2
+                d = math.sqrt(d)
+                return d < 0.1 and d > 0
+            return _distance
+
+        # Look among close points for overlap in label tuples
+        for coord, point in collect.items():
+            if coord in skip:
+                continue
+            close_by = filter(distance(coord), collect.keys())
+            for other_coord in close_by:
+                sequence = point[0]
+                tenses_a = tuple(tenses[language][sequence] for language in list(tenses.keys()))
+                other_sequence = collect[other_coord][0]
+                tenses_b = tuple(tenses[language][other_sequence] for language in list(tenses.keys()))
+
+                if tenses_a == tenses_b:
+                    skip.add(other_coord)
+                    # merge clusters
+                    cluster_count[coord] += cluster_count[other_coord]
+
+        return [(n, embedding, cluster_count[embedding]) for n, embedding in collect.values() if embedding not in skip]
+
+    def prepare_flat_data(self, points, tense_cache):
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
         matrix = []
@@ -160,15 +234,6 @@ class MDSView(ScenarioDetail):
             d['color'] = tense_color
             d['values'] = values
             matrix.append(d)
-
-        # Add all variables to the context
-        context['matrix'] = json.dumps(matrix)
-        context['language'] = display_language
-        context['languages'] = Language.objects.filter(iso__in=list(tenses.keys())).order_by('iso')
-        context['d1'] = d1
-        context['d2'] = d2
-        context['max_dimensions'] = list(range(1, len(model[0]) + 1))  # We choose dimensions to be 1-based
-        context['stress'] = scenario.mds_stress
 
         # flat data representation for d3
         flat_data = []
@@ -185,16 +250,13 @@ class MDSView(ScenarioDetail):
                         iter(fragment.items())
                     ))
                 )
-        context['flat_data'] = json.dumps(flat_data)
-        context['series_list'] = json.dumps(series_list)
-
-        return context
+        return flat_data, series_list
 
     def post(self, request, pk, *args, **kwargs):
         request.session['scenario_pk'] = pk
         request.session['fragment_pks'] = json.loads(request.POST['fragment_ids'])
         request.session['tenses'] = json.loads(request.POST['tenses'])
-        return HttpResponseRedirect(reverse('stats:fragment_table'))
+        return HttpResponseRedirect(reverse('stats:fragment_table_mds'))
 
 
 class MDSViewOld(MDSView):
@@ -280,6 +342,9 @@ class FragmentTableView(LoginRequiredMixin, FilterView):
 
     def get_queryset(self):
         fragment_pks = self.request.session.get('fragment_pks', [])
+        return self.queryset_for_fragments(fragment_pks)
+
+    def queryset_for_fragments(self, fragment_pks):
         target_words = Sentence.objects. \
             prefetch_related(Prefetch('word_set', queryset=Word.objects.filter(is_target=True)))
 
@@ -309,6 +374,29 @@ class FragmentTableView(LoginRequiredMixin, FilterView):
         context['tenses'] = tenses
 
         return context
+
+
+class FragmentTableViewMDS(FragmentTableView):
+    def get_queryset(self):
+        fragment_pks = self.request.session.get('fragment_pks', [])
+        scenario_pk = self.request.session.get('scenario_pk')
+
+        # Include all fragments whose label set matches that of the selected fragment
+        fragment = int(fragment_pks[0])
+        fragment_pks = []
+        scenario = Scenario.objects.get(pk=scenario_pk)
+        all_labels = scenario.get_labels()
+        scenario_fragments = scenario.mds_fragments
+        sequence = scenario_fragments.index(fragment)
+        languages = all_labels.keys()
+        label_key = tuple(all_labels[lang][sequence] for lang in languages)
+
+        for seq, frag in enumerate(scenario_fragments):
+            labels = tuple(all_labels[lang][seq] for lang in languages)
+            if labels == label_key:
+                fragment_pks.append(frag)
+
+        return self.queryset_for_fragments(fragment_pks)
 
 
 class UpsetView(ScenarioDetail):

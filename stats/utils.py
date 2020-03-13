@@ -184,7 +184,11 @@ def run_mds(scenario):
 
     # Pickle the created objects
     scenario.mds_matrix = matrix
-    scenario.mds_model = pos.tolist()
+
+    # Rounding helps cluster points which are very close,
+    # and also prevents loss of accuracy from serialization and deserialization
+    # of numpy arrays
+    scenario.mds_model = pos.round(3).tolist()
     scenario.mds_fragments = fragment_pks
     scenario.mds_labels = fragment_labels
     scenario.mds_stress = mds.stress_
