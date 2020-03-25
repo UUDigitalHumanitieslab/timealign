@@ -466,11 +466,13 @@ class PrepareDownload(generic.TemplateView):
         context = super(PrepareDownload, self).get_context_data(**kwargs)
 
         corpora = get_available_corpora(self.request.user)
+        language = Language.objects.get(iso=kwargs['language'])
+        corpora = corpora.filter(languages=language)
         selected_corpus = corpora.first()
         if kwargs.get('corpus'):
             selected_corpus = Corpus.objects.get(pk=int(kwargs['corpus']))
 
-        context['language_to'] = Language.objects.get(iso=kwargs['language'])
+        context['language_to'] = language
         context['corpora'] = corpora
         context['selected_corpus'] = selected_corpus
         return context
