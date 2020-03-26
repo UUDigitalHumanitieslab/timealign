@@ -108,7 +108,7 @@ class SelectionMixin(PermissionRequiredMixin):
 
     def is_final(self):
         return 'is_final' in self.request.POST
-        
+
     def form_valid(self, form):
         # save user preferred selection tool on the session
         self.request.session['select_segment'] = form.cleaned_data['select_segment']
@@ -243,13 +243,14 @@ class PrepareDownload(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super(PrepareDownload, self).get_context_data(**kwargs)
 
-        language = kwargs['language']
         corpora = get_available_corpora(self.request.user)
-        selected_corpus = corpora[0]
+        language = Language.objects.get(iso=kwargs['language'])
+        corpora = corpora.filter(languages=language)
+        selected_corpus = corpora.first()
         if kwargs.get('corpus'):
             selected_corpus = Corpus.objects.get(id=int(kwargs['corpus']))
 
-        context['language'] = Language.objects.get(iso=language)
+        context['language'] = language
         context['corpora'] = corpora
         context['selected_corpus'] = selected_corpus
         return context
