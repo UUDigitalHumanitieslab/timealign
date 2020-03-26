@@ -36,9 +36,6 @@ class CheckOwnerOrStaff(UserPassesTestMixin):
         return self.get_object().annotated_by == self.request.user or \
             self.request.user.is_staff or self.request.user.is_superuser
 
-    def handle_no_permission(self):
-        return render(self.request, 'access_denied.html')
-
 
 ##############
 # Static views
