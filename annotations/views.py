@@ -29,6 +29,14 @@ from .utils import get_random_alignment, get_available_corpora, get_xml_sentence
 from core.utils import XLSX
 
 
+class CheckOwnerOrStaff(UserPassesTestMixin):
+    """Limits access only to creator of annotation or staff users"""
+
+    def test_func(self):
+        return self.get_object().annotated_by == self.request.user or \
+            self.request.user.is_staff or self.request.user.is_superuser
+
+
 ##############
 # Static views
 ##############
@@ -134,7 +142,7 @@ class AnnotationMixin(SuccessMessageMixin, PermissionRequiredMixin):
         return super().form_valid(form)
 
 
-class AnnotationUpdateMixin(AnnotationMixin):
+class AnnotationUpdateMixin(AnnotationMixin, CheckOwnerOrStaff):
     def get_context_data(self, **kwargs):
         """Sets the annotated Words on the context"""
         context = super(AnnotationUpdateMixin, self).get_context_data(**kwargs)
