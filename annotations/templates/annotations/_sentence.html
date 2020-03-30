@@ -18,7 +18,7 @@
 
         {% if word.is_in_dialogue %}
         in-dialogue
-        {% endif %}">{{ word.word }}</span>
+        {% endif %}">{% if transliteration %}{{word.transliteration}}{% else %}{{ word.word }}{% endif %}</span>
 
     {% if tooltips %}
     <div class="tooltiptext">

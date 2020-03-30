@@ -93,6 +93,9 @@ li.paragraph {
             </h3>
             {% if annotation %}
                 {% include "annotations/_sentences.html" with sentences=annotation.alignment.translated_fragment.sentence_set.all tooltips=1 annotated_words=annotation.words.all %}
+                {% if annotation.alignment.translated_fragment.has_transliteration %}
+                    {% include "annotations/_sentences.html" with sentences=annotation.alignment.translated_fragment.sentence_set.all tooltips=1 transliteration=1 annotated_words=annotation.words.all %}
+                {% endif %}
             {% else %}
             No annotation available.
             {% endif %}

@@ -297,6 +297,9 @@ class Fragment(models.Model, HasLabelsMixin):
     def __str__(self):
         return self.full()[:100]
 
+    def has_transliteration(self):
+        return Transliteration.objects.filter(word__sentence__fragment=self)
+
 
 class Sentence(models.Model):
     XML_TAG = 's'
@@ -381,6 +384,14 @@ class Word(models.Model):
 
     def __str__(self):
         return self.word
+
+    def transliteration(self):
+        return self.transliteration_set.first().text
+
+
+class Transliteration(models.Model):
+    word = models.ForeignKey(Word, on_delete=models.CASCADE)
+    text = models.CharField(max_length=200)
 
 
 class Alignment(models.Model):
