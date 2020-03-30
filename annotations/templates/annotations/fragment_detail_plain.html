@@ -48,6 +48,9 @@
     <p class="pull-left">
         {% include "annotations/_sentences.html" with sentences=annotation.alignment.translated_fragment.sentence_set.all annotated_words=annotation.words.all plain=1 %}
     </p>
+    <p class="pull-left">
+        {% include "annotations/_latex.html" %}
+    </p>
     <p class="pull-right">
         [{{ language }}, {{ annotation.label }}]
 
