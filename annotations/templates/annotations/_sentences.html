@@ -1,22 +1,22 @@
 {% if not plain %}
-<ul class="list-group" dir="auto" style="margin-bottom: 0px">
+    <ul class="list-group" dir="auto" style="margin-bottom: 0px">
 {% endif %}
-    {% for sentence in sentences %}
-        {% if sentence.tag == 'p' %}
+{% for sentence in sentences %}
+    {% if sentence.tag == 'p' %}
         <li class="paragraph {{ sentence.position }}">
             &para
         </li>
-        {% else %}
+    {% else %}
         {% if not plain %}
-        <li class="list-group-item {{ sentence.position }}" data-pk="{{ sentence.pk }}" data-xml-id="{{ sentence.xml_id }}">
+            <li class="list-group-item {{ sentence.position }}" data-pk="{{ sentence.pk }}" data-xml-id="{{ sentence.xml_id }}">
         {% endif %}
-            {% if sentence.content %}
-                {% if sentence.position == "current" %}
+        {% if sentence.content %}
+            {% if sentence.position == "current" %}
                 <button role="button" class="reset-btn btn btn-primary btn-xs" title="Reset context">
                     <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
                 </button>
-                {% endif %}
-                {% with sentence.content as sentence %}
+            {% endif %}
+            {% with sentence.content as sentence %}
                 <button type="button" class="btn btn-info btn-xs" disabled="disabled">
                     {{ sentence.xml_id }}
                 </button>
@@ -28,22 +28,22 @@
                     {% endfor %}
                 </div>
                 {% include "annotations/_sentence.html" with words=sentence.words %}
-                {% endwith %}
-            {% elif sentence.content_xml %}
-                {% with sentence.content_xml as sentence %}
+            {% endwith %}
+        {% elif sentence.content_xml %}
+            {% with sentence.content_xml as sentence %}
                 <button type="button" class="btn btn-info btn-xs" disabled="disabled">
                     {{ sentence.xml_id }}
                 </button>
                 {% include "annotations/_sentence.html" with words=sentence.words %}
-                {% endwith %}
-            {% else %}
-                {% include "annotations/_sentence.html" with words=sentence.word_set.all %}
-            {% endif %}
+            {% endwith %}
+        {% else %}
+            {% include "annotations/_sentence.html" with words=sentence.word_set.all %}
+        {% endif %}
         {% if not plain %}
-        </li>
+            </li>
         {% endif %}
-        {% endif %}
-    {% endfor %}
+    {% endif %}
+{% endfor %}
 {% if not plain %}
-</ul>
+    </ul>
 {% endif %}
