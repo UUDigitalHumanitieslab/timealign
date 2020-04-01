@@ -48,9 +48,6 @@
     <p class="pull-left">
         {% include "annotations/_sentences.html" with sentences=annotation.alignment.translated_fragment.sentence_set.all annotated_words=annotation.words.all plain=1 %}
     </p>
-    <p class="pull-left">
-        {% include "annotations/_latex.html" %}
-    </p>
     <p class="pull-right">
         [{{ language }}, {{ annotation.label }}]
 
@@ -75,5 +72,8 @@
     <div style="clear: both;"></div>
 </div>
 {% endfor %}
+
+<h3>LaTeX</h3>
+{% include 'annotations/_latex.html' %}
 
 {% endblock %}
