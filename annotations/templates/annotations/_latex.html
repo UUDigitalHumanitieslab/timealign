@@ -1,13 +1,14 @@
 <code>
 \begin{exe}<br/>
-\ex\label&#123;ex:{{fragment.pk}}&#125;<br/>
+\ex\label&#123;ex:{{ fragment.pk }}&#125;<br/>
 \begin{xlist}<br/>
 \ex&#123;{% include "annotations/_sentences.html" with sentences=fragment.sentence_set.all plain=1 latex=True %}
-\hfill [{{fragment.language.iso}}, {{fragment.tense}}]&#125;</br>
+\hfill [{{ fragment.language.iso  }}, {{ fragment.tense }}]&#125;
+\label&#123;ex:{{ fragment.pk }}:{{ fragment.language.iso }}&#125;</br>
 {% for language, annotation in fragment.get_annotations %}
 \ex&#123;{% include "annotations/_sentences.html" with sentences=annotation.alignment.translated_fragment.sentence_set.all annotated_words=annotation.words.all plain=1 latex=True %}
-\hfill [{{language.iso}}, {{annotation.tense}}]&#125;
-\label&#123;ex:{{fragment.pk}}:{{language.iso}}&#125;</br>
+\hfill [{{ language.iso }}, {{ annotation.tense }}]&#125;
+\label&#123;ex:{{ fragment.pk }}:{{ language.iso }}&#125;</br>
 {% endfor %}
 \end{xlist}<br/>
 \end{exe}<br/>
