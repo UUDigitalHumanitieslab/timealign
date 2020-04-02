@@ -1,37 +1,32 @@
 {% for word in words %}
-    {% spaceless %}
-    <span data-pk="{{ word.pk }}" data-xml-id="{{ word.xml_id }}"
-        class="
-        word
-
+    {% if latex %}
         {% if word.is_target or word in annotated_words %}
-        selected
+            \textbf&#123;{{ word.word }}&#125;
+        {% else %}
+            {{ word.word }}
+        {% endif %}
+    {% else %}
+        {% spaceless %}
+        <span data-pk="{{ word.pk }}" data-xml-id="{{ word.xml_id }}"
+            class="word
+            {% if word.is_target or word in annotated_words %} selected {% endif %}
+            {% if word.is_other_target %} other {% endif %}
+            {% if word.word == filtered %} filtered {% endif %}
+            {% if word.is_in_dialogue %} in-dialogue {% endif %}">
+            {{ word.word }}</span>
+
+        {% if tooltips %}
+        <div class="tooltiptext">
+            Part-of-speech: <em>{{ word.pos }}</em><br/>
+            Lemma: <em>{{ word.lemma }}</em>
+        </div>
         {% endif %}
 
-        {% if word.is_other_target %}
-        other
-        {% endif %}
-
-        {% if word.word == filtered %}
-        filtered
-        {% endif %}
-
-        {% if word.is_in_dialogue %}
-        in-dialogue
-        {% endif %}">{{ word.word }}</span>
-
-    {% if tooltips %}
-    <div class="tooltiptext">
-        Part-of-speech: <em>{{ word.pos }}</em><br/>
-        Lemma: <em>{{ word.lemma }}</em>
-    </div>
+        {% for k, v in selected_words.items %}
+            {% if word.xml_id in v %}
+            <sup class="prev">{{ k }}</sup>
+            {% endif %}
+        {% endfor %}
+        {% endspaceless %}
     {% endif %}
-
-    {% for k, v in selected_words.items %}
-        {% if word.xml_id in v %}
-        <sup class="prev">{{ k }}</sup>
-        {% endif %}
-    {% endfor %}
-
-    {% endspaceless %}
 {% endfor %}
