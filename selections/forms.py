@@ -43,11 +43,12 @@ class SelectionForm(forms.ModelForm):
             self.fields['tense'].widget.choices = tuple(zip(tenses, tenses))
         else:
             del self.fields['tense']
-            # add a label field for each label key
-            for key in self.corpus.label_keys.all():
-                existing_label = self.instance.labels.filter(key=key).first() if self.instance.id else None
-                field = LabelField(label_key=key, initial=existing_label)
-                self.fields[key.symbol()] = field
+
+        # add a label field for each label key
+        for key in self.corpus.label_keys.all():
+            existing_label = self.instance.labels.filter(key=key).first() if self.instance.id else None
+            field = LabelField(label_key=key, initial=existing_label)
+            self.fields[key.symbol()] = field
 
         # hide the original field for labels.
         # we still need this field defined in AnnotationForm.fields, otherwise
