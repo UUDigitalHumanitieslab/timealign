@@ -17,7 +17,13 @@ class LabelField(forms.ModelChoiceField):
         kwargs['queryset'] = queryset
 
         super().__init__(*args, **kwargs)
-        self.widget.attrs['class'] = 'labels-field'
+        if self.is_adding_labels_allowed():
+            self.widget.attrs['class'] = 'labels-field-tags'
+        else:
+            self.widget.attrs['class'] = 'labels-field'
+
+    def is_adding_labels_allowed(self):
+        return self._key.open_label_set
 
     # MultipleChoiceField only allows entering predefined choices
     # however, we want users to be able to introduce new labels,
@@ -31,8 +37,13 @@ class LabelField(forms.ModelChoiceField):
                 title=value, key=self._key, language=self._language)
         else:
             label, created = Label.objects.get_or_create(title=value, key=self._key)
+
         if created:
-            label.save()
+            if self.is_adding_labels_allowed():
+                label.save()
+            else:
+                # user attempted to add a new label but is not allowed
+                return None
         return label
 
 

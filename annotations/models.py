@@ -117,6 +117,8 @@ class LabelKey(models.Model):
     corpora = models.ManyToManyField(Corpus, related_name='label_keys')
     language_specific = models.BooleanField(
         'Labels are language specific', default=False)
+    open_label_set = models.BooleanField(
+        'Anyone can add new labels', default=True)
 
     class Meta:
         verbose_name_plural = 'Label Keys'
