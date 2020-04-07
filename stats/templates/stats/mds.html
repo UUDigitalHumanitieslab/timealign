@@ -86,6 +86,15 @@ General size: <input type="range" min="1" max="6" value="1" class="slider" id="s
                     <input type="radio" name="options" value="no" autocomplete="off">No
                 </label>
             </div>
+            Labels:
+            <div id="cluster_labels" class="btn-group" data-toggle="buttons">
+                <label class="btn btn-primary">
+                    <input type="radio" name="options" value="yes" autocomplete="off">Yes
+                </label>
+                <label class="btn btn-primary">
+                    <input type="radio" name="options" value="no" autocomplete="off">No
+                </label>
+            </div>
             <button type="submit" class="btn btn-success">
                 {% bootstrap_icon "ok" %} Go!
             </button>
@@ -111,8 +120,11 @@ General size: <input type="range" min="1" max="6" value="1" class="slider" id="s
         var flat_data = {{ flat_data | safe}};
         var series_list = {{ series_list | safe}};
         var clusters = {{ clusters | safe}};
-        var clustered = '{{ clustering }}' == 'yes';
-        var mds = MDSView(flat_data, series_list, clusters, clustered);
+        var options = {
+            clustered: '{{ clustering }}' == 'yes',
+            clusterLabels: '{{ cluster_labels }}' == 'yes',
+        };
+        var mds = MDSView(flat_data, series_list, clusters, options);
 
         function rescale() {
             var a = $('#scale_a').val() / 100;
@@ -133,6 +145,7 @@ General size: <input type="range" min="1" max="6" value="1" class="slider" id="s
             $("#d1 input[value='{{ d1 }}'").closest(".btn").addClass("active");
             $("#d2 input[value='{{ d2 }}'").closest(".btn").addClass("active");
             $("#clustering input[value='{{ clustering }}'").closest(".btn").addClass("active");
+            $("#cluster_labels input[value='{{ cluster_labels }}'").closest(".btn").addClass("active");
 
             $("button[type='submit']").click(function () {
                 var l = $("#language > .btn.active > input").val();
@@ -140,7 +153,11 @@ General size: <input type="range" min="1" max="6" value="1" class="slider" id="s
                 var d2 = $("#d2 > .btn.active > input").val();
                 var url = "{% url 'stats:mds' scenario.pk 'language' 1111 2222 %}";
                 var clustering = $("#clustering > .btn.active > input").val();
-                window.location = url.replace("language", l).replace('1111', d1).replace('2222', d2) + '?clustering=' + clustering + window.location.hash;
+                var clusterLabels = $("#cluster_labels > .btn.active > input").val();
+                window.location = url.replace("language", l).replace('1111', d1).replace('2222', d2) +
+                                  '?clustering=' + clustering +
+                                  '&labels=' + clusterLabels +
+                                  window.location.hash;
             });
         });
 

@@ -1,4 +1,4 @@
-function MDSView(flat_data, series_list, clusters, clustered) {
+function MDSView(flat_data, series_list, clusters, options) {
     var containerWidth = d3.select(".container").node().getBoundingClientRect().width,
         margin = { top: 20, right: 20, bottom: 30, left: 40 },
         width = containerWidth - margin.left - margin.right,
@@ -214,7 +214,7 @@ function MDSView(flat_data, series_list, clusters, clustered) {
         .data(flat_data)
         .enter()
         .append("circle")
-        .attr("class", clustered ? "dot clustered" : "dot")
+        .attr("class", options.clustered ? "dot clustered" : "dot")
         .attr("r", function (d) { return cluster_size(clusters[d.cluster]); })
         .attr("cx", function (d) { return xMap(clusters[d.cluster]); })
         .attr("cy", function (d) { return yMap(clusters[d.cluster]); })
@@ -229,6 +229,20 @@ function MDSView(flat_data, series_list, clusters, clustered) {
             select_neighbours(d);
         });
 
+    if (options.clusterLabels) {
+        scalingContainer.selectAll('.cluster-label')
+            .data(flat_data)
+            .enter()
+            .append('text')
+            .attr('class', 'cluster-label')
+            .filter(function(d) { return clusters[d.cluster].count > 1; })
+            .attr("x", function (d) { return xMap(clusters[d.cluster]); })
+            .attr("y", function (d) { return yMap(clusters[d.cluster]) - 5 - cluster_size(clusters[d.cluster]); })
+            .attr('text-anchor', 'middle')
+            .text(function (d) { return clusters[d.cluster].count;});
+    }
+
+
     function show_tooltip(d) {
         // highlight node
         d3.select(this).style("fill-opacity", .5);
@@ -237,7 +251,7 @@ function MDSView(flat_data, series_list, clusters, clustered) {
             .duration(100)
             .style("opacity", .9);
         tooltip.html(
-            (clustered ? clusters[d.cluster].count + ' fragments, for example:<br/>' : '') +
+            (options.clustered ? clusters[d.cluster].count + ' fragments, for example:<br/>' : '') +
             '<strong>' +
             d.fragment_pk +
             '</strong>: <em>' +
@@ -320,6 +334,9 @@ function MDSView(flat_data, series_list, clusters, clustered) {
         scalingContainer.selectAll('.dot')
             .attr('cx', function (d) { return xMap(clusters[d.cluster]); })
             .attr('cy', function (d) { return yMap(clusters[d.cluster]); });
+        scalingContainer.selectAll('.cluster-label')
+            .attr('x', function (d) { return xMap(clusters[d.cluster]); })
+            .attr("y", function (d) { return yMap(clusters[d.cluster]) - 5 - cluster_size(clusters[d.cluster]); })
         update_location_hash();
     }
 

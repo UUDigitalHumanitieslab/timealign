@@ -128,6 +128,7 @@ class MDSView(ScenarioDetail):
         label_set = set()
 
         clustering = self.request.GET.get('clustering', 'yes') == 'yes'
+        cluster_labels = self.request.GET.get('labels', 'yes') == 'yes'
         if clustering:
             reduced = self.reduce_model(model, tenses)
         else:
@@ -169,6 +170,7 @@ class MDSView(ScenarioDetail):
         context['d1'] = d1
         context['d2'] = d2
         context['clustering'] = 'yes' if clustering else 'no'
+        context['cluster_labels'] = 'yes' if cluster_labels else 'no'
         context['max_dimensions'] = list(range(1, len(model[0]) + 1))  # We choose dimensions to be 1-based
         context['stress'] = scenario.mds_stress
 
