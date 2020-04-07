@@ -44,10 +44,13 @@ class SelectionForm(forms.ModelForm):
         else:
             del self.fields['tense']
 
+        language = self.fragment.language
         # add a label field for each label key
         for key in self.corpus.label_keys.all():
             existing_label = self.instance.labels.filter(key=key).first() if self.instance.id else None
-            field = LabelField(label_key=key, initial=existing_label)
+            field = LabelField(label_key=key,
+                               language=language,
+                               initial=existing_label)
             self.fields[key.symbol()] = field
 
         # hide the original field for labels.
