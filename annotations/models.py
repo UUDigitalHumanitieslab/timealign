@@ -115,6 +115,8 @@ class LabelKey(models.Model):
     title = models.CharField(max_length=200, unique=True)
 
     corpora = models.ManyToManyField(Corpus, related_name='label_keys')
+    language_specific = models.BooleanField(
+        'Labels are language specific', default=False)
 
     class Meta:
         verbose_name_plural = 'Label Keys'
@@ -131,6 +133,7 @@ class Label(models.Model):
     title = models.CharField(max_length=200)
     key = models.ForeignKey(LabelKey, related_name='labels', on_delete=models.CASCADE)
     color = models.CharField(max_length=10, null=True)
+    language = models.ForeignKey(Language, on_delete=models.CASCADE, null=True)
 
     class Meta:
         unique_together = ('key', 'title', )

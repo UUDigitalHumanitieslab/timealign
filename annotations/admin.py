@@ -130,7 +130,7 @@ class SubSentenceAdmin(admin.ModelAdmin):
 class CustomLabelForm(forms.ModelForm):
     class Meta:
         model = Label
-        fields = ('title', 'color')
+        fields = ('title', 'language', 'color')
         widgets = {
             'color': forms.Select(choices=zip(COLOR_LIST, COLOR_LIST))
         }

@@ -8,9 +8,14 @@ class LabelField(forms.ModelChoiceField):
     """A text field for labels with auto completion (provided by select2 in JS).
     Tied to a specific LabelKey"""
 
-    def __init__(self, label_key, *args, **kwargs):
+    def __init__(self, label_key, language, *args, **kwargs):
         self._key = label_key
-        kwargs['queryset'] = label_key.labels.all()
+        self._language = language
+        queryset = label_key.labels.all()
+        if self._key.language_specific:
+            queryset = queryset.filter(language=language)
+        kwargs['queryset'] = queryset
+
         super().__init__(*args, **kwargs)
         self.widget.attrs['class'] = 'labels-field'
 
@@ -21,7 +26,11 @@ class LabelField(forms.ModelChoiceField):
         if value.isdigit():
             # it's a pk of an existing label
             return Label.objects.get(pk=int(value))
-        label, created = Label.objects.get_or_create(title=value, key=self._key)
+        if self._key.language_specific:
+            label, created = Label.objects.get_or_create(
+                title=value, key=self._key, language=self._language)
+        else:
+            label, created = Label.objects.get_or_create(title=value, key=self._key)
         if created:
             label.save()
         return label
@@ -64,10 +73,14 @@ class AnnotationForm(forms.ModelForm):
         self.fields['tense'].queryset = Tense.objects.filter(language=self.alignment.translated_fragment.language)
         self.fields['select_segment'].initial = select_segment
 
+        language = self.alignment.translated_fragment.language
         # add a label field for each label key
         for key in self.corpus.label_keys.all():
             existing_label = self.instance.labels.filter(key=key).first() if self.instance.id else None
-            field = LabelField(required=False, label_key=key, initial=existing_label)
+            field = LabelField(required=False,
+                               label_key=key,
+                               language=language,
+                               initial=existing_label)
             self.fields[key.symbol()] = field
 
         # hide the original field for labels.
