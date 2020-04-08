@@ -36,7 +36,7 @@ def process_file(f, language, use_other_label, model='annotation'):
 
         row = row.strip()
         if row:
-            encoded = [c.decode('utf-8') for c in row.split('\t')]
+            encoded = [c.decode('utf-8') for c in row.split(b'\t')]
 
             if model == 'annotation':
                 update_annotation(language, encoded, use_other_label)
