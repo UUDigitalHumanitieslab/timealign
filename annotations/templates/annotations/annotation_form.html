@@ -137,7 +137,8 @@ $(function() {
         $("#select-segment").addClass("active");
     }
 
-    $(".labels-field").select2({tags: true});
+    $(".labels-field").select2({tags: false});
+    $(".labels-field-tags").select2({tags: true});
 });
 </script>
 {% endblock %}
