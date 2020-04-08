@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='label',
             name='language',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='annotations.Language'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='annotations.Language'),
         ),
         migrations.AddField(
             model_name='labelkey',

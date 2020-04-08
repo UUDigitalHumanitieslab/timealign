@@ -135,7 +135,7 @@ class Label(models.Model):
     title = models.CharField(max_length=200)
     key = models.ForeignKey(LabelKey, related_name='labels', on_delete=models.CASCADE)
     color = models.CharField(max_length=10, null=True)
-    language = models.ForeignKey(Language, on_delete=models.CASCADE, null=True)
+    language = models.ForeignKey(Language, on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         unique_together = ('key', 'title', )
