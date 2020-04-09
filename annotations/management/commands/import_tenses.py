@@ -2,7 +2,7 @@
 
 from django.core.management.base import BaseCommand, CommandError
 
-from annotations.models import Language, Tense, Annotation, Fragment
+from annotations.models import Language, Tense, Annotation, Fragment, LabelKey, Label
 
 
 class Command(BaseCommand):
@@ -30,59 +30,78 @@ class Command(BaseCommand):
 
 
 def process_file(f, language, use_other_label, model='annotation'):
-    for n, row in enumerate(f):
-        if n == 0:
-            continue
+    f = iter(f)
+    header = next(f)
+    if isinstance(header, bytes):
+        header = header.decode()
+    header = header.strip().split('\t')
 
-        row = row.strip()
+    columns = []
+    for h in header[1:]:
+        if isinstance(h, bytes):
+            h = h.decode()
+        if h.lower() in ['tense', 'comments']:
+            columns.append(h)
+        else:
+            try:
+                key = LabelKey.objects.get(title__iexact=h)
+                columns.append(key)
+            except LabelKey.DoesNotExist:
+                raise ValueError('Unknown label "{}"'.format(h))
+
+    for row in f:
+        row = row.decode().strip()
         if row:
-            encoded = [c.decode('utf-8') for c in row.split(b'\t')]
+            encoded = row.split('\t')
 
             if model == 'annotation':
-                update_annotation(language, encoded, use_other_label)
+                obj = get_annotation(encoded)
             elif model == 'fragment':
-                update_fragment(language, encoded, use_other_label)
+                obj = get_fragment(language, encoded)
             else:
                 raise ValueError('Unknown model {}'.format(model))
 
+            update_fields(obj, language, encoded, columns)
 
-def update_annotation(language, row, use_other_label=False):
+
+def update_fields(obj, language, row, columns):
+    for idx, column in enumerate(columns):
+        if idx + 1 >= len(row):
+            continue
+        cell = row[idx + 1]
+        if column == 'tense':
+            try:
+                obj.tense = Tense.objects.get(title__iexact=cell, language=language)
+            except Tense.DoesNotExist:
+                raise ValueError('Tense with title "{}" not found.'.format(row[1]))
+        elif column == 'comments':
+            if isinstance(obj, Annotation):
+                obj.comments = cell
+            else:
+                raise ValueError('Cannot add comments to Fragment')
+        elif isinstance(column, LabelKey):
+            label, created = Label.objects.get_or_create(title=cell,
+                                                         key=column,
+                                                         language=language)
+            if created:
+                label.save()
+
+            obj.labels.add(label)
+
+    obj.save()
+
+
+def get_annotation(row):
     try:
-        # Retrieve Annotation
-        annotation = Annotation.objects.get(pk=row[0])
+        return Annotation.objects.get(pk=row[0])
 
-        # Add Tense or other_label
-        if use_other_label:
-            annotation.other_label = row[1]
-        else:
-            annotation.tense = Tense.objects.get(title__iexact=row[1], language=language)
-
-        # Add comments
-        if len(row) == 3:
-            annotation.comments = row[2]
-
-        # Save Annotation
-        annotation.save()
     except Annotation.DoesNotExist:
         raise ValueError('Annotation with pk {} not found.'.format(row[0]))
-    except Tense.DoesNotExist:
-        raise ValueError('Tense with title "{}" not found.'.format(row[1]))
 
 
-def update_fragment(language, row, use_other_label=False):
+def get_fragment(language, row):
     try:
-        # Retrieve Fragment
-        fragment = Fragment.objects.get(pk=row[0], language=language)
+        return Fragment.objects.get(pk=row[0], language=language)
 
-        # Add Tense or other_label
-        if use_other_label:
-            fragment.other_label = row[1]
-        else:
-            fragment.tense = Tense.objects.get(title__iexact=row[1], language=language)
-
-        # Save Fragment
-        fragment.save()
     except Fragment.DoesNotExist:
         raise ValueError('Fragment with pk {} not found.'.format(row[0]))
-    except Tense.DoesNotExist:
-        raise ValueError('Tense with title "{}" not found.'.format(row[1]))
