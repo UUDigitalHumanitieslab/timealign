@@ -11,7 +11,6 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('language', type=str)
         parser.add_argument('filenames', nargs='+', type=str)
-        parser.add_argument('--use_other_label', action='store_true', dest='use_other_label', default=False)
         parser.add_argument('--model', action='store', dest='model', default='annotation')
 
     def handle(self, *args, **options):
@@ -23,13 +22,13 @@ class Command(BaseCommand):
         for filename in options['filenames']:
             with open(filename, 'r') as csvfile:
                 try:
-                    process_file(csvfile, language, options['use_other_label'], options['model'])
+                    process_file(csvfile, language, options['model'])
                     self.stdout.write('Successfully imported labels')
                 except ValueError as e:
                     raise CommandError(e.message)
 
 
-def process_file(f, language, use_other_label, model='annotation'):
+def process_file(f, language, model='annotation'):
     f = iter(f)
     header = next(f)
     if isinstance(header, bytes):
