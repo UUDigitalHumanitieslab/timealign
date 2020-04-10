@@ -56,7 +56,7 @@ def process_file(f, language, model='annotation'):
             if model == 'annotation':
                 obj = get_annotation(encoded)
             elif model == 'fragment':
-                obj = get_fragment(language, encoded)
+                obj = get_fragment(encoded)
             else:
                 raise ValueError('Unknown model {}'.format(model))
 
@@ -98,9 +98,9 @@ def get_annotation(row):
         raise ValueError('Annotation with pk {} not found.'.format(row[0]))
 
 
-def get_fragment(language, row):
+def get_fragment(row):
     try:
-        return Fragment.objects.get(pk=row[0], language=language)
+        return Fragment.objects.get(pk=row[0])
 
     except Fragment.DoesNotExist:
         raise ValueError('Fragment with pk {} not found.'.format(row[0]))
