@@ -123,7 +123,7 @@ class ScenarioLabelsTest(BaseTestCase):
                                                           ('Label:{}'.format(label_3.id),)])
 
         points = [np.array(x) for x in self.scenario.mds_model]
-        self.assertAlmostEqual(np.linalg.norm(points[0] - points[1]), 0.5)
+        self.assertAlmostEqual(np.linalg.norm(points[0] - points[1]), 0.5, places=2)
 
     def test_mds_two_points_multiple_target_labels(self):
         second_key = LabelKey.objects.create(title='Second Label Key')
@@ -150,4 +150,4 @@ class ScenarioLabelsTest(BaseTestCase):
                                                           (label_symbol(self.label_2), label_symbol(label_4))])
 
         points = [np.array(x) for x in self.scenario.mds_model]
-        self.assertAlmostEqual(np.linalg.norm(points[0] - points[1]), 0.5)
+        self.assertAlmostEqual(np.linalg.norm(points[0] - points[1]), 0.5, places=2)
