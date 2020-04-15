@@ -38,7 +38,7 @@
         <button type="submit" name="is_not_final" class="btn btn-primary">
             {% bootstrap_icon "ok" %} Submit and select another target
         </button>
-        <a href="{% url 'selections:choose' fragment.language.iso %}" role="button" class="btn btn-warning pull-right">
+        <a href="{% url 'selections:choose' fragment.document.corpus.pk fragment.language.iso %}" role="button" class="btn btn-warning pull-right">
             {% bootstrap_icon "arrow-right" %} Go to another fragment
         </a>
     </form>

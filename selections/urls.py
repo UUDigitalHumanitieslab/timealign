@@ -9,11 +9,13 @@ urlpatterns = [
     url(r'^introduction/$', IntroductionView.as_view(), name='introduction'),
     url(r'^instructions/(?P<n>\d+)/$', InstructionsView.as_view(), name='instructions'),
     url(r'^status/$', StatusView.as_view(), name='status'),
+    url(r'^status/(?P<pk>\d+)/$', StatusView.as_view(), name='status'),
 
     # Creating and editing Selections
     url(r'^create/(?P<pk>\d+)/$', SelectionCreate.as_view(), name='create'),
     url(r'^edit/(?P<pk>\d+)/$', SelectionUpdate.as_view(), name='edit'),
     url(r'^delete/(?P<pk>\d+)/$', SelectionDelete.as_view(), name='delete'),
+    url(r'^choose/(?P<corpus>\d+)/(?P<language>\w+)/$', SelectionChoose.as_view(), name='choose'),
     url(r'^choose/(?P<language>\w+)/$', SelectionChoose.as_view(), name='choose'),
 
     # List views

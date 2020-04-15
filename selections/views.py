@@ -45,8 +45,11 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
         """Creates a list of tuples with information on the selection progress"""
         context = super(StatusView, self).get_context_data(**kwargs)
 
-        user = self.request.user
-        corpora = get_available_corpora(user)
+        corpus_pk = self.kwargs.get('pk', None)
+        if corpus_pk:
+            corpora = [get_object_or_404(Corpus, pk=corpus_pk)]
+        else:
+            corpora = get_available_corpora(self.request.user)
 
         languages = set()
         for corpus in corpora:
@@ -63,7 +66,9 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
             total = fragments.count()
             completed = fragments.exclude(selection=None).count()
             language_totals.append((language, completed, total))
+
         context['languages'] = language_totals
+        context['corpus_pk'] = corpus_pk
         context['current_corpora'] = corpora
 
         return context
@@ -133,7 +138,8 @@ class SelectionCreate(SelectionMixin, generic.CreateView):
     def get_success_url(self):
         """Go to the choose-view to select a new Alignment"""
         if self.is_final():
-            return reverse('selections:choose', args=(self.get_fragment().language.iso, ))
+            return reverse('selections:choose', args=(self.get_fragment().document.corpus.pk,
+                                                      self.get_fragment().language.iso, ))
         else:
             return reverse('selections:create', args=(self.get_fragment().pk, ))
 
@@ -204,7 +210,8 @@ class SelectionChoose(PermissionRequiredMixin, generic.RedirectView):
     def get_redirect_url(self, *args, **kwargs):
         """Redirects to a random Alignment"""
         l = Language.objects.get(iso=self.kwargs['language'])
-        new_alignment = get_random_fragment(self.request.user, l)
+        corpus = Corpus.objects.get(pk=int(self.kwargs['corpus'])) if 'corpus' in self.kwargs else None
+        new_alignment = get_random_fragment(self.request.user, l, corpus)
 
         # If no new alignment has been found, redirect to the status overview
         if not new_alignment:

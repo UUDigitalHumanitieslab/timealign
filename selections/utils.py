@@ -3,16 +3,21 @@ from annotations.utils import get_available_corpora
 from .models import PreProcessFragment, Selection
 
 
-def get_random_fragment(user, language):
+def get_random_fragment(user, language, corpus=None):
     """
     Retrieves a random, open PreProcessFragment from the database.
     :param user: The current User
     :param language: The current Language
+    :param corpus: (if supplied) The Corpus where to draw an PreProcessFragment from
+                   (otherwise: select from the available Corpora for a user)
     :return: A random PreProcessFragment object
     """
     fragments = get_open_fragments(user, language)
 
-    for corpus in get_available_corpora(user):
+    corpora = [corpus] if corpus else get_available_corpora(user)
+    fragments = fragments.filter(document__corpus__in=corpora)
+
+    for corpus in corpora:
         if corpus.current_subcorpus:
             fragments = fragments.filter(pk__in=corpus.current_subcorpus.get_fragments())
 
