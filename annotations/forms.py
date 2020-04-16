@@ -141,16 +141,11 @@ class LabelImportForm(forms.Form):
         initial='annotation',
         help_text='Select Fragment in case you want to import labels for the source Fragments, '
                   'rather than the Annotations.')
-    use_other_label = forms.BooleanField(
-        initial=False,
-        required=False,
-        label='The imported labels are not tense/aspect-labels, but other labels',
-    )
 
     def save(self):
         data = self.cleaned_data
 
-        process_file(data['label_file'], data['language'], data['use_other_label'], data['model'])
+        process_file(data['label_file'], data['language'], data['model'])
 
 
 class SubSentenceFormSet(forms.BaseInlineFormSet):
