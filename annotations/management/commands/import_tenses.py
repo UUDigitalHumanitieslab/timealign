@@ -85,6 +85,8 @@ def update_fields(obj, language, row, columns):
             if created:
                 label.save()
 
+            for existing in obj.labels.filter(key=column):
+                obj.labels.remove(existing)
             obj.labels.add(label)
 
     obj.save()
