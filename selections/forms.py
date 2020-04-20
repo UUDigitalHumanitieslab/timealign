@@ -50,7 +50,8 @@ class SelectionForm(forms.ModelForm):
             existing_label = self.instance.labels.filter(key=key).first() if self.instance.id else None
             field = LabelField(label_key=key,
                                language=language,
-                               initial=existing_label)
+                               initial=existing_label,
+                               required=False)
             self.fields[key.symbol()] = field
 
         # hide the original field for labels.
@@ -74,10 +75,17 @@ class SelectionForm(forms.ModelForm):
         - If is_no_target is not set, make sure Words have been selected
         """
         cleaned_data = super(SelectionForm, self).clean()
-        # construct a value for Annotation.labels based on the individual label fields
-        fields = [key.symbol() for key in self.corpus.label_keys.all()]
-        cleaned_data['labels'] = [cleaned_data[field] for field in fields]
 
         if not (cleaned_data.get('is_no_target', False) or cleaned_data.get('already_complete', False)):
             if not cleaned_data['words']:
                 self.add_error('is_no_target', 'Please select the words composing the target phrase.')
+
+        fields = [key.symbol() for key in self.corpus.label_keys.all()]
+        # construct a value for Annotation.labels based on the individual label fields
+        cleaned_data['labels'] = []
+        if not cleaned_data.get('is_no_target', False):
+            for field in fields:
+                if cleaned_data[field]:
+                    cleaned_data['labels'].append(cleaned_data[field])
+                else:
+                    self.add_error(field, 'Please choose a label.')
