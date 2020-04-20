@@ -1,6 +1,7 @@
 from django.db.models import Count, Max
 
 from selections.models import Selection
+from annotations.exports import labels_fixed
 from annotations.management.commands.utils import open_csv, open_xlsx, pad_list
 from core.utils import CSV, XLSX
 
@@ -27,17 +28,20 @@ def export_selections(filename, format_, corpus, language,
         # Sort by sentence.xml_id and order
         selections = sorted(selections, key=lambda s: (s.fragment.document.title, s.fragment.sort_key(), s.order))
 
+        label_keys = corpus.label_keys.values_list('id', flat=True)
+        label_keys_titles = list(corpus.label_keys.values_list('title', flat=True))
         # Output to csv/xlsx
         if selections:
-            writer.writerow(get_header(max_words, add_lemmata), is_header=True)
+            writer.writerow(get_header(max_words, add_lemmata, label_keys_titles), is_header=True)
 
             for selection in selections:
-                writer.writerow(get_row(selection, add_lemmata, max_words))
+                writer.writerow(get_row(selection, add_lemmata, max_words, label_keys))
 
 
-def get_header(max_words, add_lemmata):
-    header = ['id', 'tense', 'other label', 'has target?']
-
+def get_header(max_words, add_lemmata, label_keys_titles):
+    header = ['id', 'tense']
+    header.extend(label_keys_titles)
+    header.extend(['has target?'])
     header.extend(['w' + str(i + 1) for i in range(max_words)])
     header.extend(['pos' + str(i + 1) for i in range(max_words)])
     if add_lemmata:
@@ -48,8 +52,10 @@ def get_header(max_words, add_lemmata):
     return header
 
 
-def get_row(selection, add_lemmata, max_words):
-    s_details = [selection.pk, selection.tense, selection.other_label, 'no' if selection.is_no_target else 'yes']
+def get_row(selection, add_lemmata, max_words, label_keys):
+    s_details = [selection.pk, selection.tense]
+    s_details.extend(labels_fixed(selection, label_keys))
+    s_details.extend(['no' if selection.is_no_target else 'yes'])
 
     words = selection.words.all()
     w = [word.word for word in words]
