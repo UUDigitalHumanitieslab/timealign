@@ -32,6 +32,9 @@ class LabelField(forms.ModelChoiceField):
         if value.isdigit():
             # it's a pk of an existing label
             return Label.objects.get(pk=int(value))
+        if not value:
+            # labels cannot be empty
+            return None
         if self._key.language_specific:
             label, created = Label.objects.get_or_create(
                 title=value, key=self._key, language=self._language)
