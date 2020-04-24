@@ -44,3 +44,8 @@ footer p {
 .endpoint {
     background-color: lightblue;
 }
+
+.selection-tool {
+    text-align: right;
+    margin-top: 5px;
+}
