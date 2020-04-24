@@ -79,7 +79,11 @@ class Command(BaseCommand):
                         f.tense = Tense.objects.get(language=f.language, title=selection.tense)
                     if selection.other_label:
                         f.other_label = selection.other_label
+                    selection_labels = selection.labels.all()
 
+                    f.save()
+
+                    f.labels.set(selection_labels)
                     f.save()
 
                     # Save the Fragment as resulting Fragment on the Selection
