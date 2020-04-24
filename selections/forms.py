@@ -80,10 +80,9 @@ class SelectionForm(forms.ModelForm):
             if not cleaned_data['words']:
                 self.add_error('is_no_target', 'Please select the words composing the target phrase.')
 
-        fields = [key.symbol() for key in self.corpus.label_keys.all()]
-        # construct a value for Annotation.labels based on the individual label fields
-        cleaned_data['labels'] = []
-        if not cleaned_data.get('is_no_target', False):
+            # construct a value for Annotation.labels based on the individual label fields
+            cleaned_data['labels'] = []
+            fields = [key.symbol() for key in self.corpus.label_keys.all()]
             for field in fields:
                 if cleaned_data[field]:
                     cleaned_data['labels'].append(cleaned_data[field])
