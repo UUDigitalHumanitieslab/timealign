@@ -1,16 +1,13 @@
 from django import forms
 
-from annotations.forms import LabelField
+from annotations.forms import LabelField, SegmentSelectMixin
 from annotations.utils import get_tenses
 
 from .models import Selection, Word
 
 
-class SelectionForm(forms.ModelForm):
+class SelectionForm(SegmentSelectMixin, forms.ModelForm):
     already_complete = forms.BooleanField(label='All targets have already been selected in this fragment', required=False)
-    # a hidden field used to remember the user's prefered selection tool
-    select_segment = forms.BooleanField(widget=forms.HiddenInput(),
-                                        required=False)
 
     class Meta:
         model = Selection
@@ -31,11 +28,9 @@ class SelectionForm(forms.ModelForm):
         self.user = kwargs.pop('user', None)
 
         selected_words = self.fragment.selected_words()
-        select_segment = kwargs.pop('select_segment', False)
 
         super(SelectionForm, self).__init__(*args, **kwargs)
         self.fields['words'].queryset = Word.objects.filter(sentence__fragment=self.fragment)
-        self.fields['select_segment'].initial = select_segment
 
         # Allow to select for tense if the Corpus is tense/aspect-based.
         if self.fragment.document.corpus.tense_based:
@@ -88,3 +83,5 @@ class SelectionForm(forms.ModelForm):
                     cleaned_data['labels'].append(cleaned_data[field])
                 else:
                     self.add_error(field, 'Please choose a label.')
+
+        return cleaned_data

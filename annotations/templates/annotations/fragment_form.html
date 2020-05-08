@@ -1,0 +1,38 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+{% load static %}
+
+{% block head %}
+<script src="{% static 'annotations/selection.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <h1>Fragment</h1>
+    <h4>Corpus: {{ fragment.document.corpus.title }}</h4>
+
+    <h2>
+        {{ fragment.language.title }}
+        <span class="label label-default pull-right">{{ fragment.document.title }} - {{ fragment.first_sentence.xml_id }}</span>
+    </h2>
+    <div class="selectable">
+        {% include "annotations/_sentences.html" with sentences=fragment.sentence_set.all tooltips=1 %}
+    </div>
+
+    <div class="selection-tool">
+        Selection tool:
+        <div class="btn-group" role="group">
+            <button id="select-word" type="button" class="active btn btn-xs btn-default">Word</button>
+            <button id="select-segment" type="button" class="btn btn-xs btn-default">Segment</button>
+        </div>
+    </div>
+    <form action="" method="post" class="form">{% csrf_token %}
+        {% bootstrap_form form %}
+        <button type="submit" class="btn btn-primary">
+            {% bootstrap_icon "ok" %} Submit
+        </button>
+    </form>
+</div>
+{% endblock %}

@@ -1,7 +1,8 @@
 from django.conf.urls import url
 
 from .views import InstructionsView, IntroductionView, StatusView, \
-    AnnotationCreate, AnnotationUpdate, AnnotationDelete, AnnotationChoose, FragmentDetail, FragmentDetailPlain, \
+    AnnotationCreate, AnnotationUpdate, AnnotationDelete, AnnotationChoose, \
+    FragmentEdit, FragmentDetail, FragmentDetailPlain, \
     AnnotationList, FragmentList, ExportPOSDownload, ExportPOSPrepare, PrepareDownload, TenseCategoryList, \
     ImportLabelsView, CorpusList, CorpusDetail, DocumentDetail, SourceDetail
 
@@ -22,6 +23,7 @@ urlpatterns = [
     # Showing Fragments
     url(r'^show/(?P<pk>\d+)/$', FragmentDetail.as_view(), name='show'),
     url(r'^show/(?P<pk>\d+)/plain/$', FragmentDetailPlain.as_view(), name='show_plain'),
+    url(r'^edit_fragment/(?P<pk>\d+)/$', FragmentEdit.as_view(), name='edit_fragment'),
 
     # Showing Corpora
     url(r'^corpora/$', CorpusList.as_view(), name='corpora'),
