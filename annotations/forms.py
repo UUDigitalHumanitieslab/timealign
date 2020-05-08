@@ -1,7 +1,8 @@
 from django import forms
 
-from .models import Annotation, Word, Language, Tense, Label
-from .management.commands.import_tenses import process_file
+from .models import Annotation, Word, Language, Tense, Label, Corpus
+from .management.commands.import_tenses import process_file as process_labels_file
+from .management.commands.add_fragments import process_file as process_fragments_file
 
 
 class LabelField(forms.ModelChoiceField):
@@ -148,7 +149,19 @@ class LabelImportForm(forms.Form):
     def save(self):
         data = self.cleaned_data
 
-        process_file(data['label_file'], data['language'], data['model'])
+        process_labels_file(data['label_file'], data['language'], data['model'])
+
+
+class AddFragmentsForm(forms.Form):
+    fragment_file = forms.FileField(
+        help_text='This should be a csv file produced by PerfectExtractor')
+    corpus = forms.ModelChoiceField(
+        queryset=Corpus.objects.all()
+    )
+
+    def save(self):
+        data = self.cleaned_data
+        process_fragments_file(data['fragment_file'], data['corpus'])
 
 
 class SubSentenceFormSet(forms.BaseInlineFormSet):

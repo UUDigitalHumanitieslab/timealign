@@ -20,7 +20,7 @@ from django_filters.views import FilterView
 
 from .exports import export_pos_file
 from .filters import AnnotationFilter
-from .forms import AnnotationForm, LabelImportForm
+from .forms import AnnotationForm, LabelImportForm, AddFragmentsForm
 from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, \
     TenseCategory, Tense, Source, Sentence, Word
 from .utils import get_random_alignment, get_available_corpora, get_xml_sentences, bind_annotations_to_xml, \
@@ -553,5 +553,35 @@ class ImportLabelsView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
                 messages.error(
                     self.request, 'Error during import: {}'.format(e.message))
             return redirect(reverse('annotations:import-labels'))
+        else:
+            return render(request, self.template_name, {'form': form})
+
+
+class AddFragmentsView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
+    """
+    Allows superusers to import labels to Annotations and Fragments
+    """
+    form_class = AddFragmentsForm
+    template_name = 'annotations/add_fragments_form.html'
+
+    def test_func(self):
+        # limit access to superusers
+        return self.request.user.is_superuser
+
+    def get(self, request, *args, **kwargs):
+        form = self.form_class()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                form.save()
+                messages.success(
+                    self.request, 'Successfully added the fragments!')
+            except ValueError as e:
+                messages.error(
+                    self.request, 'Error during import: {}'.format(e.message))
+            return redirect(reverse('annotations:add-fragments'))
         else:
             return render(request, self.template_name, {'form': form})

@@ -35,34 +35,46 @@ class Command(BaseCommand):
 
         for filename in options['filenames']:
             with open(filename, 'r') as f:
-                csv_reader = csv.reader(f, delimiter=';')
-                for n, row in enumerate(csv_reader):
-                    # Retrieve the languages from the first row of the output
-                    if n == 0:
-                        language_from, languages_to = retrieve_languages(row)
-                        continue
+                try:
+                    process_file(f, corpus, use_other_label=options['use_other_label'])
+                    self.stdout.write(self.style.SUCCESS('Successfully imported fragments'))
+                except Exception as e:
+                    raise CommandError(e.message)
 
-                    # For every other line, create a Fragment and its Alignments
-                    with transaction.atomic():
-                        doc, _ = Document.objects.get_or_create(corpus=corpus, title=row[COLUMN_DOCUMENT])
 
-                        from_fragment = Fragment.objects.create(language=language_from,
-                                                                document=doc)
+def process_file(f, corpus, use_other_label=False):
+    lines = f.read().decode('utf-8-sig').splitlines()
+    csv_reader = csv.reader(lines, delimiter=';')
+    for n, row in enumerate(csv_reader):
+        # Retrieve the languages from the first row of the output
+        if n == 0:
+            language_from, languages_to = retrieve_languages(row)
+            continue
 
-                        # Add other_label or Tense to Fragment
-                        if options['use_other_label']:
-                            from_fragment.other_label = row[COLUMN_TYPE]
-                        else:
-                            from_fragment.tense = Tense.objects.get(language=language_from, title=row[COLUMN_TYPE])
-                        from_fragment.save()
+        # For every other line, create a Fragment and its Alignments
+        with transaction.atomic():
+            doc, _ = Document.objects.get_or_create(corpus=corpus, title=row[COLUMN_DOCUMENT])
 
-                        # Add Sentences to Fragment
-                        add_sentences(from_fragment, row[COLUMN_XML], row[COLUMN_IDS].split(' '))
+            from_fragment = Fragment.objects.create(language=language_from,
+                                                    document=doc)
 
-                        # Create the Fragments in other Languages and add the Alignment object
-                        create_to_fragments(doc, from_fragment, languages_to, row)
+            # Add other_label or Tense to Fragment
+            if use_other_label:
+                raise NotImplementedError()
+            else:
+                try:
+                    from_fragment.tense = Tense.objects.get(language=language_from, title=row[COLUMN_TYPE])
+                except Tense.DoesNotExist:
+                    # TODO log error
+                    continue
 
-                    self.stdout.write(self.style.SUCCESS('Line {} processed'.format(n)))
+            from_fragment.save()
+
+            # Add Sentences to Fragment
+            add_sentences(from_fragment, row[COLUMN_XML], row[COLUMN_IDS].split(' '))
+
+            # Create the Fragments in other Languages and add the Alignment object
+            create_to_fragments(doc, from_fragment, languages_to, row)
 
 
 def create_to_fragments(document, from_fragment, languages_to, row):
