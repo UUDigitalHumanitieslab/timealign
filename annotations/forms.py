@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Annotation, Word, Language, Tense, Label, Corpus
+from .models import Annotation, Word, Language, Tense, Label, Corpus, Fragment
 from .management.commands.import_tenses import process_file as process_labels_file
 from .management.commands.add_fragments import process_file as process_fragments_file
 
@@ -17,7 +17,7 @@ class LabelField(forms.ModelChoiceField):
             queryset = queryset.filter(language=language)
         kwargs['queryset'] = queryset
 
-        super().__init__(*args, **kwargs)
+        super(LabelField, self).__init__(*args, **kwargs)
         if self.is_adding_labels_allowed():
             self.widget.attrs['class'] = 'labels-field-tags'
         else:
@@ -51,11 +51,54 @@ class LabelField(forms.ModelChoiceField):
         return label
 
 
-class AnnotationForm(forms.ModelForm):
-    # a hidden field used to remember the user's prefered selection tool
-    select_segment = forms.BooleanField(widget=forms.HiddenInput(),
-                                        required=False)
+class LabelFormMixin(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super(LabelFormMixin, self).__init__(*args, **kwargs)
 
+        # add a label field for each label key
+        for key in self.corpus.label_keys.all():
+            existing_label = self.instance.labels.filter(key=key).first() if self.instance.id else None
+            field = LabelField(required=False,
+                               label_key=key,
+                               language=self.language,
+                               initial=existing_label)
+            self.fields[key.symbol()] = field
+
+        # hide the original field for labels.
+        # we still need this field defined in AnnotationForm.fields, otherwise
+        # the value set in AnnotationForm.clean() will not be used when submitting the form.
+        del self.fields['labels']
+
+    def clean(self):
+        cleaned_data = super(LabelFormMixin, self).clean()
+
+        # construct a value for Annotation.labels based on the individual label fields
+        fields = [key.symbol() for key in self.corpus.label_keys.all()]
+        cleaned_data['labels'] = [cleaned_data[field] for field in fields]
+
+        return cleaned_data
+
+    @property
+    def corpus(self):
+        return NotImplementedError
+
+    @property
+    def language(self):
+        return NotImplementedError
+
+
+class SegmentSelectMixin(forms.Form):
+    # a hidden field used to remember the user's preferred selection tool
+    select_segment = forms.BooleanField(widget=forms.HiddenInput(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        select_segment = kwargs.pop('select_segment', False)
+
+        super(SegmentSelectMixin, self).__init__(*args, **kwargs)
+        self.fields['select_segment'].initial = select_segment
+
+
+class AnnotationForm(LabelFormMixin, SegmentSelectMixin, forms.ModelForm):
     class Meta:
         model = Annotation
         fields = [
@@ -71,52 +114,35 @@ class AnnotationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         """
-        Filters the Words on the translated language.
+        - formats the form labels with actual values
+        - filters the words/tense field based on the translated Fragment
+        - removes formal_structure and sentence_function fields if the structure needs not to be checked
+        - allow to edit Tense if the current User has this permission
+        - move comments to the end
         """
-        self.alignment = kwargs.pop('alignment', None)
+        self.alignment = kwargs.pop('alignment')
+        self.user = kwargs.pop('user', None)
+
         translated_fragment = self.alignment.translated_fragment
         label = self.alignment.original_fragment.get_labels()
         structure = self.alignment.original_fragment.get_formal_structure_display()
 
-        self.user = kwargs.pop('user', None)
-        select_segment = kwargs.pop('select_segment', False)
-
         super(AnnotationForm, self).__init__(*args, **kwargs)
-        self.fields['words'].queryset = Word.objects.filter(sentence__fragment=translated_fragment)
+
         self.fields['is_no_target'].label = self.fields['is_no_target'].label.format(label)
         self.fields['is_not_labeled_structure'].label = self.fields['is_not_labeled_structure'].label.format(structure)
-        self.fields['tense'].queryset = Tense.objects.filter(language=self.alignment.translated_fragment.language)
-        self.fields['select_segment'].initial = select_segment
 
-        language = self.alignment.translated_fragment.language
-        # add a label field for each label key
-        for key in self.corpus.label_keys.all():
-            existing_label = self.instance.labels.filter(key=key).first() if self.instance.id else None
-            field = LabelField(required=False,
-                               label_key=key,
-                               language=language,
-                               initial=existing_label)
-            self.fields[key.symbol()] = field
-
-        # hide the original field for labels.
-        # we still need this field defined in AnnotationForm.fields, otherwise
-        # the value set in AnnotationForm.clean() will not be used when submitting the form.
-        del self.fields['labels']
+        self.fields['tense'].queryset = Tense.objects.filter(language=translated_fragment.language)
+        self.fields['words'].queryset = Word.objects.filter(sentence__fragment=translated_fragment)
 
         if not self.corpus.check_structure:
             del self.fields['is_not_labeled_structure']
             del self.fields['is_not_same_structure']
 
-        # Only allow to edit tense/other_label if the current User has this permission
         if not self.user.has_perm('annotations.edit_labels_in_interface'):
             del self.fields['tense']
 
-        # Comments should be the last form field
         self.fields.move_to_end('comments')
-
-    @property
-    def corpus(self):
-        return self.alignment.original_fragment.document.corpus
 
     def clean(self):
         """
@@ -124,13 +150,70 @@ class AnnotationForm(forms.ModelForm):
         - If is_translation is set, make sure Words have been selected
         """
         cleaned_data = super(AnnotationForm, self).clean()
-        # construct a value for Annotation.labels based on the individual label fields
-        fields = [key.symbol() for key in self.corpus.label_keys.all()]
-        cleaned_data['labels'] = [cleaned_data[field] for field in fields]
 
         if not cleaned_data['is_no_target'] and cleaned_data['is_translation']:
             if not cleaned_data['words']:
                 self.add_error('is_translation', 'Please select the words composing the translation.')
+
+        return cleaned_data
+
+    @property
+    def corpus(self):
+        return self.alignment.original_fragment.document.corpus
+
+    @property
+    def language(self):
+        return self.alignment.translated_fragment.language
+
+
+class FragmentForm(LabelFormMixin, SegmentSelectMixin, forms.ModelForm):
+    words = forms.ModelMultipleChoiceField(queryset=Word.objects.none(), required=False)
+
+    class Meta:
+        model = Fragment
+        fields = [
+            'tense', 'labels',
+            'formal_structure', 'sentence_function',
+            'words',
+            'select_segment'
+        ]
+
+    def __init__(self, *args, **kwargs):
+        """
+        - filters the words/tense field based on the translated Fragment
+        - sets initial value for the words field
+        - removes formal_structure and sentence_function fields if the structure needs not to be checked
+        """
+        self.fragment = kwargs.get('instance')
+
+        super(FragmentForm, self).__init__(*args, **kwargs)
+
+        self.fields['tense'].queryset = Tense.objects.filter(language=self.fragment.language)
+        self.fields['words'].queryset = Word.objects.filter(sentence__fragment=self.fragment)
+        self.fields['words'].initial = self.fragment.targets()
+
+        if not self.corpus.check_structure:
+            del self.fields['formal_structure']
+            del self.fields['sentence_function']
+
+    def clean(self):
+        """
+        - make sure Words have been selected
+        """
+        cleaned_data = super(FragmentForm, self).clean()
+
+        if not cleaned_data['words']:
+            self.add_error(None, 'Please select target words.')
+
+        return cleaned_data
+
+    @property
+    def corpus(self):
+        return self.fragment.document.corpus
+
+    @property
+    def language(self):
+        return self.fragment.language
 
 
 class LabelImportForm(forms.Form):

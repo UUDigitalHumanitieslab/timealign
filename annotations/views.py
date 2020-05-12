@@ -20,7 +20,7 @@ from django_filters.views import FilterView
 
 from .exports import export_pos_file
 from .filters import AnnotationFilter
-from .forms import AnnotationForm, LabelImportForm, AddFragmentsForm
+from .forms import AnnotationForm, LabelImportForm, AddFragmentsForm, FragmentForm
 from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, \
     TenseCategory, Tense, Source, Sentence, Word
 from .utils import get_random_alignment, get_available_corpora, get_xml_sentences, bind_annotations_to_xml, \
@@ -105,7 +105,20 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
 #################
 # CRUD Annotation
 #################
-class AnnotationMixin(SuccessMessageMixin, PermissionRequiredMixin):
+class SelectSegmentMixin:
+    def get_form_kwargs(self):
+        """Sets select_fragment as a form kwarg"""
+        kwargs = super(SelectSegmentMixin, self).get_form_kwargs()
+        kwargs['select_segment'] = self.request.session.get('select_segment', False)
+        return kwargs
+
+    def form_valid(self, form):
+        """save user preferred selection tool on the session"""
+        self.request.session['select_segment'] = form.cleaned_data['select_segment']
+        return super(SelectSegmentMixin, self).form_valid(form)
+
+
+class AnnotationMixin(SelectSegmentMixin, SuccessMessageMixin, PermissionRequiredMixin):
     model = Annotation
     form_class = AnnotationForm
     permission_required = 'annotations.change_annotation'
@@ -135,11 +148,6 @@ class AnnotationMixin(SuccessMessageMixin, PermissionRequiredMixin):
     def get_alignments(self):
         """Retrieve related fields on Alignment to prevent extra queries"""
         return Alignment.objects.select_related('original_fragment', 'translated_fragment')
-
-    def form_valid(self, form):
-        # save user preferred selection tool on the session
-        self.request.session['select_segment'] = form.cleaned_data['select_segment']
-        return super().form_valid(form)
 
 
 class AnnotationUpdateMixin(AnnotationMixin, CheckOwnerOrStaff):
@@ -257,6 +265,27 @@ class FragmentDetailPlain(LoginRequiredMixin, generic.DetailView):
             .prefetch_related('original', 'sentence_set__word_set')
         fragment = super(FragmentDetailPlain, self).get_object(qs)
         return fragment
+
+
+class FragmentEdit(SelectSegmentMixin, LoginRequiredMixin, generic.UpdateView):
+    model = Fragment
+    form_class = FragmentForm
+
+    def get_context_data(self, **kwargs):
+        """Sets the annotated Words on the context"""
+        context = super(FragmentEdit, self).get_context_data(**kwargs)
+        context['annotated_words'] = self.object.targets()
+        return context
+
+    def get_success_url(self):
+        return reverse('annotations:show', args=(self.object.pk,))
+
+    def form_valid(self, form):
+        """Updates the target words"""
+        for word in Word.objects.filter(sentence__fragment=self.object):
+            word.is_target = word in form.cleaned_data['words']
+            word.save()
+        return super(FragmentEdit, self).form_valid(form)
 
 
 ############
