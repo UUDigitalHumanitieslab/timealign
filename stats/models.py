@@ -60,9 +60,13 @@ class Scenario(models.Model):
     def get_labels(self):
         # format mds_labels in a way that works with the recent changes.
         # this prevents us from having to rerun all existing scenarios.
-        if isinstance(next(iter(self.mds_labels.values()))[0], int):
-            return {key: [('Tense:{}'.format(x),) for x in value] for key, value in self.mds_labels.items()}
-        return self.mds_labels
+        result = dict()
+        for language, values in self.mds_labels.items():
+            if isinstance(values[0], int):
+                result[language] = [('Tense:{}'.format(v),) for v in values]
+            else:
+                result[language] = values
+        return result
 
 
 class ScenarioLanguage(models.Model):

@@ -452,7 +452,7 @@ class SankeyView(ScenarioDetail):
         context = super(SankeyView, self).get_context_data(**kwargs)
 
         scenario = self.object
-        labels = scenario.get_labels()
+        mds_labels = scenario.get_labels()
         fragment_pks = scenario.mds_fragments
         languages_from = scenario.languages(as_from=True)
         languages_to = scenario.languages(as_to=True)
@@ -464,12 +464,17 @@ class SankeyView(ScenarioDetail):
         lto_option = self.request.GET.get('lto_option')
         lto_option = None if lto_option == 'none' else lto_option
 
+        # Simplify labels (from tuples to single values)
+        labels = dict()
+        for language, values in mds_labels.items():
+            labels[language] = [v[0] if isinstance(v, tuple) else v for v in values]
+
         # Retrieve nodes and links
         nodes = set()
-        for language, ls in list(labels.items()):
+        for language, ls in labels.items():
             if language in [language_from, language_to]:
-                for iterator, label in enumerate(ls):
-                    nodes.add(label)
+                for l in ls:
+                    nodes.add(l)
 
         # Retrieve the values for the source language
         lfrom_values = []

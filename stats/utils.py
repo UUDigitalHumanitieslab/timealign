@@ -298,11 +298,9 @@ def get_tense_properties_from_cache(tense_identifier, tense_cache, seq=0):
     if tense_identifier in tense_cache:
         tense_label, tense_color, tense_category = tense_cache[tense_identifier]
     else:
-        _, tense_color, tense_category = get_tense_properties(tense_identifier, seq)
+        tense_label, tense_color, tense_category = get_tense_properties(tense_identifier, seq)
         if isinstance(tense_identifier, tuple):
             tense_label = '<{}>'.format(','.join(tense_cache[t][0] for t in tense_identifier))
-        else:
-            tense_label = tense_cache[tense_identifier][0]
         tense_cache[tense_identifier] = (tense_label, tense_color, tense_category)
     return tense_label, tense_color, tense_category
 
