@@ -4,7 +4,6 @@ import random
 import math
 from collections import Counter, OrderedDict, defaultdict
 from itertools import chain, repeat, count
-from operator import attrgetter
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
