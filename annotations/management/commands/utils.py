@@ -1,40 +1,7 @@
-import codecs
 import contextlib
 import csv
-import io
 
 from xlsxwriter import Workbook
-
-
-class UnicodeWriter:
-    """
-    A CSV writer which will write rows to CSV file "f",
-    which is encoded in the given encoding.
-    Copied from https://docs.python.org/2/library/csv.html#examples
-    """
-
-    def __init__(self, f, dialect=csv.excel, encoding='utf-8', **kwds):
-        # Redirect output to a queue
-        self.queue = io.StringIO()
-        self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
-        self.stream = f
-        self.encoder = codecs.getincrementalencoder(encoding)()
-
-    def writerow(self, row, is_header=False):
-        self.writer.writerow([s.encode('utf-8') if type(s) == str else s for s in row])
-        # Fetch UTF-8 output from the queue ...
-        data = self.queue.getvalue()
-        data = data.decode('utf-8')
-        # ... and reencode it into the target encoding
-        data = self.encoder.encode(data)
-        # write to the target stream
-        self.stream.write(data)
-        # empty queue
-        self.queue.truncate(0)
-
-    def writerows(self, rows):
-        for row in rows:
-            self.writerow(row)
 
 
 class ExcelWriter:
@@ -48,6 +15,8 @@ class ExcelWriter:
 
     def writerow(self, contents, is_header=False):
         cell_format = None
+
+        # Add bold formatting and an autofilter
         if is_header:
             cell_format = self._workbook.add_format({'bold': True})
             self._worksheet.autofilter(self._row, 0, 0, len(contents) - 1)
@@ -66,8 +35,8 @@ class ExcelWriter:
 @contextlib.contextmanager
 def open_csv(filename):
     with open(filename, 'w') as fileobj:
-        fileobj.write('\uFEFF'.encode('utf-8'))  # the UTF-8 BOM to hint Excel we are using that...
-        yield UnicodeWriter(fileobj, delimiter=';')
+        fileobj.write('\uFEFF')  # the UTF-8 BOM to hint Excel we are using that...
+        yield csv.writer(fileobj, delimiter=';')
 
 
 @contextlib.contextmanager

@@ -72,7 +72,7 @@ def export_pos_file(filename, format_, corpus, language, subcorpus=None,
                 header.extend(['index' + str(i + 1) for i in range(max_words)])
             header.extend(['comments', 'full fragment'])
             header.extend(list(['source ' + x for x in ['id', 'document', 'sentences', 'words', 'tense'] + label_keys_titles + ['fragment']]))
-            writer.writerow(header, is_header=True)
+            writer.writerow(header, is_header=True) if format_ == XLSX else writer.writerow(header)
 
             for annotation in annotations:
                 words = annotation.words.all()
@@ -133,7 +133,7 @@ def export_fragments_file(filename, format_, corpus, language,
             if add_indices:
                 header.extend(['index' + str(i + 1) for i in range(max_words)])
             header.extend(['document', 'sentence id', 'target ids', 'full fragment'])
-            writer.writerow(header, is_header=True)
+            writer.writerow(header, is_header=True) if format_ == XLSX else writer.writerow(header)
 
             for fragment in fragments:
                 words = Word.objects.filter(sentence__fragment=fragment, is_target=True)

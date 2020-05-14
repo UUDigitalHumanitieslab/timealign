@@ -53,7 +53,7 @@ class Command(BaseCommand):
 
         filename = 'pos_{lang}.{ext}'.format(lang=source_language.iso, ext=format_)
         with opener(filename) as writer:
-            writer.writerow(header, is_header=True)
+            writer.writerow(header, is_header=True) if format_ == XLSX else writer.writerow(header)
             writer.writerows(results)
 
 
