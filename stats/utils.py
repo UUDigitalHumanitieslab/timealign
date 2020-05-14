@@ -274,7 +274,7 @@ def copy_scenario_language(scenario, scenario_language):
     copy_sl.save()
 
 
-def get_tense_properties(tense_identifier, seq=0):
+def get_tense_properties(tense_identifier, seq=0, allow_empty=False):
     if not tense_identifier:
         tense_label = '-'
         tense_color = '#000000'
@@ -286,19 +286,19 @@ def get_tense_properties(tense_identifier, seq=0):
         tense_category = tense.category.title
     else:
         tense_label = tense_identifier
-        tense_color = get_color(tense_identifier, seq)
+        tense_color = '#000000' if allow_empty else get_color(tense_identifier, seq)
         tense_category = None
     return tense_label, tense_color, tense_category
 
 
-def get_tense_properties_from_cache(tense_identifier, tense_cache, seq=0):
+def get_tense_properties_from_cache(tense_identifier, tense_cache, seq=0, allow_empty=False):
     if isinstance(tense_identifier, tuple) and len(tense_identifier) == 1:
         tense_identifier = tense_identifier[0]
 
     if tense_identifier in tense_cache:
         tense_label, tense_color, tense_category = tense_cache[tense_identifier]
     else:
-        tense_label, tense_color, tense_category = get_tense_properties(tense_identifier, seq)
+        tense_label, tense_color, tense_category = get_tense_properties(tense_identifier, seq, allow_empty)
         if isinstance(tense_identifier, tuple):
             tense_label = '<{}>'.format(','.join(tense_cache[t][0] for t in tense_identifier))
         tense_cache[tense_identifier] = (tense_label, tense_color, tense_category)

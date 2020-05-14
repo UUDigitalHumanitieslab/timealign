@@ -4,6 +4,7 @@ import random
 import math
 from collections import Counter, OrderedDict, defaultdict
 from itertools import chain, repeat, count
+from operator import attrgetter
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
@@ -513,31 +514,27 @@ class SankeyView(ScenarioDetail):
         for l1, l2 in zip(list_of_lists, list_of_lists[1:]):
             zipped = list(zip(l1, l2))
             for n, link in enumerate(zipped):
-                links[(link[0], link[1])].append(fragment_pks[n])
+                origin = list_of_lists[0][n]
+                links[(origin, link[0], link[1])].append(fragment_pks[n])
 
         # Convert the nodes into a dictionary
         tense_cache = prepare_label_cache(scenario.corpus)
-        labels = set()
         new_nodes = []
         for node in nodes:
-            node_label, node_color, _ = get_tense_properties_from_cache(node, tense_cache, len(labels))
-
-            labels.add(node_label)
+            node_label, node_color, _ = get_tense_properties_from_cache(node, tense_cache, allow_empty=True)
             new_node = {'id': node, 'color': node_color, 'label': node_label}
             new_nodes.append(new_node)
 
         # Convert the links into a dictionary
         new_links = []
-        for link, fragment_pks in list(links.items()):
-            for l1, l2 in zip(link, link[1:]):
-                l1_label, l1_color, _ = get_tense_properties_from_cache(l1, tense_cache)
-                l2_label, l2_color, _ = get_tense_properties_from_cache(l2, tense_cache)
-
-                new_link = {'source': l1, 'source_color': l1_color, 'source_label': l1_label,
-                            'target': l2, 'target_color': l2_color, 'target_label': l2_label,
-                            'value': len(fragment_pks), 'fragment_pks': fragment_pks, 'link_color': l1_color}
-
+        for link, fragment_pks in links.items():
+            for l0, l1, l2 in zip(link, link[1:], link[2:]):
+                l0_label, l0_color, _ = get_tense_properties_from_cache(l0, tense_cache)
+                new_link = {'origin': l0, 'origin_label': l0_label, 'origin_color': l0_color,
+                            'source': l1, 'target': l2,
+                            'value': len(fragment_pks), 'fragment_pks': fragment_pks}
                 new_links.append(new_link)
+        new_links = sorted(new_links, key=lambda n: n['origin_color'])
 
         # JSONify the data and add it to the context
         context['data'] = json.dumps({'nodes': new_nodes, 'links': new_links})
