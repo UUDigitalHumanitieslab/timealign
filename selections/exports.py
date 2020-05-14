@@ -32,7 +32,8 @@ def export_selections(filename, format_, corpus, language,
         label_keys_titles = list(corpus.label_keys.values_list('title', flat=True))
         # Output to csv/xlsx
         if selections:
-            writer.writerow(get_header(max_words, add_lemmata, label_keys_titles), is_header=True)
+            header = get_header(max_words, add_lemmata, label_keys_titles)
+            writer.writerow(header, is_header=True) if format_ == XLSX else writer.writerow(header)
 
             for selection in selections:
                 writer.writerow(get_row(selection, add_lemmata, max_words, label_keys))
