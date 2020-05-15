@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from .constants import COLUMN_DOCUMENT, COLUMN_TYPE, COLUMN_IDS, COLUMN_XML, FROM_WIDTH, TO_WIDTH
-from annotations.models import Language, Tense, Corpus, Document, Fragment, Sentence, Word, Alignment
+from annotations.models import Language, Tense, Corpus, Document, Fragment, Sentence, Word, Alignment, LabelKey
 
 
 class Command(BaseCommand):
@@ -16,7 +16,7 @@ class Command(BaseCommand):
         parser.add_argument('corpus', type=str)
         parser.add_argument('filenames', type=str, nargs='+')
 
-        parser.add_argument('--use_other_label', action='store_true', dest='use_other_label', default=False)
+        parser.add_argument('--use_label', dest='use_label')
         parser.add_argument('--delete', action='store_true', dest='delete', default=False,
                             help='Delete existing Fragments (and contents) for this Corpus')
 
@@ -34,17 +34,23 @@ class Command(BaseCommand):
             Fragment.objects.filter(document__corpus=corpus).delete()
 
         for filename in options['filenames']:
-            with open(filename, 'r') as f:
+            with open(filename, 'rb') as f:
                 try:
-                    process_file(f, corpus, use_other_label=options['use_other_label'])
+                    process_file(f, corpus, use_label=options['use_label'])
                     self.stdout.write(self.style.SUCCESS('Successfully imported fragments'))
                 except Exception as e:
-                    raise CommandError(e.message)
+                    raise CommandError(e)
 
 
-def process_file(f, corpus, use_other_label=False):
+def process_file(f, corpus, use_label_pk=None, use_label=None):
     lines = f.read().decode('utf-8-sig').splitlines()
     csv_reader = csv.reader(lines, delimiter=';')
+    label_key = None
+    if use_label_pk:
+        label_key = LabelKey.objects.get(pk=use_label_pk)
+    elif use_label:
+        label_key = LabelKey.objects.get(title=use_label, corpora=corpus)
+
     for n, row in enumerate(csv_reader):
         # Retrieve the languages from the first row of the output
         if n == 0:
@@ -58,15 +64,16 @@ def process_file(f, corpus, use_other_label=False):
             from_fragment = Fragment.objects.create(language=language_from,
                                                     document=doc)
 
+            type_value = row[COLUMN_TYPE]
             # Add other_label or Tense to Fragment
-            if use_other_label:
-                raise NotImplementedError()
+            if label_key:
+                label, _ = label_key.labels.get_or_create(title=type_value)
+                from_fragment.labels.add(label)
             else:
                 try:
-                    from_fragment.tense = Tense.objects.get(language=language_from, title=row[COLUMN_TYPE])
+                    from_fragment.tense = Tense.objects.get(language=language_from, title=type_value)
                 except Tense.DoesNotExist:
-                    # TODO log error
-                    continue
+                    raise ValueError('Unknown tense: {}'.format(type_value))
 
             from_fragment.save()
 

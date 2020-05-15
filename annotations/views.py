@@ -580,7 +580,7 @@ class ImportLabelsView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
                     self.request, 'Successfully imported the labels!')
             except ValueError as e:
                 messages.error(
-                    self.request, 'Error during import: {}'.format(e.message))
+                    self.request, 'Error during import: {}'.format(e))
             return redirect(reverse('annotations:import-labels'))
         else:
             return render(request, self.template_name, {'form': form})
@@ -598,8 +598,9 @@ class AddFragmentsView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
         return self.request.user.is_superuser
 
     def get(self, request, *args, **kwargs):
-        form = self.form_class()
-        return render(request, self.template_name, {'form': form})
+        corpus = request.GET.get('corpus')
+        form = self.form_class(corpus=corpus)
+        return render(request, self.template_name, dict(form=form, corpus=corpus))
 
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST, request.FILES)
@@ -610,7 +611,7 @@ class AddFragmentsView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
                     self.request, 'Successfully added the fragments!')
             except ValueError as e:
                 messages.error(
-                    self.request, 'Error during import: {}'.format(e.message))
+                    self.request, 'Error during import: {}'.format(e))
             return redirect(reverse('annotations:add-fragments'))
         else:
             return render(request, self.template_name, {'form': form})

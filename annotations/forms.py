@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Annotation, Word, Language, Tense, Label, Corpus, Fragment
+from .models import Annotation, Word, Language, Tense, Label, Corpus, Fragment, LabelKey
 from .management.commands.import_tenses import process_file as process_labels_file
 from .management.commands.add_fragments import process_file as process_fragments_file
 
@@ -236,15 +236,28 @@ class LabelImportForm(forms.Form):
 
 
 class AddFragmentsForm(forms.Form):
-    fragment_file = forms.FileField(
-        help_text='This should be a csv file produced by PerfectExtractor')
-    corpus = forms.ModelChoiceField(
-        queryset=Corpus.objects.all()
-    )
+    corpus = forms.ModelChoiceField(queryset=Corpus.objects.all())
+
+    def __init__(self, *args, corpus=None, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if args:
+            corpus = corpus or args[0].get('corpus')
+        if corpus is not None:
+            corpus = int(corpus)
+            self.fields['corpus'].initial = corpus
+            self.fields['fragment_file'] = forms.FileField(
+                help_text='This should be a csv file produced by PerfectExtractor')
+            choices = [('tense', 'Tense')]
+            choices += LabelKey.objects.filter(corpora=corpus).values_list('pk', 'title')
+            self.fields['annotation_type'] = forms.ChoiceField(
+                label='Treat type column as:',
+                choices=choices)
 
     def save(self):
         data = self.cleaned_data
-        process_fragments_file(data['fragment_file'], data['corpus'])
+        use_label = data['annotation_type'] if data['annotation_type'] != 'tense' else None
+        process_fragments_file(data['fragment_file'], data['corpus'], use_label_pk=use_label)
 
 
 class SubSentenceFormSet(forms.BaseInlineFormSet):
