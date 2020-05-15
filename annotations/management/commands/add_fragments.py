@@ -100,7 +100,10 @@ def retrieve_languages(row, header_width=FROM_WIDTH):
     languages_to = dict()
     language_from = Language.objects.get(iso=row[COLUMN_XML])
     for i in range(header_width + 1, len(row), TO_WIDTH):
-        languages_to[i] = Language.objects.get(iso=row[i])
+        try:
+            languages_to[i] = Language.objects.get(iso=row[i])
+        except Language.DoesNotExist:
+            raise ValueError('Unknown lanugage code: {}'.format(row[i]))
     return language_from, languages_to
 
 
