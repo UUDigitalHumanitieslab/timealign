@@ -113,12 +113,12 @@ function MDSView(flat_data, series_list, clusters, options) {
 
     function set_dots(key, opacity, negative_match = false) {
         if (negative_match) {
-            d3.selectAll(".dot")
+            d3.selectAll(".dot, .cluster-label")
                 .filter(function (e) { return key !== e.key })
                 .style("opacity", opacity);
         }
         else {
-            d3.selectAll(".dot")
+            d3.selectAll(".dot, .cluster-label")
                 .filter(function (e) { return key === e.key })
                 .style("opacity", opacity);
         }
