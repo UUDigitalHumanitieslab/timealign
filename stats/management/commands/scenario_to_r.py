@@ -8,6 +8,7 @@ from rpy2.rlike import container
 
 from django.core.management.base import BaseCommand, CommandError
 
+from annotations.models import TenseCategory
 from stats.models import Scenario
 from stats.utils import prepare_label_cache, get_tense_properties_from_cache
 
@@ -66,6 +67,17 @@ class Command(BaseCommand):
             [('fragment_id', robjects.StrVector(fragment_ids))] +
             [(language, robjects.StrVector(categories[language])) for language in language_keys])
         robjects.r.assign('df_cat', robjects.DataFrame(df_cat))
+
+        tc_titles = []
+        tc_colors = []
+        for title, color in TenseCategory.objects.values_list('title', 'color'):
+            tc_titles.append(title)
+            tc_colors.append(color)
+        tensecats = container.OrdDict(
+            [('category', robjects.StrVector(tc_titles))] +
+            [('colors', robjects.StrVector(tc_colors))]
+        )
+        robjects.r.assign('tensecats', robjects.DataFrame(tensecats))
 
         # Save the workspace
         filename = 's{}.RData'.format(scenario.pk)
