@@ -275,6 +275,16 @@ def copy_scenario_language(scenario, scenario_language):
 
 
 def get_tense_properties(tense_identifier, seq=0, allow_empty=False):
+    """
+    Fetches properties for a Tense identifier.
+    For integers, this method finds the label, color and TenseCategory label.
+    For strings, this method generates a color based on a sequence number.
+    NOTE: Usually, one should not call this method directly, rather use get_tense_properties_from_cache below.
+    :param tense_identifier: identifier of the Tense, int or string
+    :param seq: current sequence number of assigned colors (for strings)
+    :param allow_empty: allow #000000 (black) as color instead of an assigned color
+    :return: label, color, and category for the given tense identifier
+    """
     if not tense_identifier:
         tense_label = '-'
         tense_color = '#000000'
@@ -292,6 +302,15 @@ def get_tense_properties(tense_identifier, seq=0, allow_empty=False):
 
 
 def get_tense_properties_from_cache(tense_identifier, tense_cache, seq=0, allow_empty=False):
+    """
+    Fetches properties for a Tense identifier from a cache.
+    For integers, this method finds the label, color and TenseCategory label.
+    For strings, this method generates a color based on a sequence number.
+    :param tense_identifier: identifier of the Tense, int or string
+    :param seq: current sequence number of assigned colors (for strings)
+    :param allow_empty: allow #000000 (black) as color instead of an assigned color
+    :return: label, color, and category for the given tense identifier
+    """
     if isinstance(tense_identifier, tuple) and len(tense_identifier) == 1:
         tense_identifier = tense_identifier[0]
 
@@ -306,6 +325,11 @@ def get_tense_properties_from_cache(tense_identifier, tense_cache, seq=0, allow_
 
 
 def prepare_label_cache(corpus):
+    """
+    Prepares the label cache for a Corpus that is used in get_tense_properties_from_cache.
+    :param corpus: The given Corpus.
+    :return: A dictionary with label, colors and categories per label identifier.
+    """
     cache = {'Tense:{}'.format(t.pk): (t.title, t.category.color, t.category.title)
              for t in Tense.objects.select_related('category')}
     for i, label in enumerate(Label.objects.filter(key__corpora=corpus)):
@@ -318,7 +342,7 @@ def get_color(tense, seq=0):
     """
     This function maps a tense on a color from the d3 color scale.
     See https://github.com/d3/d3-3.x-api-reference/blob/master/Ordinal-Scales.md#categorical-colors for details.
-    TODO: create a Tense model and save this stuff there.
+    TODO: the string lookup has become obsolete now we have the Tense and LabelKey in place. Consider removing.
     :param tense: The given tense
     :param seq: The current sequence number
     :return: A color from the d3 color scale
