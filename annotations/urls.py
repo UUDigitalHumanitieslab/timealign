@@ -4,7 +4,7 @@ from .views import InstructionsView, IntroductionView, StatusView, \
     AnnotationCreate, AnnotationUpdate, AnnotationDelete, AnnotationChoose, \
     FragmentEdit, FragmentDetail, FragmentDetailPlain, \
     AnnotationList, FragmentList, ExportPOSDownload, ExportPOSPrepare, PrepareDownload, TenseCategoryList, \
-    ImportLabelsView, CorpusList, CorpusDetail, DocumentDetail, SourceDetail
+    ImportLabelsView, CorpusList, CorpusDetail, DocumentDetail, SourceDetail, AddFragmentsView
 
 urlpatterns = [
     # Static views
@@ -49,4 +49,5 @@ urlpatterns = [
 
     # Importing of labels
     url(r'^import_labels/$', ImportLabelsView.as_view(), name='import-labels'),
+    url(r'^add_fragments/$', AddFragmentsView.as_view(), name='add-fragments'),
 ]
