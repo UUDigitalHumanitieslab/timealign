@@ -12,7 +12,7 @@ django-js-asset==1.2.2    # via django-ckeditor
 django-nested-admin==3.2.4  # via -r requirements.in
 django-object-actions==2.0.0  # via -r requirements.in
 django-picklefield==2.1.1  # via -r requirements.in
-django==2.2.11            # via -r requirements.in, django-braces, django-filter, django-picklefield
+django==2.2.13            # via -r requirements.in, django-braces, django-filter, django-picklefield
 joblib==0.14.1            # via scikit-learn
 lxml==4.5.0               # via -r requirements.in
 mysqlclient==1.4.6        # via -r requirements.in
