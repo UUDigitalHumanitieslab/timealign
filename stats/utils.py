@@ -77,7 +77,7 @@ def run_mds(scenario):
         # Filter on other_labels (if selected)
         if language_from.use_labels and language_from.other_labels:
             other_labels = language_from.other_labels.split(',')
-            fragments = fragments.filter(other_label__in=other_labels)
+            fragments = fragments.filter(labels__title__in=other_labels)
 
         # Fetch the Annotations
         annotations = Annotation.objects \
@@ -105,7 +105,7 @@ def run_mds(scenario):
             if language_to.use_labels and language_to.other_labels:
                 other_labels = language_to.other_labels.split(',')
                 annotations = annotations.filter(~Q(alignment__translated_fragment__language=language_to.language) |
-                                                 Q(other_label__in=other_labels))
+                                                 Q(labels__title__in=other_labels))
 
         annotations.filter(alignment__translated_fragment__language__in=languages)
 
