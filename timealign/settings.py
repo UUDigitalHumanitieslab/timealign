@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'django_filters',
     'django_object_actions',
     'nested_admin',
+    'widget_tweaks',
+    'perfectextractor_ui',
 
     'core.apps.CoreConfig',
     'news.apps.NewsConfig',
@@ -154,3 +156,6 @@ MEDIA_URL = '/media/'
 
 CKEDITOR_UPLOAD_PATH = 'news'
 CKEDITOR_IMAGE_BACKEND = 'pillow'
+
+# Path to where the PerfectExtractor corpora reside
+PE_DATA_PATH = '/opt/corpora/'

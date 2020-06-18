@@ -8,8 +8,7 @@ django-object-actions
 django-picklefield
 lxml
 mysqlclient
-numpy
+perfectextractor-ui
 Pillow
-scipy
 scikit-learn
 XlsxWriter

@@ -4,24 +4,34 @@
 #
 #    pip-compile requirements.in
 #
-django-bootstrap3==12.0.3  # via -r requirements.in
+certifi==2020.4.5.2       # via requests
+chardet==3.0.4            # via requests
+click==7.1.2              # via perfectextractor
+django-bootstrap3==12.1.0  # via -r requirements.in
 django-braces==1.14.0     # via -r requirements.in
 django-ckeditor==5.9.0    # via -r requirements.in
-django-filter==2.2.0      # via -r requirements.in
+django-filter==2.3.0      # via -r requirements.in
 django-js-asset==1.2.2    # via django-ckeditor
-django-nested-admin==3.2.4  # via -r requirements.in
+django-nested-admin==3.3.2  # via -r requirements.in
 django-object-actions==2.0.0  # via -r requirements.in
-django-picklefield==2.1.1  # via -r requirements.in
-django==2.2.11            # via -r requirements.in, django-braces, django-filter, django-picklefield
-joblib==0.14.1            # via scikit-learn
-lxml==4.5.0               # via -r requirements.in
+django-picklefield==3.0.1  # via -r requirements.in
+django-widget-tweaks==1.4.8  # via perfectextractor-ui
+django==2.2.13            # via -r requirements.in, django-braces, django-filter, django-picklefield
+idna==2.9                 # via requests
+joblib==0.15.1            # via scikit-learn
+lxml==4.5.1               # via -r requirements.in, perfectextractor
 mysqlclient==1.4.6        # via -r requirements.in
-numpy==1.18.1             # via -r requirements.in, scikit-learn, scipy
-pillow==7.0.0             # via -r requirements.in
+numpy==1.18.5             # via scikit-learn, scipy
+perfectextractor-ui==0.1.1  # via -r requirements.in
+perfectextractor==0.3     # via perfectextractor-ui
+pillow==7.1.2             # via -r requirements.in
 python-monkey-business==1.0.0  # via django-nested-admin
-pytz==2019.3              # via django
-scikit-learn==0.22.2.post1  # via -r requirements.in
-scipy==1.4.1              # via -r requirements.in, scikit-learn
-six==1.14.0               # via django-braces, django-nested-admin, python-monkey-business
+pytz==2020.1              # via django
+requests==2.24.0          # via perfectextractor
+scikit-learn==0.23.1      # via -r requirements.in
+scipy==1.4.1              # via scikit-learn
+six==1.15.0               # via django-braces, django-nested-admin, python-monkey-business
 sqlparse==0.3.1           # via django
-xlsxwriter==1.2.8         # via -r requirements.in
+threadpoolctl==2.1.0      # via scikit-learn
+urllib3==1.25.9           # via requests
+xlsxwriter==1.2.9         # via -r requirements.in
