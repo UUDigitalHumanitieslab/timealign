@@ -42,10 +42,11 @@ urlpatterns = [
     url(r'^student-research/$', views.flatpage, {'url': '/student-research/'}, name='student-research'),
     url(r'^workshops/$', views.flatpage, {'url': '/workshops/'}, name='workshops'),
     url(r'^expert-meetings/$', views.flatpage, {'url': '/expert-meetings/'}, name='expert-meetings'),
-    url(r'^perfectextractor/$', views.flatpage, {'url': '/perfectextractor/'}, name='perfectextractor'),
+    url(r'^perfectextractor/introduction/$', views.flatpage, {'url': '/perfectextractor/introduction/'}, name='perfectextractor'),
     url(r'^translation-mining/$', views.flatpage, {'url': '/translation-mining/'}, name='translation-mining'),
     url(r'^contact/$', views.flatpage, {'url': '/contact/'}, name='contact'),
 
     url(r'^ckeditor/', include('ckeditor_uploader.urls')),
     url(r'^nested_admin/', include('nested_admin.urls')),
+    url(r'^perfectextractor/', include('perfectextractor_ui.urls'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
