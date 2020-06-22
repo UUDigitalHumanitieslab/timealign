@@ -26,6 +26,14 @@ class ScenarioLanguageForm(forms.ModelForm):
         if self.instance.language_id:
             self.fields['tenses'].queryset = self.fields['tenses'].queryset.filter(language=self.instance.language)
 
+            qs = self.fields['include_labels'].queryset
+            qs = qs.filter(language=self.instance.language) | qs.filter(language=None)
+            qs = qs.filter(key__corpora=self.instance.scenario.corpus)
+            labels = []
+            for label in qs:
+                labels.append((label.pk, '{}:{}'.format(label.key.title, label.title)))
+            self.fields['include_labels'].choices = labels
+
     def clean(self):
         """
         Check that either as_from or as_to has been set for a ScenarioLanguage.

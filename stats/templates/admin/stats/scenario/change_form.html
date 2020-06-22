@@ -1,0 +1,53 @@
+{% extends 'admin/change_form.html' %}
+{% load static %}
+{% load add_preserved_filters from admin_urls %}
+
+{# block copied from django-object-actions #}
+{% block object-tools-items %}
+  {% for tool in objectactions %}
+    <li class="objectaction-item" data-tool-name="{{ tool.name }}">
+      {% url tools_view_name pk=object_id tool=tool.name as action_url %}
+      <a href="{% add_preserved_filters action_url %}" title="{{ tool.standard_attrs.title }}"
+         {% for k, v in tool.custom_attrs.items %}
+           {{ k }}="{{ v }}"
+         {% endfor %}
+         class="{{ tool.standard_attrs.class }}">
+      {{ tool.label|capfirst }}
+      </a>
+    </li>
+  {% endfor %}
+  {{ block.super }}
+{% endblock %}
+
+
+{% block extrahead %}
+    {{ block.super }}
+    {# make jQuery available to select2 #}
+    <script>var jQuery = django.jQuery;</script>
+    {# Load the Select2 library #}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/js/select2.min.js"></script>
+
+    <style>
+    .color-swatch {
+        display: inline-block;
+        width: 100%;
+        height: 10px;
+        vertical-align:  middle;
+    }
+    </style>
+{% endblock %}
+{% block admin_change_form_document_ready %}
+{{ block.super }}
+<script>
+    django.jQuery(function() {
+        main(django.jQuery);
+    })
+
+    function main($) {
+        $(".field-include_labels select").select2({
+            tags:true
+        });
+    }
+</script>
+{% endblock %}

@@ -54,19 +54,19 @@ class ScenarioLabelsTest(BaseTestCase):
         self.scenario.documents.add(self.d)
         self.scenario.save()
 
-        l1 = ScenarioLanguage(
+        self.l1 = ScenarioLanguage(
             scenario=self.scenario, language=self.en,
             as_from=True, as_to=False,
             use_labels=True
         )
-        l1.save()
+        self.l1.save()
 
-        l2 = ScenarioLanguage(
+        self.l2 = ScenarioLanguage(
             scenario=self.scenario, language=self.nl,
             as_from=False, as_to=True,
             use_labels=True
         )
-        l2.save()
+        self.l2.save()
 
         self.label_key = LabelKey.objects.create(title='Label Key')
         self.label_key.corpora.add(self.c1)
@@ -151,3 +151,22 @@ class ScenarioLabelsTest(BaseTestCase):
 
         points = [np.array(x) for x in self.scenario.mds_model]
         self.assertAlmostEqual(np.linalg.norm(points[0] - points[1]), 0.5, places=2)
+
+    def test_mds_label_filter(self):
+        label_3 = Label.objects.create(title='Label3 (nl)', key=self.label_key)
+
+        self.make_annotation_with_alignment(
+            self.make_fragment('Another sentence', self.en, 'sentence', self.label_1),
+            self.make_fragment('Nog een zin', self.nl, 'zin'),
+            label_3).save()
+
+        self.l2.include_labels.add(label_3)
+        self.l2.save()
+
+        run_mds(self.scenario)
+        self.assertEqual(self.scenario.mds_labels['en'], [('Label:{}'.format(self.label_1.id),)])
+        self.assertEqual(self.scenario.mds_labels['nl'], [('Label:{}'.format(label_3.id),)])
+
+        points = [np.array(x) for x in self.scenario.mds_model]
+        # after filtering we expect a single point
+        self.assertEqual(len(points), 1)

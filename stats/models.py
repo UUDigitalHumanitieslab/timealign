@@ -4,7 +4,7 @@ from django.db import models
 
 from picklefield.fields import PickledObjectField
 
-from annotations.models import Language, Tense, Corpus, Document, SubCorpus, Fragment
+from annotations.models import Language, Tense, Corpus, Document, SubCorpus, Fragment, Label
 
 
 class Scenario(models.Model):
@@ -80,7 +80,7 @@ class ScenarioLanguage(models.Model):
     use_tenses = models.BooleanField(default=True)
     use_labels = models.BooleanField(default=False)
 
-    other_labels = models.CharField('Allowed labels, comma-separated', max_length=200, blank=True)
+    include_labels = models.ManyToManyField(Label, blank=True)
 
     # backward compatability
     @property
