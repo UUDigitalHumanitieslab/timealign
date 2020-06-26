@@ -8,7 +8,7 @@ from django_object_actions import DjangoObjectActions
 
 from .forms import ScenarioForm, ScenarioLanguageForm
 from .models import Scenario, ScenarioLanguage
-from .utils import run_mds, copy_scenario
+from .utils import run_mds, copy_scenario, EmptyScenario
 
 
 logger = logging.getLogger()
@@ -54,6 +54,8 @@ class ScenarioAdmin(DjangoObjectActions, admin.ModelAdmin):
             obj.last_run = timezone.now()
             obj.save()
             self.message_user(request, mark_safe('Multidimensional Scaling has been run.'))
+        except EmptyScenario:
+            self.message_user(request, 'Scenario configuration produced an empty data set', level=messages.ERROR)
         except ValueError:
             message = 'Something went wrong while running scenario {}'.format(obj.title)
             self.message_user(request, message, level=messages.ERROR)

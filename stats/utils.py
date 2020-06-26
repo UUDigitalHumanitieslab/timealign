@@ -12,6 +12,10 @@ from django.db.models import Q
 from annotations.models import Fragment, Annotation, Tense, Label, LabelKey
 
 
+class EmptyScenario(Exception):
+    pass
+
+
 COLOR_LIST = [
     '#1f77b4',
     '#ff7f0e',
@@ -176,6 +180,9 @@ def run_mds(scenario):
         for labels_2 in list(labels_matrix.values()):
             result.append(get_distance(labels_1, labels_2))
         matrix.append(result)
+
+    if len(matrix) == 0:
+        raise EmptyScenario()
 
     # Perform Multidimensional Scaling
     matrix = np.array(matrix)
