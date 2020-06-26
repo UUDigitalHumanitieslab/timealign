@@ -15,6 +15,12 @@ class ScenarioForm(forms.ModelForm):
 
 
 class ScenarioLanguageForm(forms.ModelForm):
+    class Meta:
+        widgets = {
+            'include_keys': forms.CheckboxSelectMultiple,
+            'include_labels': forms.CheckboxSelectMultiple
+        }
+
     def __init__(self, *args, **kwargs):
         super(ScenarioLanguageForm, self).__init__(*args, **kwargs)
 
@@ -33,6 +39,8 @@ class ScenarioLanguageForm(forms.ModelForm):
             for label in qs:
                 labels.append((label.pk, '{}:{}'.format(label.key.title, label.title)))
             self.fields['include_labels'].choices = labels
+
+            self.fields['include_keys'].queryset = self.fields['include_keys'].queryset.filter(corpora=self.instance.scenario.corpus)
 
     def clean(self):
         """

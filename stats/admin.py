@@ -14,7 +14,7 @@ from .utils import run_mds, copy_scenario
 logger = logging.getLogger()
 
 
-class ScenarioLanguageInline(admin.TabularInline):
+class ScenarioLanguageInline(admin.StackedInline):
     model = ScenarioLanguage
     form = ScenarioLanguageForm
     extra = 1

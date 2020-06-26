@@ -29,25 +29,70 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/js/select2.min.js"></script>
 
     <style>
-    .color-swatch {
-        display: inline-block;
-        width: 100%;
-        height: 10px;
-        vertical-align:  middle;
-    }
-    </style>
-{% endblock %}
-{% block admin_change_form_document_ready %}
-{{ block.super }}
-<script>
-    django.jQuery(function() {
-        main(django.jQuery);
-    })
+     .color-swatch {
+         display: inline-block;
+         width: 100%;
+         height: 10px;
+         vertical-align:  middle;
+     }
 
-    function main($) {
-        $(".field-include_labels select").select2({
-            tags:true
-        });
-    }
-</script>
-{% endblock %}
+     .field-include_labels li {
+         display: inline-block;
+     }
+
+     .field-include_labels li label, .field-include_keys li label {
+         background: #777;
+         display: inline-block;
+         margin: .15em;
+         padding: .2em .6em .3em;
+         font-weight: 700;
+         line-height: 1;
+         color: #fff;
+         text-align: center;
+         white-space: nowrap;
+         vertical-align: baseline;
+         border-radius: .25em;
+         cursor:pointer;
+         width: auto !important;
+     }
+
+     .field-include_labels li label::after, .field-include_keys li label::after {
+         height: auto !important;
+     }
+
+     .field-include_labels input, .field-include_keys input {
+         display: none;
+     }
+
+     li label.checked {
+         background: #337ab7;
+     }
+    </style>
+    {% endblock %}
+    {% block admin_change_form_document_ready %}
+    {{ block.super }}
+    <script>
+     django.jQuery(function() {
+         main(django.jQuery);
+     })
+
+     function main($) {
+         $('input[type="checkbox"]:checked').each(function(idx, element) {
+             element.parentNode.className = 'checked';
+         });
+         $('input[type="checkbox"]').change(function(event) {
+             if(event.target.checked) {
+                 event.target.parentNode.className = 'checked';
+             }
+             else {
+                 event.target.parentNode.className = '';
+             }
+         });
+         $('.field-include_labels').add('.field-include_keys').each(function(idx, element) {
+             if ($(element).closest('fieldset').find('.field-language select').val() === '') {
+                 $('.related-widget-wrapper', element).replaceWith('<div class="form-row">Please choose language and save to show field.</div>');
+             }
+         });
+     }
+    </script>
+    {% endblock %}
