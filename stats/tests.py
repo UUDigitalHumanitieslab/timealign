@@ -170,3 +170,56 @@ class ScenarioLabelsTest(BaseTestCase):
         points = [np.array(x) for x in self.scenario.mds_model]
         # after filtering we expect a single point
         self.assertEqual(len(points), 1)
+
+    def test_mds_scenario_language_include_keys(self):
+        second_key = LabelKey.objects.create(title='Second Label Key')
+        second_key.corpora.add(self.c1)
+        label_3 = Label.objects.create(title='Label3', key=second_key)
+        label_4 = Label.objects.create(title='Label4', key=second_key)
+        label_5 = Label.objects.create(title='Label5', key=self.label_key)
+
+        self.f_en.labels.add(label_3)
+        self.f_en.save()
+        self.annotation.labels.add(label_4)
+        self.annotation.save()
+
+        # leaving ScenarioLangage.include_keys empty, all label keys should be used
+        run_mds(self.scenario)
+        # expecting a tuple of two labels
+        self.assertEqual(len(self.scenario.mds_labels['nl'][0]), 2)
+
+        # inlcuding only one LabelKey for nl, two for en
+        self.l2.include_keys.clear()
+        self.l2.include_keys.add(second_key)
+        self.l2.save()
+        run_mds(self.scenario)
+        # expecting a tuple of two labels for en
+        self.assertEqual(len(self.scenario.mds_labels['en'][0]), 2)
+        # and a tuple of one label for nl
+        self.assertEqual(len(self.scenario.mds_labels['nl'][0]), 1)
+
+        # here we will filter by label without including the relevant label key
+        annotation = self.make_annotation_with_alignment(
+            self.make_fragment('Another sentence', self.en, 'sentence', self.label_1),
+            self.make_fragment('Nog een zin', self.nl, 'zin'), label_3)
+        annotation.labels.add(label_5)
+        annotation.save()
+
+        self.l2.include_keys.clear()
+        self.l2.include_keys.add(self.label_key)
+        # first run without label filters
+        self.l2.include_labels.clear()
+        self.l2.save()
+        run_mds(self.scenario)
+
+        # nl now includes only one key (self.label_key)
+        self.assertEqual(len(self.scenario.mds_labels['nl'][0]), 1)
+        self.assertEqual(self.scenario.mds_labels['nl'], [('Label:2',), ('Label:5',)])
+
+        # run again, filtering by label_3 whose key (second_key) is not in include_keys
+        self.l2.include_labels.add(label_3)
+        run_mds(self.scenario)
+
+        self.assertEqual(len(self.scenario.mds_labels['nl'][0]), 1)
+        # and there should be only one annotation, with labels 5 and 3, but only 5 is visible
+        self.assertEqual(self.scenario.mds_labels['nl'], [('Label:5',)])
