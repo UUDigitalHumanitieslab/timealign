@@ -1,6 +1,6 @@
 from django_filters import FilterSet, CharFilter, ModelChoiceFilter, OrderingFilter
 
-from .models import Annotation, Corpus, Tense
+from .models import Annotation, Corpus, Tense, Label
 
 
 class AnnotationFilter(FilterSet):
@@ -25,7 +25,8 @@ class AnnotationFilter(FilterSet):
 
     class Meta:
         model = Annotation
-        fields = ['corpus', 'is_no_target', 'is_translation', 'tense', 'original_tense', 'word_in_source', 'annotated_by']
+        fields = ['corpus', 'is_no_target', 'is_translation', 'tense', 'original_tense',
+                  'labels', 'word_in_source', 'annotated_by']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -34,3 +35,4 @@ class AnnotationFilter(FilterSet):
         params = request.resolver_match.kwargs
         self.filters['original_tense'].queryset = Tense.objects.filter(language__iso=params['l1'])
         self.filters['tense'].queryset = Tense.objects.filter(language__iso=params['l2'])
+        self.filters['labels'].queryset = Label.objects.filter(language__iso__in=[params['l1'], params['l2']])
