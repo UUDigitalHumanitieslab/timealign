@@ -417,6 +417,15 @@ class AnnotationList(PermissionRequiredMixin, FilterView):
                               'words') \
             .order_by('-annotated_at')
 
+    def get_filterset(self, filterset_class):
+        kwargs = self.get_filterset_kwargs(filterset_class)
+        request = kwargs['request']
+        if kwargs['data']:
+            request.session['annotation_filter'] = kwargs['data']
+        elif 'annotation_filter' in request.session:
+            kwargs['data'] = request.session['annotation_filter']
+        return filterset_class(**kwargs)
+
 
 class FragmentList(PermissionRequiredMixin, generic.ListView):
     """
