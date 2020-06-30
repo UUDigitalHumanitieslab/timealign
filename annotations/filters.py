@@ -26,3 +26,11 @@ class AnnotationFilter(FilterSet):
     class Meta:
         model = Annotation
         fields = ['corpus', 'is_no_target', 'is_translation', 'tense', 'original_tense', 'word_in_source', 'annotated_by']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = kwargs['request']
+        # there might be a better way to access these parameters
+        params = request.resolver_match.kwargs
+        self.filters['original_tense'].queryset = Tense.objects.filter(language__iso=params['l1'])
+        self.filters['tense'].queryset = Tense.objects.filter(language__iso=params['l2'])
