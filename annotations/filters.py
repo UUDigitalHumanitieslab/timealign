@@ -1,6 +1,6 @@
 from django_filters import FilterSet, CharFilter, ModelChoiceFilter, OrderingFilter
 
-from .models import Annotation, Corpus
+from .models import Annotation, Corpus, Tense
 
 
 class AnnotationFilter(FilterSet):
@@ -11,6 +11,9 @@ class AnnotationFilter(FilterSet):
                                 field_name='alignment__original_fragment__sentence__word__word',
                                 lookup_expr='iexact',
                                 help_text='Use this to filter for words in the source text (case-insensitive)')
+    original_tense = ModelChoiceFilter(label='Original Tense',
+                                       field_name='alignment__original_fragment__tense',
+                                       queryset=Tense.objects.all())
 
     o = OrderingFilter(
         fields=(
@@ -22,4 +25,4 @@ class AnnotationFilter(FilterSet):
 
     class Meta:
         model = Annotation
-        fields = ['corpus', 'is_no_target', 'is_translation', 'tense', 'word_in_source', 'annotated_by']
+        fields = ['corpus', 'is_no_target', 'is_translation', 'tense', 'original_tense', 'word_in_source', 'annotated_by']
