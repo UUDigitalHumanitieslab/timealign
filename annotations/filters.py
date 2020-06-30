@@ -1,4 +1,4 @@
-from django_filters import FilterSet, CharFilter, ModelChoiceFilter, OrderingFilter
+from django_filters import FilterSet, CharFilter, ModelChoiceFilter, OrderingFilter, MultipleChoiceFilter
 
 from .models import Annotation, Corpus, Tense, Label
 
@@ -14,6 +14,7 @@ class AnnotationFilter(FilterSet):
     original_tense = ModelChoiceFilter(label='Original Tense',
                                        field_name='alignment__original_fragment__tense',
                                        queryset=Tense.objects.all())
+    labels = MultipleChoiceFilter(choices=Label.objects.all())
 
     o = OrderingFilter(
         fields=(
@@ -28,11 +29,16 @@ class AnnotationFilter(FilterSet):
         fields = ['corpus', 'is_no_target', 'is_translation', 'tense', 'original_tense',
                   'labels', 'word_in_source', 'annotated_by']
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, l1, l2, *args, **kwargs):
         super().__init__(*args, **kwargs)
         request = kwargs['request']
-        # there might be a better way to access these parameters
-        params = request.resolver_match.kwargs
-        self.filters['original_tense'].queryset = Tense.objects.filter(language__iso=params['l1'])
-        self.filters['tense'].queryset = Tense.objects.filter(language__iso=params['l2'])
-        self.filters['labels'].queryset = Label.objects.filter(language__iso__in=[params['l1'], params['l2']])
+        self.filters['original_tense'].queryset = Tense.objects.filter(language__iso=l1)
+        self.filters['tense'].queryset = Tense.objects.filter(language__iso=l2)
+        labels_queryset = Label.objects.all()
+        if kwargs['data'] and kwargs['data']['corpus']:
+            labels_queryset = labels_queryset.filter(key__corpora=kwargs['data']['corpus'])
+
+        self.filters['labels'] = MultipleChoiceFilter(label='Labels',
+                                                      field_name='labels',
+                                                      choices=[(label.pk, '{}:{}'.format(label.key.title, label.title))
+                                                               for label in labels_queryset])
