@@ -244,6 +244,11 @@ class SelectionList(PermissionRequiredMixin, FilterView):
             .filter(fragment__language__iso=self.kwargs['language']) \
             .filter(fragment__document__corpus__in=corpora)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['container_fluid'] = True
+        return context
+
 
 ############
 # Download views
