@@ -15,6 +15,7 @@ class AnnotationFilter(FilterSet):
                                        field_name='alignment__original_fragment__tense',
                                        queryset=Tense.objects.all())
     labels = MultipleChoiceFilter(choices=Label.objects.all())
+    original_labels = MultipleChoiceFilter(choices=Label.objects.all())
 
     o = OrderingFilter(
         fields=(
@@ -27,18 +28,26 @@ class AnnotationFilter(FilterSet):
     class Meta:
         model = Annotation
         fields = ['corpus', 'is_no_target', 'is_translation', 'tense', 'original_tense',
-                  'labels', 'word_in_source', 'annotated_by']
+                  'labels', 'original_labels', 'word_in_source', 'annotated_by']
+
+    def _labels_to_choices(self, queryset):
+        return [(label.pk, '{}:{}'.format(label.key.title, label.title)) for label in queryset]
 
     def __init__(self, l1, l2, *args, **kwargs):
         super().__init__(*args, **kwargs)
         request = kwargs['request']
         self.filters['original_tense'].queryset = Tense.objects.filter(language__iso=l1)
         self.filters['tense'].queryset = Tense.objects.filter(language__iso=l2)
-        labels_queryset = Label.objects.all()
+        # match labels in the relevant languages, or labels that are not language specific
+        l1_labels_queryset = Label.objects.filter(language__isnull=True) | Label.objects.filter(language__iso=l1)
+        l2_labels_queryset = Label.objects.filter(language__isnull=True) | Label.objects.filter(language__iso=l2)
         if kwargs['data'] and kwargs['data']['corpus']:
-            labels_queryset = labels_queryset.filter(key__corpora=kwargs['data']['corpus'])
+            l1_labels_queryset = l1_labels_queryset.filter(key__corpora=kwargs['data']['corpus'])
+            l2_labels_queryset = l2_labels_queryset.filter(key__corpora=kwargs['data']['corpus'])
 
+        self.filters['original_labels'] = MultipleChoiceFilter(label='Original Labels',
+                                                               field_name='alignment__original_fragment__labels',
+                                                               choices=self._labels_to_choices(l1_labels_queryset))
         self.filters['labels'] = MultipleChoiceFilter(label='Labels',
                                                       field_name='labels',
-                                                      choices=[(label.pk, '{}:{}'.format(label.key.title, label.title))
-                                                               for label in labels_queryset])
+                                                      choices=self._labels_to_choices(l2_labels_queryset))
