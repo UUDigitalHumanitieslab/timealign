@@ -75,7 +75,7 @@ def run_mds(scenario):
             fragments = fragments.filter(tense__in=language_from.tenses.all())
 
         # Filter on labels (if selected)
-        if language_from.use_labels and language_from.include_labels.count():
+        if language_from.use_labels and language_from.include_labels.exists():
             fragments = fragments.filter(labels__in=language_from.include_labels.all())
 
         # Fetch the Annotations
@@ -101,7 +101,7 @@ def run_mds(scenario):
                                                  Q(tense__in=language_to.tenses.all()))
 
             # Filter on labels (if selected)
-            if language_to.use_labels and language_to.include_labels.count():
+            if language_to.use_labels and language_to.include_labels.exists():
                 annotations = annotations.filter(~Q(alignment__translated_fragment__language=language_to.language) |
                                                  Q(labels__in=language_to.include_labels.all()))
 

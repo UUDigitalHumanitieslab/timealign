@@ -74,12 +74,7 @@
              element.parentNode.className = 'checked';
          });
          $('input[type="checkbox"]').change(function(event) {
-             if(event.target.checked) {
-                 event.target.parentNode.className = 'checked';
-             }
-             else {
-                 event.target.parentNode.className = '';
-             }
+             event.target.parentNode.classList.toggle('checked');
          });
          $('.field-include_labels').add('.field-include_keys').each(function(idx, element) {
              if ($(element).closest('fieldset').find('.field-language select').val() === '') {

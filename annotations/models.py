@@ -18,7 +18,7 @@ class HasLabelsMixin:
             if include_tense and self.tense:
                 out.append('Tense:{}'.format(self.tense.pk))
             if include_labels:
-                if include_keys is None or len(include_keys) == 0:
+                if not include_keys:
                     out.extend('Label:{}'.format(label.pk) for label in self.labels.all())
                 else:
                     out.extend('Label:{}'.format(label.pk) for label in self.labels.filter(key__in=include_keys))
