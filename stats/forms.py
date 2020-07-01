@@ -15,6 +15,12 @@ class ScenarioForm(forms.ModelForm):
 
 
 class ScenarioLanguageForm(forms.ModelForm):
+    class Meta:
+        widgets = {
+            'include_keys': forms.CheckboxSelectMultiple,
+            'include_labels': forms.CheckboxSelectMultiple
+        }
+
     def __init__(self, *args, **kwargs):
         super(ScenarioLanguageForm, self).__init__(*args, **kwargs)
 
@@ -25,6 +31,16 @@ class ScenarioLanguageForm(forms.ModelForm):
         # If the Language has been set, filter the Tenses based on the Language
         if self.instance.language_id:
             self.fields['tenses'].queryset = self.fields['tenses'].queryset.filter(language=self.instance.language)
+
+            qs = self.fields['include_labels'].queryset
+            qs = qs.filter(language=self.instance.language) | qs.filter(language=None)
+            qs = qs.filter(key__corpora=self.instance.scenario.corpus)
+            labels = []
+            for label in qs:
+                labels.append((label.pk, '{}:{}'.format(label.key.title, label.title)))
+            self.fields['include_labels'].choices = labels
+
+            self.fields['include_keys'].queryset = self.fields['include_keys'].queryset.filter(corpora=self.instance.scenario.corpus)
 
     def clean(self):
         """

@@ -78,10 +78,9 @@ def run_mds(scenario):
         if language_from.use_tenses and language_from.tenses.exists():
             fragments = fragments.filter(tense__in=language_from.tenses.all())
 
-        # Filter on other_labels (if selected)
-        if language_from.use_labels and language_from.other_labels:
-            other_labels = language_from.other_labels.split(',')
-            fragments = fragments.filter(other_label__in=other_labels)
+        # Filter on labels (if selected)
+        if language_from.use_labels and language_from.include_labels.exists():
+            fragments = fragments.filter(labels__in=language_from.include_labels.all())
 
         # Fetch the Annotations
         annotations = Annotation.objects \
@@ -105,11 +104,10 @@ def run_mds(scenario):
                 annotations = annotations.filter(~Q(alignment__translated_fragment__language=language_to.language) |
                                                  Q(tense__in=language_to.tenses.all()))
 
-            # Filter on other_labels (if selected)
-            if language_to.use_labels and language_to.other_labels:
-                other_labels = language_to.other_labels.split(',')
+            # Filter on labels (if selected)
+            if language_to.use_labels and language_to.include_labels.exists():
                 annotations = annotations.filter(~Q(alignment__translated_fragment__language=language_to.language) |
-                                                 Q(other_label__in=other_labels))
+                                                 Q(labels__in=language_to.include_labels.all()))
 
         annotations.filter(alignment__translated_fragment__language__in=languages)
 
@@ -203,12 +201,8 @@ def run_mds(scenario):
 
 
 def get_labels(model, scenario_language):
-    if scenario_language.use_labels:
-        # Special case for Scenario's that have 'le-combine' in the title. TODO: remove this hack.
-        if 'le-combine' in scenario_language.scenario.title and model.other_label in ['le1', 'le12']:
-            return ['le']
-
-    return model.get_labels(as_pk=True, include_tense=scenario_language.use_tenses, include_labels=scenario_language.use_labels)
+    return model.get_labels(as_pk=True, include_tense=scenario_language.use_tenses, include_labels=scenario_language.use_labels,
+                            include_keys=scenario_language.include_keys.all())
 
 
 def get_distance(array1, array2):

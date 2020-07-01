@@ -4,7 +4,7 @@ from django.db import models
 
 from picklefield.fields import PickledObjectField
 
-from annotations.models import Language, Tense, Corpus, Document, SubCorpus, Fragment
+from annotations.models import Language, Tense, Corpus, Document, SubCorpus, Fragment, Label, LabelKey
 
 
 class Scenario(models.Model):
@@ -78,9 +78,14 @@ class ScenarioLanguage(models.Model):
     tenses = models.ManyToManyField(Tense, blank=True)
 
     use_tenses = models.BooleanField(default=True)
-    use_labels = models.BooleanField(default=False)
 
-    other_labels = models.CharField('Allowed labels, comma-separated', max_length=200, blank=True)
+    use_labels = models.BooleanField(default=False)
+    include_keys = models.ManyToManyField(LabelKey, blank=True, related_name='+',
+                                          help_text='Keys selected here will be used as components of the fragment tuples.')
+    include_labels = models.ManyToManyField(Label, blank=True, related_name='+',
+                                            verbose_name='Filter by labels',
+                                            help_text='Fragments will be included in the scenario only when '
+                                            'they are assigned one of the selected labels. Leave emtpy to include all fragments.')
 
     # backward compatability
     @property

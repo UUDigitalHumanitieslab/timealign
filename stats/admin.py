@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 
-from django_object_actions import DjangoObjectActions
+from django_object_actions import BaseDjangoObjectActions
 
 from .forms import ScenarioForm, ScenarioLanguageForm
 from .models import Scenario, ScenarioLanguage
@@ -14,7 +14,7 @@ from .utils import run_mds, copy_scenario, EmptyScenario
 logger = logging.getLogger()
 
 
-class ScenarioLanguageInline(admin.TabularInline):
+class ScenarioLanguageInline(admin.StackedInline):
     model = ScenarioLanguage
     form = ScenarioLanguageForm
     extra = 1
@@ -23,7 +23,7 @@ class ScenarioLanguageInline(admin.TabularInline):
 
 
 @admin.register(Scenario)
-class ScenarioAdmin(DjangoObjectActions, admin.ModelAdmin):
+class ScenarioAdmin(BaseDjangoObjectActions, admin.ModelAdmin):
     form = ScenarioForm
     list_display = ('title', 'corpus', 'is_test', 'from_languages', 'to_languages', 'last_run', )
     list_filter = ('corpus', 'scenariolanguage__language', 'owner')
