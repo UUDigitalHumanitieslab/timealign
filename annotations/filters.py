@@ -27,8 +27,8 @@ class AnnotationFilter(FilterSet):
 
     class Meta:
         model = Annotation
-        fields = ['corpus', 'is_no_target', 'is_translation', 'tense', 'original_tense',
-                  'labels', 'original_labels', 'word_in_source', 'annotated_by']
+        fields = ['corpus', 'is_no_target', 'is_translation', 'original_tense', 'tense',
+                  'original_labels', 'labels', 'word_in_source', 'annotated_by']
 
     def _labels_to_choices(self, queryset):
         return [(label.pk, '{}:{}'.format(label.key.title, label.title)) for label in queryset]
