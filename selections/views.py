@@ -32,6 +32,7 @@ class IntroductionView(generic.TemplateView):
 
 class InstructionsView(generic.TemplateView):
     """Loads the various steps of the instructions"""
+
     def get_template_names(self):
         return 'selections/instructions{}.html'.format(self.kwargs['n'])
 
@@ -235,7 +236,10 @@ class SelectionList(PermissionRequiredMixin, FilterView):
         Retrieves all Selections for the given language.
         :return: A QuerySet of Selections.
         """
-        corpora = get_available_corpora(self.request.user)
+        if 'corpus' in self.kwargs:
+            corpora = [Corpus.objects.get(pk=int(self.kwargs['corpus']))]
+        else:
+            corpora = get_available_corpora(self.request.user)
         return Selection.objects \
             .filter(fragment__language__iso=self.kwargs['language']) \
             .filter(fragment__document__corpus__in=corpora)
