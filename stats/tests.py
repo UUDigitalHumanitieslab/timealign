@@ -214,7 +214,8 @@ class ScenarioLabelsTest(BaseTestCase):
 
         # nl now includes only one key (self.label_key)
         self.assertEqual(len(self.scenario.mds_labels['nl'][0]), 1)
-        self.assertEqual(self.scenario.mds_labels['nl'], [('Label:2',), ('Label:5',)])
+        self.assertEqual(self.scenario.mds_labels['nl'], [('Label:{}'.format(self.label_2.id),),
+                                                          ('Label:{}'.format(label_5.id),)])
 
         # run again, filtering by label_3 whose key (second_key) is not in include_keys
         self.l2.include_labels.add(label_3)
@@ -222,4 +223,4 @@ class ScenarioLabelsTest(BaseTestCase):
 
         self.assertEqual(len(self.scenario.mds_labels['nl'][0]), 1)
         # and there should be only one annotation, with labels 5 and 3, but only 5 is visible
-        self.assertEqual(self.scenario.mds_labels['nl'], [('Label:5',)])
+        self.assertEqual(self.scenario.mds_labels['nl'], [('Label:{}'.format(label_5.id),)])
