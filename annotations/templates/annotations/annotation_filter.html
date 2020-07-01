@@ -67,6 +67,7 @@
         <form action="" method="get">
             {% bootstrap_form filter.form %}
             {% bootstrap_button "Filter" button_type="submit" %}
+            {% bootstrap_button "Clear" button_type="reset" %}
         </form>
       </div>
     </div>
@@ -78,6 +79,11 @@ $(function() {
         placement: "bottom",
     });
      $('select').select2();
+     $('button[type="reset"]').click(function(event) {
+         var form = $(event.target).closest('form');
+         form.find('select').val(null).trigger('change');
+         form.submit();
+     });
 });
 </script>
 {% endblock %}
