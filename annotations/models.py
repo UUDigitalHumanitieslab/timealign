@@ -288,7 +288,10 @@ class Fragment(models.Model, HasLabelsMixin):
         return sort_key(sentence.xml_id, sentence.XML_TAG)
 
     def first_sentence(self):
-        return self.sentence_set.first()
+        try:
+            return self.sentence_set.all()[0]
+        except IndexError:
+            return None
 
     def xml_ids(self):
         return ', '.join([s.xml_id for s in self.sentence_set.all()])
