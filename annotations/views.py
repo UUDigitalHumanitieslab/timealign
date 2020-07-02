@@ -413,6 +413,8 @@ class AnnotationList(PermissionRequiredMixin, FilterView):
                               Prefetch('alignment__original_fragment__sentence_set', queryset=target_words,
                                        to_attr='targets_prefetched'),
                               'alignment__translated_fragment__sentence_set__word_set',
+                              'alignment__original_fragment__labels',
+                              'labels',
                               'words') \
             .order_by('-annotated_at')
 

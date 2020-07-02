@@ -9,7 +9,7 @@ class HasLabelsMixin:
         labels = []
         if self.tense:
             labels.append(self.tense.title)
-        labels.extend(self.labels.values_list('title', flat=True))
+        labels.extend(label.title for label in self.labels.all())
         return ', '.join(labels)
 
     def get_labels(self, as_pk=False, include_tense=True, include_labels=False):
