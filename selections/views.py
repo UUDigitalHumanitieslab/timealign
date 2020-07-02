@@ -240,9 +240,18 @@ class SelectionList(PermissionRequiredMixin, FilterView):
             corpora = [Corpus.objects.get(pk=int(self.kwargs['corpus']))]
         else:
             corpora = get_available_corpora(self.request.user)
-        return Selection.objects \
+        queryset = Selection.objects \
             .filter(fragment__language__iso=self.kwargs['language']) \
             .filter(fragment__document__corpus__in=corpora)
+
+        Queryset = queryset.select_related('fragment',
+                                           'fragment__document',
+                                           'fragment__document__corpus',
+                                           'tense',
+                                           'selected_by')\
+            .prefetch_related('fragment__sentence_set__word_set',
+                              'words')
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
