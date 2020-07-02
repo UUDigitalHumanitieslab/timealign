@@ -31,7 +31,7 @@ class AnnotationFilter(FilterSet):
                   'original_labels', 'labels', 'word_in_source', 'annotated_by']
 
     def _labels_to_choices(self, queryset):
-        return [(label.pk, '{}:{}'.format(label.key.title, label.title)) for label in queryset]
+        return [(label['pk'], '{}:{}'.format(label['key__title'], label['title'])) for label in queryset.values('pk', 'key__title', 'title')]
 
     def __init__(self, l1, l2, *args, **kwargs):
         super().__init__(*args, **kwargs)
