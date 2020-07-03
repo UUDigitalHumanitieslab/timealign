@@ -74,10 +74,12 @@
 
 <script>
 $(function() {
-    $('[data-toggle="popover"]').popover({
-        html: true,
-        placement: "bottom",
-    });
+     $('[data-toggle="popover"]').popover({
+         html: true,
+         placement: "bottom",
+     });
+     $('#id_original_tense').parent().before('<h4>Source</h4>')
+     $('#id_tense').parent().before('<h4>Target</h4>')
      $('select').select2();
      $('button[type="reset"]').click(function(event) {
          var form = $(event.target).closest('form');
