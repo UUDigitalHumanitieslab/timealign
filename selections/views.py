@@ -244,7 +244,7 @@ class SelectionList(PermissionRequiredMixin, FilterView):
             .filter(fragment__language__iso=self.kwargs['language']) \
             .filter(fragment__document__corpus__in=corpora)
 
-        Queryset = queryset.select_related('fragment',
+        queryset = queryset.select_related('fragment',
                                            'fragment__document',
                                            'fragment__document__corpus',
                                            'tense',
