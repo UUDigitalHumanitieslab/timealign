@@ -4,9 +4,10 @@
 
 {% block content %}
 
-<div class="container">
     <h1>PreSelections <span class="label label-info pull-right">{{ page_obj.paginator.count }} in current selection</span></h1>
 
+    <div class="row">
+      <div class="col-lg-10">
     <table class="table table-striped">
         <thead>
             <tr>
@@ -54,16 +55,21 @@
         </tbody>
     </table>
 
-    {% if is_paginated %}
-    {% bootstrap_pagination page_obj extra=request.GET.urlencode %}
-    {% endif %}
+        {% if is_paginated %}
+        {% bootstrap_pagination page_obj extra=request.GET.urlencode %}
+        {% endif %}
+      </div>
 
-    <h2>Filter</h2>
-    <form action="" method="get">
-        {% bootstrap_form filter.form %}
-        {% bootstrap_button "Filter" button_type="submit" %}
-    </form>
-</div>
+
+      <div class="col-lg-2">
+        <h2>Filter</h2>
+        <form action="" method="get">
+            {% bootstrap_form filter.form %}
+            {% bootstrap_button "Filter" button_type="submit" %}
+            {% bootstrap_button "Clear" button_type="reset" %}
+        </form>
+      </div>
+    </div>
 
 <script>
 $(function() {
@@ -71,6 +77,12 @@ $(function() {
         html: true,
         placement: "bottom",
     });
+    $('select').select2();
+     $('button[type="reset"]').click(function(event) {
+         var form = $(event.target).closest('form');
+         form.find('select').val(null).trigger('change');
+         form.submit();
+     });
 });
 </script>
 {% endblock %}

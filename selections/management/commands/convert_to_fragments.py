@@ -76,7 +76,7 @@ class Command(BaseCommand):
                     f.pk = None
 
                     if selection.tense:
-                        f.tense = Tense.objects.get(language=f.language, title=selection.tense)
+                        f.tense = selection.tense
                     if selection.other_label:
                         f.other_label = selection.other_label
                     selection_labels = selection.labels.all()

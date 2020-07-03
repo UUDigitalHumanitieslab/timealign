@@ -44,7 +44,8 @@
                         {% endif %}
                         <span class="glyphicon glyphicon-play" aria-hidden="true"></span></a>
                     {% endif %}
-                    <a href="{% url 'selections:list' language.iso %}" role="button" class="btn btn-default btn-xs" title="List view">
+                    <a href="{% url 'selections:list' language.iso %}{% if corpus_pk %}?corpus={{ corpus_pk }}{% endif %}"
+                       role="button" class="btn btn-default btn-xs" title="List view">
                         <span class="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>
                     </a>
                     <a href="{% url 'selections:prepare_download' language.iso %}" role="button" class="btn btn-default btn-xs" title="Download spreadsheet">

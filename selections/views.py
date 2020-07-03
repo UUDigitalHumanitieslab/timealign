@@ -2,7 +2,7 @@ from tempfile import NamedTemporaryFile
 
 from django.contrib import messages
 from django.urls import reverse
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, QueryDict
 from django.shortcuts import get_object_or_404
 from django.views import generic
 from django.utils.http import urlquote
@@ -32,6 +32,7 @@ class IntroductionView(generic.TemplateView):
 
 class InstructionsView(generic.TemplateView):
     """Loads the various steps of the instructions"""
+
     def get_template_names(self):
         return 'selections/instructions{}.html'.format(self.kwargs['n'])
 
@@ -235,10 +236,38 @@ class SelectionList(PermissionRequiredMixin, FilterView):
         Retrieves all Selections for the given language.
         :return: A QuerySet of Selections.
         """
-        corpora = get_available_corpora(self.request.user)
-        return Selection.objects \
+        if 'corpus' in self.kwargs:
+            corpora = [Corpus.objects.get(pk=int(self.kwargs['corpus']))]
+        else:
+            corpora = get_available_corpora(self.request.user)
+        queryset = Selection.objects \
             .filter(fragment__language__iso=self.kwargs['language']) \
             .filter(fragment__document__corpus__in=corpora)
+
+        queryset = queryset.select_related('fragment',
+                                           'fragment__document',
+                                           'fragment__document__corpus',
+                                           'tense',
+                                           'selected_by')\
+            .prefetch_related('fragment__sentence_set__word_set',
+                              'words')
+        return queryset
+
+    def get_filterset(self, filterset_class):
+        kwargs = self.get_filterset_kwargs(filterset_class)
+        request = kwargs['request']
+        language = request.resolver_match.kwargs['language']
+        session_key = 'selection_filter_{}'.format(language)
+        if kwargs['data']:
+            request.session[session_key] = kwargs['data'].urlencode()
+        elif session_key in request.session:
+            kwargs['data'] = QueryDict(request.session[session_key])
+        return filterset_class(language, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['container_fluid'] = True
+        return context
 
 
 ############

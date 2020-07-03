@@ -31,7 +31,7 @@
         {# Load the Select2 library #}
         <link href="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/css/select2.min.css" rel="stylesheet" />
         <script src="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/js/select2.min.js"></script>
-        
+
         {# Custom CSS #}
         <link rel="stylesheet" type="text/css" href="{% static 'core/style.css' %}" />
         <link rel="stylesheet" type="text/css" href="{% static 'core/nav.css' %}" />
@@ -43,7 +43,11 @@
     <body>
         {% include "base/_menu.html" %}
 
-        <div class="container">
+        {% if container_fluid %}
+            <div class="container-fluid">
+        {% else %}
+            <div class="container">
+        {% endif %}
             <div>{% bootstrap_messages %}</div>
 
             <div>{% block content %}{% endblock %}</div>

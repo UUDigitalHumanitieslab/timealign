@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 
-from annotations.models import Fragment, Word, Label
+from annotations.models import Fragment, Word, Label, Tense
 
 
 class PreProcessFragment(Fragment):
@@ -39,7 +39,7 @@ class Selection(models.Model):
     last_modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='selection_last_modified_by', on_delete=models.SET_NULL)
     last_modified_at = models.DateTimeField(auto_now=True)
 
-    tense = models.CharField('Tense', max_length=200, blank=True)
+    tense = models.ForeignKey(Tense, on_delete=models.CASCADE, null=True)
     other_label = models.CharField(max_length=200, blank=True)
     labels = models.ManyToManyField(Label)
 

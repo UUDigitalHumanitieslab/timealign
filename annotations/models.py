@@ -9,7 +9,7 @@ class HasLabelsMixin:
         labels = []
         if self.tense:
             labels.append(self.tense.title)
-        labels.extend(self.labels.values_list('title', flat=True))
+        labels.extend(label.title for label in self.labels.all())
         return ', '.join(labels)
 
     def get_labels(self, as_pk=False, include_tense=True, include_labels=False, include_keys=None):
@@ -291,7 +291,13 @@ class Fragment(models.Model, HasLabelsMixin):
         return sort_key(sentence.xml_id, sentence.XML_TAG)
 
     def first_sentence(self):
-        return self.sentence_set.first()
+        # The following code is used instead of calling sentence_set.first()
+        # because first() triggers a new DB query, while all() makes use
+        # of prefetched values when they are available.
+        try:
+            return self.sentence_set.all()[0]
+        except IndexError:
+            return None
 
     def xml_ids(self):
         return ', '.join([s.xml_id for s in self.sentence_set.all()])

@@ -1,7 +1,6 @@
 from django import forms
 
 from annotations.forms import LabelField, SegmentSelectMixin
-from annotations.utils import get_tenses
 
 from .models import Selection, Word
 
@@ -16,7 +15,6 @@ class SelectionForm(SegmentSelectMixin, forms.ModelForm):
             'select_segment'
         ]
         widgets = {
-            'tense': forms.Select(),
             'comments': forms.Textarea(attrs={'rows': 2}),
         }
 
@@ -33,10 +31,7 @@ class SelectionForm(SegmentSelectMixin, forms.ModelForm):
         self.fields['words'].queryset = Word.objects.filter(sentence__fragment=self.fragment)
 
         # Allow to select for tense if the Corpus is tense/aspect-based.
-        if self.fragment.document.corpus.tense_based:
-            tenses = get_tenses(self.fragment.language)
-            self.fields['tense'].widget.choices = tuple(zip(tenses, tenses))
-        else:
+        if not self.fragment.document.corpus.tense_based:
             del self.fields['tense']
 
         language = self.fragment.language

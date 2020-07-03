@@ -8,8 +8,7 @@ from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count, Prefetch
 from django.urls import reverse
-from django.http import HttpResponse
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse, QueryDict
 from django.shortcuts import get_object_or_404, render, redirect
 from django.template.loader import render_to_string
 from django.views import generic
@@ -414,8 +413,26 @@ class AnnotationList(PermissionRequiredMixin, FilterView):
                               Prefetch('alignment__original_fragment__sentence_set', queryset=target_words,
                                        to_attr='targets_prefetched'),
                               'alignment__translated_fragment__sentence_set__word_set',
+                              'alignment__original_fragment__labels',
+                              'labels',
                               'words') \
             .order_by('-annotated_at')
+
+    def get_filterset(self, filterset_class):
+        kwargs = self.get_filterset_kwargs(filterset_class)
+        request = kwargs['request']
+        l1, l2 = request.resolver_match.kwargs['l1'], request.resolver_match.kwargs['l2']
+        session_key = 'annotation_filter_{}_{}'.format(l1, l2)
+        if kwargs['data']:
+            request.session[session_key] = kwargs['data'].urlencode()
+        elif session_key in request.session:
+            kwargs['data'] = QueryDict(request.session[session_key])
+        return filterset_class(l1, l2, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['container_fluid'] = True
+        return context
 
 
 class FragmentList(PermissionRequiredMixin, generic.ListView):
