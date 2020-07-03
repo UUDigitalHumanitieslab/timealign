@@ -2,7 +2,7 @@ from tempfile import NamedTemporaryFile
 
 from django.contrib import messages
 from django.urls import reverse
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, QueryDict
 from django.shortcuts import get_object_or_404
 from django.views import generic
 from django.utils.http import urlquote
@@ -252,6 +252,17 @@ class SelectionList(PermissionRequiredMixin, FilterView):
             .prefetch_related('fragment__sentence_set__word_set',
                               'words')
         return queryset
+
+    def get_filterset(self, filterset_class):
+        kwargs = self.get_filterset_kwargs(filterset_class)
+        request = kwargs['request']
+        language = request.resolver_match.kwargs['language']
+        session_key = 'selection_filter_{}'.format(language)
+        if kwargs['data']:
+            request.session[session_key] = kwargs['data'].urlencode()
+        elif session_key in request.session:
+            kwargs['data'] = QueryDict(request.session[session_key])
+        return filterset_class(language, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
