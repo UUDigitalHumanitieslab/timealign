@@ -74,7 +74,7 @@ class LabelFormMixin(forms.Form):
 
         # construct a value for Annotation.labels based on the individual label fields
         fields = [key.symbol() for key in self.corpus.label_keys.all()]
-        cleaned_data['labels'] = [cleaned_data[field] for field in fields]
+        cleaned_data['labels'] = [cleaned_data[field] for field in fields if cleaned_data[field]]
 
         return cleaned_data
 
