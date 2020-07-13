@@ -32,7 +32,7 @@ class HasLabelsMixin:
 
 
 class Language(models.Model):
-    iso = models.CharField(max_length=2, unique=True)
+    iso = models.CharField(max_length=50, unique=True)
     title = models.CharField(max_length=200)
 
     def __str__(self):
