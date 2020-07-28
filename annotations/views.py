@@ -6,7 +6,8 @@ from lxml import etree
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Count, Prefetch
+from django.contrib.admin.utils import construct_change_message
+from django.db.models import Count, Prefetch, QuerySet
 from django.urls import reverse
 from django.http import HttpResponse, JsonResponse, QueryDict
 from django.shortcuts import get_object_or_404, render, redirect
@@ -16,6 +17,9 @@ from django.utils.http import urlquote
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django_filters.views import FilterView
+from reversion.models import Version
+from reversion.views import RevisionMixin
+import reversion
 
 from .exports import export_pos_file
 from .filters import AnnotationFilter
@@ -149,7 +153,45 @@ class AnnotationMixin(SelectSegmentMixin, SuccessMessageMixin, PermissionRequire
         return Alignment.objects.select_related('original_fragment', 'translated_fragment')
 
 
-class AnnotationUpdateMixin(AnnotationMixin, CheckOwnerOrStaff):
+class RevisionWithCommentMixin(RevisionMixin):
+    revision_manage_manually = True
+
+    def form_valid(self, form):
+        result = super().form_valid(form)
+        change = construct_change_message(form, None, False)
+        if change:
+            reversion.add_to_revision(self.object)
+            reversion.set_comment(self.format_change_comment(change, form.cleaned_data))
+
+        return result
+
+    def format_change_for_field(self, field, value):
+        if isinstance(value, QuerySet):
+            value = ', '.join(map(str, value))
+        return '{} to "{}"'.format(field, value)
+
+    def format_change_comment(self, change, values):
+        change = change[0]
+        if 'changed' in change and 'fields' in change['changed']:
+            fields = change['changed']['fields']
+            parts = [self.format_change_for_field(field, values[field])
+                     for field in fields]
+            return 'Changed {}'.format(', '.join(parts))
+        return ''
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['revisions'] = Version.objects.get_for_object(self.object)
+        return context
+
+
+class RevisionCreateMixin(RevisionMixin):
+    def form_valid(self, form):
+        reversion.set_comment('Created annotation')
+        return super().form_valid(form)
+
+
+class AnnotationUpdateMixin(AnnotationMixin, CheckOwnerOrStaff, RevisionWithCommentMixin):
     def get_context_data(self, **kwargs):
         """Sets the annotated Words on the context"""
         context = super(AnnotationUpdateMixin, self).get_context_data(**kwargs)
@@ -170,7 +212,7 @@ class AnnotationUpdateMixin(AnnotationMixin, CheckOwnerOrStaff):
         return self.alignment
 
 
-class AnnotationCreate(AnnotationMixin, generic.CreateView):
+class AnnotationCreate(AnnotationMixin, RevisionCreateMixin, generic.CreateView):
     success_message = 'Annotation created successfully'
 
     def get_success_url(self):
@@ -266,7 +308,22 @@ class FragmentDetailPlain(LoginRequiredMixin, generic.DetailView):
         return fragment
 
 
-class FragmentEdit(SelectSegmentMixin, LoginRequiredMixin, generic.UpdateView):
+class FragmentRevisionWithCommentMixin(RevisionWithCommentMixin):
+    def find_in_enum(self, key, enum):
+        for k, v in enum:
+            if k == key:
+                return v
+        return 'unknown'
+
+    def format_change_for_field(self, field, value):
+        if field == 'formal_structure':
+            return 'formal structure to ' + self.find_in_enum(value, Fragment.FORMAL_STRUCTURES)
+        if field == 'sentence_function':
+            return 'sentence function to ' + self.find_in_enum(value, Fragment.SENTENCE_FUNCTIONS)
+        return super().format_change_for_field(field, value)
+
+
+class FragmentEdit(SelectSegmentMixin, LoginRequiredMixin, FragmentRevisionWithCommentMixin, generic.UpdateView):
     model = Fragment
     form_class = FragmentForm
 

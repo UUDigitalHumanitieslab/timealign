@@ -1,0 +1,22 @@
+<style>
+ summary {
+     cursor: pointer;
+ }
+ summary h4:hover {
+     text-decoration: underline;
+ }
+</style>
+
+{% if revisions %}
+    <details>
+    <summary><h4>Show change history ({{revisions|length}})</h4></summary>
+    <table class="table">
+    <tr><th>Timestamp</th><th>Edited by</th><th>Description</th></tr>
+    {% for r in revisions %}
+    <tr>
+        <td>{{r.revision.date_created}}</td><td>{{r.revision.user}}</td><td>{{r.revision.comment}}</td>
+    </tr>
+    {% endfor %}
+    </table>
+    </details>
+{% endif %}
