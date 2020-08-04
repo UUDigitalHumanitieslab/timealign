@@ -507,6 +507,7 @@ class TenseCategoryList(PermissionRequiredMixin, generic.ListView):
                 tense = tense_cache.get((tc.title, language.iso), '')
                 tenses[tc].append(tense)
 
+        context['container_fluid'] = True
         context['tenses'] = sorted(list(tenses.items()), key=lambda item: item[0].pk)
         context['languages'] = languages
 
