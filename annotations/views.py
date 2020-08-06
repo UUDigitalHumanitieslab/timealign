@@ -521,10 +521,6 @@ class LabelList(PermissionRequiredMixin, generic.ListView):
     permission_required = 'annotations.change_annotation'
 
     def get_context_data(self, **kwargs):
-        """
-        Sets the tenses and languages on the context
-        :return: The context variables.
-        """
         context = super().get_context_data(**kwargs)
         if 'corpus' in self.kwargs:
             self.object_list = self.object_list.filter(corpora=self.kwargs['corpus'])
