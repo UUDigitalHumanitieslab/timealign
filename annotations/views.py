@@ -21,7 +21,7 @@ from .exports import export_pos_file
 from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm, AddFragmentsForm, FragmentForm
 from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, \
-    TenseCategory, Tense, Source, Sentence, Word
+    TenseCategory, Tense, Source, Sentence, Word, Label, LabelKey
 from .utils import get_random_alignment, get_available_corpora, get_xml_sentences, bind_annotations_to_xml, \
     natural_sort_key
 
@@ -511,6 +511,42 @@ class TenseCategoryList(PermissionRequiredMixin, generic.ListView):
         context['tenses'] = sorted(list(tenses.items()), key=lambda item: item[0].pk)
         context['languages'] = languages
 
+        return context
+
+
+class LabelList(PermissionRequiredMixin, generic.ListView):
+    model = LabelKey
+    context_object_name = 'labelkeys'
+    template_name = 'annotations/labels.html'
+    permission_required = 'annotations.change_annotation'
+
+    def get_context_data(self, **kwargs):
+        """
+        Sets the tenses and languages on the context
+        :return: The context variables.
+        """
+        context = super().get_context_data(**kwargs)
+        if 'corpus' in self.kwargs:
+            self.object_list = self.object_list.filter(corpora=self.kwargs['corpus'])
+
+        context['container_fluid'] = True
+        context['label_keys'] = self.object_list
+        labels = [key.labels.all() for key in self.object_list]
+
+        # transpose the 2d array stored in labels so that we could have each label key
+        # show in a column on the html table
+        transposed = []
+        max_len = max([len(x) for x in labels]) if labels else 0
+        for i in range(max_len):
+            transposed.append([])
+            for group in labels:
+                if len(group) > i:
+                    transposed[-1].append(group[i])
+                else:
+                    # add empty table cells
+                    transposed[-1].append('')
+        context['labels'] = transposed
+        context['corpora'] = get_available_corpora(self.request.user)
         return context
 
 

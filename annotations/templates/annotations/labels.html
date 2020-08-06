@@ -4,46 +4,40 @@
 
 {% block head %}
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/dt-1.10.21/datatables.min.css"/>
-    <script type="text/javascript" src="https://cdn.datatables.net/v/bs/dt-1.10.21/datatables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs/dt-1.10.21/datatables.js"></script>
 {% endblock %}
 
 {% block content %}
-    <h1>Tenses overview</h1>
+    <h1>Labels overview</h1>
 
     <p id="column_toggles">
-      Toggle:
-      {% for l in languages %}
-        <a href="#" data-column="{{forloop.counter}}">{{l.title}}</a>
+      By corpus:
+      {% for corpus in corpora %}
+        <a href="{% url 'annotations:labels' corpus.pk %}">{{corpus.title}}</a>
+        {% if not forloop.last %} | {% endif %}
       {% endfor %}
     </p>
     <p>
-      <a href="#" id="hide_all">Hide all</a>
+      <a href="{% url 'annotations:labels' %}">Show all</a>
     </p>
-    <table id="tenses_table" class="table table-striped table-condensed">
+    <table id="labels_table" class="table table-striped table-condensed">
         <thead>
         <tr>
-            <th>
-                Tense category
-            </th>
-            {% for l in languages %}
-            <th>
-                {{ l.title }}
-            </th>
-            {% endfor %}
+          {% for key in label_keys %}
+            <th>{{key.title}}</th>
+          {% endfor %}
         </tr>
         </thead>
         <tbody>
-            {% for tc, ts in tenses %}
-            <tr>
-                <th class="has-bg" bgcolor="{{ tc.color }}">
-                    {{ tc.title }}
-                </th>
-                {% for t in ts %}
-                <td>
-                    {{ t }}
-                </td>
+            {% for ls in labels %}
+                <tr>
+                {% for label in ls %}
+                    <td {% if label.color %}class="has-bg" bgcolor="{{ label.color }}"{% endif %}>
+                      {{ label.title }}
+                      {% if label.language %}({{ label.language }}){% endif %}
+                    </td>
                 {% endfor %}
-            </tr>
+                </tr>
             {% endfor %}
         </tbody>
     </table>
@@ -75,17 +69,8 @@
 
      $(function() {
          fixForegroundColors();
-         var table = $('#tenses_table').DataTable({
+         var table = $('#labels_table').DataTable({
              paging: false,
-         });
-         $('#column_toggles a').click(function(event) {
-             event.preventDefault();
-             var column = table.column($(this).attr('data-column'));
-             column.visible(!column.visible());
-         });
-         $('#hide_all').click(function(event) {
-             event.preventDefault();
-             table.columns(function(idx){ return idx>0;}).visible(false);
          });
      });
     </script>
