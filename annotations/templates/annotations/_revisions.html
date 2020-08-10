@@ -19,7 +19,7 @@
     <tr><th>Timestamp</th><th>Edited by</th><th>Description</th></tr>
     {% for r in revisions %}
     <tr>
-        <td>{{r.revision.date_created}}</td><td>{{r.revision.user}}</td><td>{{r.revision.comment}}</td>
+        <td>{{r.revision.date_created|date:"j M Y, G:i" }}</td><td>{{r.revision.user}}</td><td>{{r.revision.comment}}</td>
     </tr>
     {% endfor %}
     </table>
