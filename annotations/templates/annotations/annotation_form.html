@@ -9,8 +9,8 @@
 
 {% block content %}
 
-{% with f1=alignment.original_fragment f2=alignment.translated_fragment %}
 <div class="container">
+{% with f1=alignment.original_fragment f2=alignment.translated_fragment %}
     <h1>Annotation</h1>
     <div class="row">
         <div class="col-md-6">
@@ -58,6 +58,7 @@
             </form>
         </div>
     </div>
-</div>
 {% endwith %}
+    {% include 'annotations/_revisions.html' %}
+</div>
 {% endblock %}

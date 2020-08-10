@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.http import HttpResponseRedirect
 
 from django_object_actions import DjangoObjectActions
+from reversion.admin import VersionAdmin
 import nested_admin
 
 from .forms import SubSentenceFormSet, SubSentenceForm
@@ -60,7 +61,7 @@ class SentenceInline(nested_admin.NestedTabularInline):
 
 
 @admin.register(Fragment)
-class FragmentAdmin(DjangoObjectActions, nested_admin.NestedModelAdmin):
+class FragmentAdmin(DjangoObjectActions, nested_admin.NestedModelAdmin, VersionAdmin):
     list_display = ('pk', 'language', 'xml_ids', 'full', 'target_words', 'label', )
     list_filter = ('document__corpus', 'language', )
     list_per_page = 20
@@ -96,7 +97,7 @@ class AlignmentAdmin(admin.ModelAdmin):
 
 
 @admin.register(Annotation)
-class AnnotationAdmin(admin.ModelAdmin):
+class AnnotationAdmin(VersionAdmin):
     list_display = ('pk', 'selected_words', 'label',
                     'annotated_by', 'annotated_at', )
     list_filter = ('is_no_target', 'is_translation', 'annotated_by', )
