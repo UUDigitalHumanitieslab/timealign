@@ -522,8 +522,12 @@ class LabelList(PermissionRequiredMixin, generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if 'corpus' in self.kwargs:
-            self.object_list = self.object_list.filter(corpora=self.kwargs['corpus'])
+        corpus = self.kwargs.get('corpus')
+        if corpus:
+            corpus = Corpus.objects.get(pk=corpus)
+        else:
+            corpus = get_available_corpora(self.request.user)[0]
+        self.object_list = self.object_list.filter(corpora=corpus)
 
         context['container_fluid'] = True
         context['label_keys'] = self.object_list
@@ -542,6 +546,7 @@ class LabelList(PermissionRequiredMixin, generic.ListView):
                     # add empty table cells
                     transposed[-1].append('')
         context['labels'] = transposed
+        context['corpus'] = corpus
         context['corpora'] = get_available_corpora(self.request.user)
         return context
 
