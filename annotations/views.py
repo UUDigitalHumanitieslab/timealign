@@ -310,10 +310,8 @@ class FragmentDetailPlain(LoginRequiredMixin, generic.DetailView):
 
 class FragmentRevisionWithCommentMixin(RevisionWithCommentMixin):
     def find_in_enum(self, key, enum):
-        for k, v in enum:
-            if k == key:
-                return v
-        return 'unknown'
+        # the type of enum expected here is actually an iterable of key-value tuples
+        return dict(enum).get(key, 'unknown')
 
     def format_change_for_field(self, field, value):
         if field == 'formal_structure':
