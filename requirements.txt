@@ -13,7 +13,7 @@ django-ckeditor==5.9.0    # via -r requirements.in
 django-filter==2.3.0      # via -r requirements.in
 django-js-asset==1.2.2    # via django-ckeditor
 django-nested-admin==3.3.2  # via -r requirements.in
-django-object-actions==3.0.0  # via -r requirements.in
+django-object-actions==3.0.1  # via -r requirements.in
 django-picklefield==3.0.1  # via -r requirements.in
 django-reversion==3.0.7   # via -r requirements.in
 django-widget-tweaks==1.4.8  # via perfectextractor-ui
@@ -23,8 +23,8 @@ joblib==0.16.0            # via scikit-learn
 lxml==4.5.2               # via -r requirements.in, perfectextractor
 mysqlclient==2.0.1        # via -r requirements.in
 numpy==1.19.1             # via scikit-learn, scipy
-perfectextractor-ui==0.1.4  # via -r requirements.in
-perfectextractor==0.3.2   # via perfectextractor-ui
+perfectextractor-ui==0.1.5  # via -r requirements.in
+perfectextractor==0.3.3   # via perfectextractor-ui
 pillow==7.2.0             # via -r requirements.in
 python-monkey-business==1.0.0  # via django-nested-admin
 pytz==2020.1              # via django
