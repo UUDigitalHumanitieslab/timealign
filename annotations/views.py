@@ -6,7 +6,8 @@ from lxml import etree
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Count, Prefetch
+from django.contrib.admin.utils import construct_change_message
+from django.db.models import Count, Prefetch, QuerySet
 from django.urls import reverse
 from django.http import HttpResponse, JsonResponse, QueryDict
 from django.shortcuts import get_object_or_404, render, redirect
@@ -16,12 +17,15 @@ from django.utils.http import urlquote
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django_filters.views import FilterView
+from reversion.models import Version
+from reversion.views import RevisionMixin
+import reversion
 
 from .exports import export_pos_file
 from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm, AddFragmentsForm, FragmentForm
 from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, \
-    TenseCategory, Tense, Source, Sentence, Word
+    TenseCategory, Tense, Source, Sentence, Word, Label, LabelKey
 from .utils import get_random_alignment, get_available_corpora, get_xml_sentences, bind_annotations_to_xml, \
     natural_sort_key
 
@@ -149,7 +153,45 @@ class AnnotationMixin(SelectSegmentMixin, SuccessMessageMixin, PermissionRequire
         return Alignment.objects.select_related('original_fragment', 'translated_fragment')
 
 
-class AnnotationUpdateMixin(AnnotationMixin, CheckOwnerOrStaff):
+class RevisionWithCommentMixin(RevisionMixin):
+    revision_manage_manually = True
+
+    def form_valid(self, form):
+        result = super().form_valid(form)
+        change = construct_change_message(form, None, False)
+        if change:
+            reversion.add_to_revision(self.object)
+            reversion.set_comment(self.format_change_comment(change, form.cleaned_data))
+
+        return result
+
+    def format_change_for_field(self, field, value):
+        if isinstance(value, QuerySet):
+            value = ', '.join(map(str, value))
+        return '{} to "{}"'.format(field, value)
+
+    def format_change_comment(self, change, values):
+        change = change[0]
+        if 'changed' in change and 'fields' in change['changed']:
+            fields = change['changed']['fields']
+            parts = [self.format_change_for_field(field, values[field])
+                     for field in fields]
+            return 'Changed {}'.format(', '.join(parts))
+        return ''
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['revisions'] = Version.objects.get_for_object(self.object)
+        return context
+
+
+class RevisionCreateMixin(RevisionMixin):
+    def form_valid(self, form):
+        reversion.set_comment('Created annotation')
+        return super().form_valid(form)
+
+
+class AnnotationUpdateMixin(AnnotationMixin, CheckOwnerOrStaff, RevisionWithCommentMixin):
     def get_context_data(self, **kwargs):
         """Sets the annotated Words on the context"""
         context = super(AnnotationUpdateMixin, self).get_context_data(**kwargs)
@@ -170,7 +212,7 @@ class AnnotationUpdateMixin(AnnotationMixin, CheckOwnerOrStaff):
         return self.alignment
 
 
-class AnnotationCreate(AnnotationMixin, generic.CreateView):
+class AnnotationCreate(AnnotationMixin, RevisionCreateMixin, generic.CreateView):
     success_message = 'Annotation created successfully'
 
     def get_success_url(self):
@@ -266,7 +308,20 @@ class FragmentDetailPlain(LoginRequiredMixin, generic.DetailView):
         return fragment
 
 
-class FragmentEdit(SelectSegmentMixin, LoginRequiredMixin, generic.UpdateView):
+class FragmentRevisionWithCommentMixin(RevisionWithCommentMixin):
+    def find_in_enum(self, key, enum):
+        # the type of enum expected here is actually an iterable of key-value tuples
+        return dict(enum).get(key, 'unknown')
+
+    def format_change_for_field(self, field, value):
+        if field == 'formal_structure':
+            return 'formal structure to ' + self.find_in_enum(value, Fragment.FORMAL_STRUCTURES)
+        if field == 'sentence_function':
+            return 'sentence function to ' + self.find_in_enum(value, Fragment.SENTENCE_FUNCTIONS)
+        return super().format_change_for_field(field, value)
+
+
+class FragmentEdit(SelectSegmentMixin, LoginRequiredMixin, FragmentRevisionWithCommentMixin, generic.UpdateView):
     model = Fragment
     form_class = FragmentForm
 
@@ -507,9 +562,47 @@ class TenseCategoryList(PermissionRequiredMixin, generic.ListView):
                 tense = tense_cache.get((tc.title, language.iso), '')
                 tenses[tc].append(tense)
 
+        context['container_fluid'] = True
         context['tenses'] = sorted(list(tenses.items()), key=lambda item: item[0].pk)
         context['languages'] = languages
 
+        return context
+
+
+class LabelList(PermissionRequiredMixin, generic.ListView):
+    model = LabelKey
+    context_object_name = 'labelkeys'
+    template_name = 'annotations/labels.html'
+    permission_required = 'annotations.change_annotation'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        corpus = self.kwargs.get('corpus')
+        if corpus:
+            corpus = Corpus.objects.get(pk=corpus)
+        else:
+            corpus = get_available_corpora(self.request.user)[0]
+        self.object_list = self.object_list.filter(corpora=corpus)
+
+        context['container_fluid'] = True
+        context['label_keys'] = self.object_list
+        labels = [key.labels.all() for key in self.object_list]
+
+        # transpose the 2d array stored in labels so that we could have each label key
+        # show in a column on the html table
+        transposed = []
+        max_len = max([len(x) for x in labels]) if labels else 0
+        for i in range(max_len):
+            transposed.append([])
+            for group in labels:
+                if len(group) > i:
+                    transposed[-1].append(group[i])
+                else:
+                    # add empty table cells
+                    transposed[-1].append('')
+        context['labels'] = transposed
+        context['corpus'] = corpus
+        context['corpora'] = get_available_corpora(self.request.user)
         return context
 
 

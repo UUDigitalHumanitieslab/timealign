@@ -30,10 +30,13 @@ If you want to use MySQL as your database backend (recommended) use the followin
     source .env/bin/activate
     pip install --upgrade pip wheel
     pip install -r requirements.txt
-    
+
     # Create a database and change the databases section in timealign/settings.py accordingly
     # Migrate the database using:
     python manage.py migrate
+
+    # Initialize revisions
+    python manage.py createinitialrevisions
 
     # Run the tests
     python manage.py test
@@ -48,7 +51,7 @@ If the test runs OK, you should be ready to roll! Run the webserver using:
 
 You can find ERD diagrams of the applications in [`doc/models`](doc/models/README.md).
 
-General information on the Time in Translation-project can be found on [our website](https://time-in-translation.hum.uu.nl/). 
+General information on the Time in Translation-project can be found on [our website](https://time-in-translation.hum.uu.nl/).
 
 ## Citing
 

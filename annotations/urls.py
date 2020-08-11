@@ -4,7 +4,7 @@ from .views import InstructionsView, IntroductionView, StatusView, \
     AnnotationCreate, AnnotationUpdate, AnnotationDelete, AnnotationChoose, \
     FragmentEdit, FragmentDetail, FragmentDetailPlain, \
     AnnotationList, FragmentList, ExportPOSDownload, ExportPOSPrepare, PrepareDownload, TenseCategoryList, \
-    ImportLabelsView, CorpusList, CorpusDetail, DocumentDetail, SourceDetail, AddFragmentsView
+    LabelList, ImportLabelsView, CorpusList, CorpusDetail, DocumentDetail, SourceDetail, AddFragmentsView
 
 urlpatterns = [
     # Static views
@@ -40,6 +40,8 @@ urlpatterns = [
     url(r'^matrix/(?P<language>\w+)/$', FragmentList.as_view(), name='matrix'),
     url(r'^matrix/(?P<language>\w+)/(?P<showtenses>\w+)/$', FragmentList.as_view(), name='tense_matrix'),
     url(r'^tenses/$', TenseCategoryList.as_view(), name='tenses'),
+    url(r'^labels/$', LabelList.as_view(), name='labels'),
+    url(r'^labels/(?P<corpus>\d+)/$', LabelList.as_view(), name='labels'),
 
     # Downloads
     url(r'^prepare_download/(?P<language>\w+)/(?P<corpus>\w+)$', PrepareDownload.as_view(), name='prepare_download'),
