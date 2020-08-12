@@ -1,6 +1,12 @@
 {% extends "base/base.html" %}
 
 {% load bootstrap3 %}
+{% load static %}
+
+{% block head %}
+<script src="{% static 'annotations/selection.js' %}"></script>
+{% endblock %}
+
 
 {% block content %}
 <div class="container">
@@ -29,10 +35,6 @@ $(function() {
                 text: $(this).next(".tooltiptext")
             }
         });
-    });
-
-    $("span").click(function() {
-        $(this).toggleClass("bg-success");
     });
 
     $("#submit").click(function(event) {

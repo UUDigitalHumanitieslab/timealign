@@ -1,15 +1,55 @@
 {% extends "base/base.html" %}
 
 {% load bootstrap3 %}
+{% load static %}
+
+{% block head %}
+<script src="{% static 'annotations/selection.js' %}"></script>
+{% endblock %}
+
 
 {% block content %}
 <div class="container">
     <h1>Instructions (part 6)</h1>
     <div>
         <p class="lead">
-            This concludes the instructions. Happy TimeAligning!
+          If you intend to select multiple consecutive words in each sentence, you may find it easier to use segment selection mode.
         </p>
-        <a class="btn btn-success btn-lg pull-right" href="{% url 'annotations:instructions' 1 %}" role="button">Back to the start &raquo;</a>
+        <div class="alert alert-info" role="alert">
+          Click the <button class="btn btn-xs btn-default">Segment</button> button next to the bottom right corner of the sentence. Then click on 'Jan', and 'gegangen' to select the complete sentence. <p>After that, click the 'Submit' button to continue.</p>
+        </div>
+        {% url "annotations:instructions" 7 as next_url %}
+        {% include "annotations/_instructions5.html" %}
+        {% include "annotations/_instructions_buttons.html" with url=next_url %}
     </div>
+    <input type="hidden" name="select_segment" value="false"/>
 </div>
+
+<script>
+$(function() {
+    $(".tooltiptext").hide();
+
+    $(".alignment span").each(function() {
+        $(this).qtip({
+            content: {
+                text: $(this).next(".tooltiptext")
+            }
+        });
+    });
+
+    $("#submit").click(function(event) {
+        var segment_selection = $('input[name=select_segment').val() === 'true';
+        var all_selected = true;
+        $(".to-select-segment").each(function() {
+            all_selected &&= $(this).hasClass("selected");
+        });
+
+        if (!all_selected || !segment_selection) {
+            event.preventDefault();
+            $(".alert").removeClass("alert-info");
+            $(".alert").addClass("alert-danger");
+        }
+    });
+});
+</script>
 {% endblock %}

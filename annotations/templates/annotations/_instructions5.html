@@ -15,12 +15,12 @@
                     Part-of-speech: <em>NNP</em><br/>
                     Lemma: <em>John</em>
                 </div>
-                <span class="bg-success">has</span>
+                <span class="selected">has</span>
                 <div class="tooltiptext">
                     Part-of-speech: <em>VBZ</em><br/>
                     Lemma: <em>have</em>
                 </div>
-                <span class="bg-success">come</span>
+                <span class="selected">come</span>
                 <div class="tooltiptext">
                     Part-of-speech: <em>VBN</em><br/>
                     Lemma: <em>come</em>
@@ -33,30 +33,39 @@
             </li>
         </ul>
     </div>
-    <div class="col-md-6 translated">
+    <div class="col-md-6 translated selectable">
         <ul class="list-group">
             <li class="list-group-item">
-                <span>Jan</span>
+                <span class="word to-select-segment">Jan</span>
                 <div class="tooltiptext">
                     Part-of-speech: <em>NE</em><br/>
                     Lemma: <em>Jan</em>
                 </div>
-                <span class="to-select">ist</span>
+                <span class="word to-select to-select-segment">ist</span>
                 <div class="tooltiptext">
                     Part-of-speech: <em>VAFIN</em><br/>
                     Lemma: <em>sein</em>
                 </div>
-                <span class="to-select">gegangen</span>
+                <span class="word to-select to-select-segment">gegangen</span>
                 <div class="tooltiptext">
                     Part-of-speech: <em>VVPP</em><br/>
                     Lemma: <em>gehen</em>
                 </div>
-                <span>.</span>
+                <span class="word" >.</span>
                 <div class="tooltiptext">
                     Part-of-speech: <em>$.</em><br/>
                     Lemma: <em>.</em>
                 </div>
             </li>
         </ul>
+    </div>
+</div>
+
+
+<div class="selection-tool">
+    Selection tool:
+    <div class="btn-group" role="group">
+        <button id="select-word" type="button" class="active btn btn-xs btn-default">Word</button>
+        <button id="select-segment" type="button" class="btn btn-xs btn-default">Segment</button>
     </div>
 </div>
