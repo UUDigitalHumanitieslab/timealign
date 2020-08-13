@@ -1,0 +1,15 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+<div class="container">
+    <h1>Instructions (part 8)</h1>
+    <div>
+        <p class="lead">
+            This concludes the instructions. Happy PreSelecting!
+        </p>
+        <a class="btn btn-success btn-lg pull-right" href="{% url 'selections:instructions' 1 %}" role="button">Back to the start &raquo;</a>
+    </div>
+</div>
+{% endblock %}

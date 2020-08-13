@@ -1,6 +1,12 @@
 {% extends "base/base.html" %}
 
 {% load bootstrap3 %}
+{% load static %}
+
+{% block head %}
+<script src="{% static 'annotations/selection.js' %}"></script>
+{% endblock %}
+
 
 {% block content %}
 <div class="container">
@@ -32,10 +38,6 @@ $(function() {
         });
     });
 
-    $("span").click(function() {
-        $(this).toggleClass("bg-success");
-    });
-
     $("#submit").click(function(event) {
         event.preventDefault();
         $(".alert").removeClass("alert-info");
@@ -45,7 +47,7 @@ $(function() {
     $("#submit_other").click(function(event) {
         var all_selected = true;
         $(".to-select-first").each(function() {
-            all_selected &= $(this).hasClass("bg-success");
+            all_selected = all_selected && $(this).hasClass("selected");
         });
 
         if (!all_selected) {

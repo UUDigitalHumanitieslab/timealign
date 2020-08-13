@@ -37,6 +37,7 @@ $(function() {
         $("#select-word").addClass("active");
         $("#select-segment").removeClass("active");
         $("input[name=select_segment]").val(false);
+        $(".endpoint").removeClass("endpoint");
     });
     $("#select-segment").click(function() {
         clickHandler = selectSegment;
