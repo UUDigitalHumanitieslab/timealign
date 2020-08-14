@@ -10,8 +10,8 @@ The labeling scheme is modeled as follows:
 - Each corpus (`Corpus`) is linked to a set of label keys (`LabelKey`) which have descriptive names.
 - Each label key is linked to multiple labels (`Label`), however each label may only be linked to one parent label key.
 - A label may have a custom color defined.
-- A label *key* may be configured in 'open set' mode - this means annotators are allowed to create new labels during annotation. The alternative is limiting annotators to use only labels pre-defined by the admin.
-- A label *key* may be designated as language-specific, which means each label belonging to that key is assigned to a specific language and may only be used to annotate fragments of that language.
+- A label **key** may be configured in 'open set' mode - this means annotators are allowed to create new labels during annotation. The alternative is limiting annotators to use only labels pre-defined by the admin.
+- A label **key** may be designated as language-specific, which means each label belonging to that key is assigned to a specific language and may only be used to annotate fragments of that language.
 
 #### Implementation details
 In the code, both the `Annotation` and `Fragment` model classes extend the `HasLabelsMixin`. The mixin provides the `get_labels()` method that is used throughout the code to access labels in one of two forms:
