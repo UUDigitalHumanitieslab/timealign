@@ -2,6 +2,13 @@
 
 {% load bootstrap3 %}
 
+{% block head %}
+<style>
+  li {
+      margin-top: .5em;
+  }
+</style>
+{% endblock %}
 {% block content %}
 <div>
     <div class="pull-right">
@@ -14,7 +21,7 @@
 </div>
 
 <p>
-TimeAlign allows us to create so-called scenarios. 
+TimeAlign allows us to create so-called scenarios.
 A scenario basically filters the fragments you would want to include into your analysis.
 It works as follows:
 </p>
@@ -52,7 +59,7 @@ It works as follows:
 	which means both narration and dialogue) you want to create maps,
 	and if you want to require translations to be in the same formal
 	structure.
-	</li>
+    </li>
     <li>
 	Next, you'll see a link allowing you to show Multidimensional
 	Scaling options. If you want to be really scrupulous, you can <strong>set
@@ -75,28 +82,35 @@ It works as follows:
 	"from"-language. Again, click "Save and continue editing".
 	</li>
     <li>
-	This button will update the "Tenses" selection box with tenses
-	only for this language. If you want, you can now <strong>select the
-	tenses</strong> you would want to use. Leave this empty to include all
+	This button will update the form with tenses and labels that are relevant
+      for this language.
+    </li>
+    <li>
+      If you use tenses in your corpus, you may now <strong>select the
+	tenses</strong> you would like to include in the scenario. Leave this empty to include all
 	tenses.
-	</li>
+    </li>
+    <li>
+      If you use labels in your corpus, make sure to check the "use labels" checkbox.
+      You may now choose to configure the "Include keys" and "Filter by labels" fields:
+      <ul>
+        <li>
+          Choosing keys under "Include keys" will affect the components used in the scenario data points. For example, suppose fragments in your corpus were annotated with two different keys, but you wish to only use one of them in the scenario, then you should select only one key in this form field. This will not cause any annotations to be filtered out, but each annotation will be treated as having a single label.
+        </li>
+        <li>
+          Choosing labels under "Filter by labels" will cause only annotations that were assigned one of the selected labels to be included in the scenario. This will have no effect on the components used in the scenario data points.
+        </li>
+        <li>For both fields, making no selection implies including everything.</li>
+      </ul>
+    </li>
     <li>
 	Next, you have to <strong>supply the translated languages</strong> for this
 	scenario. First, select the language(s) your translated fragments
 	are in, and click the "as to" checkbox to signal this as a
 	"to"-language. Again, click "Save and continue editing".
 	</li>
-    <li>
-	This button will again update the "Tenses" selection box and
-	allow you to <strong>filter</strong> these (if needed).
-	</li>
-    <li>
-	If you happen to work on a <strong>tenseless language</strong> (e.g. Mandarin,
-	Hebrew), you should check the "Use other label" checkbox to
-	signal you want to use this column. If you want to filter any of
-	these, you can supply the labels you want to include in a
-	comma-separated list in the "Allowed labels" text input (e.g.
-	"guo,le1,le12" to only select these annotations).
+        <li>
+	This button will again update the "Tenses" selection box and label fields.
 	</li>
     <li>
 	<strong>Repeat steps 8-12 for every language</strong> in your scenario. If
