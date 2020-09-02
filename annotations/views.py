@@ -17,15 +17,15 @@ from django.utils.http import urlquote
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django_filters.views import FilterView
+from reversion import add_to_revision, set_comment
 from reversion.models import Version
 from reversion.views import RevisionMixin
-import reversion
 
 from .exports import export_pos_file
 from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm, AddFragmentsForm, FragmentForm
 from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, \
-    TenseCategory, Tense, Source, Sentence, Word, Label, LabelKey
+    TenseCategory, Tense, Source, Sentence, Word, LabelKey
 from .utils import get_random_alignment, get_available_corpora, get_xml_sentences, bind_annotations_to_xml, \
     natural_sort_key
 
@@ -79,6 +79,7 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
             corpora = get_available_corpora(self.request.user)
 
         # Retrieve the totals per language pair
+        languages = {language.pk: language for language in Language.objects.all()}
         alignments = Alignment.objects.filter(original_fragment__document__corpus__in=corpora)
         totals = alignments \
             .values('original_fragment__language', 'translated_fragment__language') \
@@ -88,7 +89,6 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
                      for t in totals.exclude(annotation=None)}
 
         # Convert the QuerySets into a list of tuples
-        languages = {l.pk: l for l in Language.objects.all()}
         language_totals = []
         for total in totals:
             l1 = languages.get(total['original_fragment__language'])
@@ -160,8 +160,8 @@ class RevisionWithCommentMixin(RevisionMixin):
         result = super().form_valid(form)
         change = construct_change_message(form, None, False)
         if change:
-            reversion.add_to_revision(self.object)
-            reversion.set_comment(self.format_change_comment(change, form.cleaned_data))
+            add_to_revision(self.object)
+            set_comment(self.format_change_comment(change, form.cleaned_data))
 
         return result
 
@@ -187,7 +187,7 @@ class RevisionWithCommentMixin(RevisionMixin):
 
 class RevisionCreateMixin(RevisionMixin):
     def form_valid(self, form):
-        reversion.set_comment('Created annotation')
+        set_comment('Created annotation')
         return super().form_valid(form)
 
 
@@ -686,11 +686,9 @@ class ImportLabelsView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
         if form.is_valid():
             try:
                 form.save()
-                messages.success(
-                    self.request, 'Successfully imported the labels!')
+                messages.success(self.request, 'Successfully imported the labels!')
             except ValueError as e:
-                messages.error(
-                    self.request, 'Error during import: {}'.format(e))
+                messages.error(self.request, 'Error during import: {}'.format(e))
             return redirect(reverse('annotations:import-labels'))
         else:
             return render(request, self.template_name, {'form': form})
@@ -717,11 +715,9 @@ class AddFragmentsView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
         if form.is_valid():
             try:
                 form.save()
-                messages.success(
-                    self.request, 'Successfully added the fragments!')
+                messages.success(self.request, 'Successfully added the fragments!')
             except ValueError as e:
-                messages.error(
-                    self.request, 'Error during import: {}'.format(e))
+                messages.error(self.request, 'Error during import: {}'.format(e))
             return redirect(reverse('annotations:add-fragments'))
         else:
             return render(request, self.template_name, {'form': form})
