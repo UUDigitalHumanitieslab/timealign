@@ -57,6 +57,7 @@ def export_pos_file(filename, format_, corpus, language, subcorpus=None,
                              'alignment__translated_fragment__sentence_set__word_set')
 
         # Sort by document and sentence.xml_id
+        # TODO: This is potentially slowing down the export
         annotations = sorted(annotations, key=lambda a: (a.alignment.original_fragment.document.title,
                                                          a.alignment.original_fragment.sort_key()))
 
@@ -74,6 +75,7 @@ def export_pos_file(filename, format_, corpus, language, subcorpus=None,
             header.extend(list(['source ' + x for x in ['id', 'document', 'sentences', 'words', 'tense'] + label_keys_titles + ['fragment']]))
             writer.writerow(header, is_header=True) if format_ == XLSX else writer.writerow(header)
 
+            # TODO: all Fragment.full() calls below are potentially slowing down the export
             for annotation in annotations:
                 words = annotation.words.all()
                 w = [word.word for word in words]
