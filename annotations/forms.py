@@ -220,9 +220,7 @@ class LabelImportForm(forms.Form):
     label_file = forms.FileField(
         help_text='This should be a tab-separated file, with id and label as columns.'
                   'The first row (header) will not be imported.')
-    language = forms.ModelChoiceField(
-        queryset=Language.objects.all()
-    )
+    language = forms.ModelChoiceField(queryset=Language.objects.all())
     model = forms.ChoiceField(
         choices=(('annotation', 'Annotation'), ('fragment', 'Fragment'),),
         initial='annotation',
@@ -231,7 +229,6 @@ class LabelImportForm(forms.Form):
 
     def save(self):
         data = self.cleaned_data
-
         process_labels_file(data['label_file'], data['language'], data['model'])
 
 

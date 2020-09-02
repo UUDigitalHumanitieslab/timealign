@@ -79,9 +79,7 @@ def update_fields(obj, language, row, columns):
             else:
                 raise ValueError('Cannot add comments to Fragment')
         elif isinstance(column, LabelKey):
-            label, created = Label.objects.get_or_create(title=cell,
-                                                         key=column,
-                                                         language=language)
+            label, created = Label.objects.get_or_create(title=cell, key=column, language=language)
             if created:
                 label.save()
 

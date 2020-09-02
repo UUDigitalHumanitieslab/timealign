@@ -5,20 +5,20 @@ from tempfile import NamedTemporaryFile
 from lxml import etree
 
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.admin.utils import construct_change_message
 from django.db.models import Count, Prefetch, QuerySet
 from django.urls import reverse
 from django.http import HttpResponse, JsonResponse, QueryDict
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.views import generic
 from django.utils.http import urlquote
 
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django_filters.views import FilterView
-from reversion import add_to_revision, set_comment
 from reversion.models import Version
+from reversion.revisions import add_to_revision, set_comment
 from reversion.views import RevisionMixin
 
 from .exports import export_pos_file
@@ -666,40 +666,44 @@ class ExportPOSDownload(PermissionRequiredMixin, generic.View):
         return response
 
 
-class ImportLabelsView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
+class ImportMixin(SuccessMessageMixin, generic.FormView):
+    def post(self, request, *args, **kwargs):
+        # check for errors, and call the save method of the form
+        form = self.get_form()
+        if form.is_valid():
+            try:
+                form.save()
+                return super().form_valid(form)
+            except ValueError as e:
+                messages.error(self.request, 'Error during import: {}'.format(e))
+                return self.form_invalid(form)
+        else:
+            return self.form_invalid(form)
+
+
+class ImportLabelsView(UserPassesTestMixin, ImportMixin):
     """
     Allows superusers to import labels to Annotations and Fragments
     """
     form_class = LabelImportForm
     template_name = 'annotations/label_form.html'
+    success_message = 'Successfully imported the labels!'
 
     def test_func(self):
         # limit access to superusers
         return self.request.user.is_superuser
 
-    def get(self, request, *args, **kwargs):
-        form = self.form_class()
-        return render(request, self.template_name, {'form': form})
-
-    def post(self, request, *args, **kwargs):
-        form = self.form_class(request.POST, request.FILES)
-        if form.is_valid():
-            try:
-                form.save()
-                messages.success(self.request, 'Successfully imported the labels!')
-            except ValueError as e:
-                messages.error(self.request, 'Error during import: {}'.format(e))
-            return redirect(reverse('annotations:import-labels'))
-        else:
-            return render(request, self.template_name, {'form': form})
+    def get_success_url(self):
+        return reverse('annotations:import-labels')
 
 
-class AddFragmentsView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
+class AddFragmentsView(UserPassesTestMixin, ImportMixin):
     """
     Allows superusers to import labels to Annotations and Fragments
     """
     form_class = AddFragmentsForm
     template_name = 'annotations/add_fragments_form.html'
+    success_message = 'Successfully added the fragments!'
 
     def test_func(self):
         # limit access to superusers
@@ -710,14 +714,5 @@ class AddFragmentsView(LoginRequiredMixin, UserPassesTestMixin, generic.View):
         form = self.form_class(corpus=corpus)
         return render(request, self.template_name, dict(form=form, corpus=corpus))
 
-    def post(self, request, *args, **kwargs):
-        form = self.form_class(request.POST, request.FILES)
-        if form.is_valid():
-            try:
-                form.save()
-                messages.success(self.request, 'Successfully added the fragments!')
-            except ValueError as e:
-                messages.error(self.request, 'Error during import: {}'.format(e))
-            return redirect(reverse('annotations:add-fragments'))
-        else:
-            return render(request, self.template_name, {'form': form})
+    def get_success_url(self):
+        return reverse('annotations:add-fragments')
