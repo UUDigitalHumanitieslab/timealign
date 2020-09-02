@@ -51,6 +51,9 @@
                                 {% if user.is_authenticated and perms.selections.change_selection %}
                                 <li><a href="{% url 'selections:status' %}">Status Overview</a></li>
                                 {% endif %}
+                                {% if request.user.is_superuser %}
+                                <li><a href="{% url 'selections:add-fragments' %}">Add Fragments</a></li>
+                                {% endif %}
                                 <li><a href="https://github.com/UUDigitalHumanitieslab/timealign" target="_blank">Source Code</a></li>
                             </ul>
                         </li>
@@ -61,6 +64,10 @@
                                 <li><a href="{% url 'annotations:instructions' 1 %}">Instructions</a></li>
                                 {% if user.is_authenticated and perms.annotations.change_annotation %}
                                 <li><a href="{% url 'annotations:status' %}">Status Overview</a></li>
+                                {% endif %}
+                                {% if request.user.is_superuser %}
+                                <li><a href="{% url 'annotations:add-fragments' %}">Add Fragments</a></li>
+                                <li><a href="{% url 'annotations:import-labels' %}">Import Labels</a></li>
                                 {% endif %}
                                 <li><a href="https://github.com/UUDigitalHumanitieslab/timealign" target="_blank">Source Code</a></li>
                             </ul>

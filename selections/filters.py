@@ -10,7 +10,7 @@ class SelectionFilter(FilterSet):
                                   lookup_expr='iexact',
                                   help_text='Use this to filter for words in the text (case-insensitive)')
     corpus = ModelChoiceFilter(label='Corpus',
-                               field_name='resulting_fragment__document__corpus',
+                               field_name='fragment__document__corpus',
                                queryset=Corpus.objects.all())
 
     o = OrderingFilter(

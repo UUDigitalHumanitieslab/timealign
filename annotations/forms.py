@@ -235,13 +235,13 @@ class LabelImportForm(forms.Form):
 class AddFragmentsForm(forms.Form):
     corpus = forms.ModelChoiceField(queryset=Corpus.objects.all())
 
-    def __init__(self, *args, corpus=None, **kwargs):
+    def __init__(self, *args, **kwargs):
+        self.corpus = kwargs.pop('corpus')
+
         super().__init__(*args, **kwargs)
 
-        if args:
-            corpus = corpus or args[0].get('corpus')
-        if corpus is not None:
-            corpus = int(corpus)
+        if self.corpus:
+            corpus = int(self.corpus)
             self.fields['corpus'].initial = corpus
             self.fields['fragment_file'] = forms.FileField(
                 help_text='This should be a csv file produced by PerfectExtractor')

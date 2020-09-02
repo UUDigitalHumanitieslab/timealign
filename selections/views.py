@@ -7,19 +7,19 @@ from django.shortcuts import get_object_or_404
 from django.views import generic
 from django.utils.http import urlquote
 
-from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin, UserPassesTestMixin
 from django_filters.views import FilterView
 
 from annotations.models import Language, Corpus, Document
 from annotations.utils import get_available_corpora
+from core.mixins import ImportMixin, SelectSegmentMixin
+from core.utils import XLSX
 
 from .exports import export_selections
 from .filters import SelectionFilter
-from .forms import SelectionForm
+from .forms import AddPreProcessFragmentsForm, SelectionForm
 from .models import PreProcessFragment, Selection
 from .utils import get_random_fragment, get_selection_order
-
-from core.utils import XLSX
 
 
 ##############
@@ -78,7 +78,7 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
 ################
 # CRUD Selection
 ################
-class SelectionMixin(PermissionRequiredMixin):
+class SelectionMixin(SelectSegmentMixin, PermissionRequiredMixin):
     model = Selection
     form_class = SelectionForm
     permission_required = 'selections.change_selection'
@@ -93,7 +93,6 @@ class SelectionMixin(PermissionRequiredMixin):
         kwargs = super(SelectionMixin, self).get_form_kwargs()
         kwargs['fragment'] = self.get_fragment()
         kwargs['user'] = self.request.user
-        kwargs['select_segment'] = self.request.session.get('select_segment', False)
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -114,11 +113,6 @@ class SelectionMixin(PermissionRequiredMixin):
 
     def is_final(self):
         return 'is_final' in self.request.POST
-
-    def form_valid(self, form):
-        # save user preferred selection tool on the session
-        self.request.session['select_segment'] = form.cleaned_data['select_segment']
-        return super().form_valid(form)
 
 
 class SelectionUpdateMixin(SelectionMixin):
@@ -270,9 +264,9 @@ class SelectionList(PermissionRequiredMixin, FilterView):
         return context
 
 
-############
-# Download views
-############
+##############
+# Export views
+##############
 class PrepareDownload(generic.TemplateView):
     template_name = 'selections/download.html'
 
@@ -317,3 +311,33 @@ class SelectionsDownload(PermissionRequiredMixin, generic.View):
             response['Content-Disposition'] = \
                 'attachment; filename={}'.format(filename)
             return response
+
+
+##############
+# Import views
+##############
+class AddPreProcessFragmentsView(UserPassesTestMixin, ImportMixin):
+    """
+    Allows superusers to import labels to Annotations and Fragments
+    """
+    form_class = AddPreProcessFragmentsForm
+    template_name = 'selections/add_fragments_form.html'
+    success_message = 'Successfully added the fragments!'
+
+    def test_func(self):
+        # limit access to superusers
+        return self.request.user.is_superuser
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['corpus'] = self.request.GET.get('corpus')
+        return context
+
+    def get_form_kwargs(self):
+        """Sets the Corpus as a form kwarg"""
+        kwargs = super().get_form_kwargs()
+        kwargs['corpus'] = self.request.GET.get('corpus')
+        return kwargs
+
+    def get_success_url(self):
+        return reverse('selections:add-fragments')

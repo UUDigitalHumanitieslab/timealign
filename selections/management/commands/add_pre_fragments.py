@@ -35,17 +35,24 @@ class Command(BaseCommand):
 
         for filename in options['filenames']:
             with open(filename, 'r') as f:
-                csv_reader = csv.reader(f, delimiter=';')
-                for n, row in enumerate(csv_reader):
-                    # Retrieve language from header row
-                    if n == 0:
-                        language = Language.objects.get(iso=row[COLUMN_XML])
-                        continue
+                try:
+                    process_file(f, corpus)
+                    self.stdout.write(self.style.SUCCESS('Successfully imported PreProcessFragments'))
+                except Exception as e:
+                    raise CommandError(e)
 
-                    with transaction.atomic():
-                        doc, _ = Document.objects.get_or_create(corpus=corpus, title=row[COLUMN_DOCUMENT])
 
-                        from_fragment = PreProcessFragment.objects.create(language=language, document=doc)
-                        add_sentences(from_fragment, row[COLUMN_XML])
+def process_file(f, corpus):
+    lines = f.read().decode('utf-8-sig').splitlines()
+    csv_reader = csv.reader(lines, delimiter=';')
+    for n, row in enumerate(csv_reader):
+        # Retrieve language from header row
+        if n == 0:
+            language = Language.objects.get(iso=row[COLUMN_XML])
+            continue
 
-                    self.stdout.write(self.style.SUCCESS('Line {} processed'.format(n)))
+        with transaction.atomic():
+            doc, _ = Document.objects.get_or_create(corpus=corpus, title=row[COLUMN_DOCUMENT])
+
+            from_fragment = PreProcessFragment.objects.create(language=language, document=doc)
+            add_sentences(from_fragment, row[COLUMN_XML])

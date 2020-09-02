@@ -21,6 +21,8 @@ from reversion.models import Version
 from reversion.revisions import add_to_revision, set_comment
 from reversion.views import RevisionMixin
 
+from core.mixins import ImportMixin, CheckOwnerOrStaff, SelectSegmentMixin
+
 from .exports import export_pos_file
 from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm, AddFragmentsForm, FragmentForm
@@ -30,14 +32,6 @@ from .utils import get_random_alignment, get_available_corpora, get_xml_sentence
     natural_sort_key
 
 from core.utils import XLSX
-
-
-class CheckOwnerOrStaff(UserPassesTestMixin):
-    """Limits access only to creator of annotation or staff users"""
-
-    def test_func(self):
-        return self.get_object().annotated_by == self.request.user or \
-            self.request.user.is_staff or self.request.user.is_superuser
 
 
 ##############
@@ -108,19 +102,6 @@ class StatusView(PermissionRequiredMixin, generic.TemplateView):
 #################
 # CRUD Annotation
 #################
-class SelectSegmentMixin:
-    def get_form_kwargs(self):
-        """Sets select_fragment as a form kwarg"""
-        kwargs = super(SelectSegmentMixin, self).get_form_kwargs()
-        kwargs['select_segment'] = self.request.session.get('select_segment', False)
-        return kwargs
-
-    def form_valid(self, form):
-        """save user preferred selection tool on the session"""
-        self.request.session['select_segment'] = form.cleaned_data['select_segment']
-        return super(SelectSegmentMixin, self).form_valid(form)
-
-
 class AnnotationMixin(SelectSegmentMixin, SuccessMessageMixin, PermissionRequiredMixin):
     model = Annotation
     form_class = AnnotationForm
@@ -606,6 +587,9 @@ class LabelList(PermissionRequiredMixin, generic.ListView):
         return context
 
 
+##############
+# Export views
+##############
 class PrepareDownload(generic.TemplateView):
     template_name = 'annotations/download.html'
 
@@ -666,21 +650,9 @@ class ExportPOSDownload(PermissionRequiredMixin, generic.View):
         return response
 
 
-class ImportMixin(SuccessMessageMixin, generic.FormView):
-    def post(self, request, *args, **kwargs):
-        # check for errors, and call the save method of the form
-        form = self.get_form()
-        if form.is_valid():
-            try:
-                form.save()
-                return super().form_valid(form)
-            except ValueError as e:
-                messages.error(self.request, 'Error during import: {}'.format(e))
-                return self.form_invalid(form)
-        else:
-            return self.form_invalid(form)
-
-
+##############
+# Import views
+##############
 class ImportLabelsView(UserPassesTestMixin, ImportMixin):
     """
     Allows superusers to import labels to Annotations and Fragments
@@ -709,10 +681,16 @@ class AddFragmentsView(UserPassesTestMixin, ImportMixin):
         # limit access to superusers
         return self.request.user.is_superuser
 
-    def get(self, request, *args, **kwargs):
-        corpus = request.GET.get('corpus')
-        form = self.form_class(corpus=corpus)
-        return render(request, self.template_name, dict(form=form, corpus=corpus))
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['corpus'] = self.request.GET.get('corpus')
+        return context
+
+    def get_form_kwargs(self):
+        """Sets the Corpus as a form kwarg"""
+        kwargs = super().get_form_kwargs()
+        kwargs['corpus'] = self.request.GET.get('corpus')
+        return kwargs
 
     def get_success_url(self):
         return reverse('annotations:add-fragments')

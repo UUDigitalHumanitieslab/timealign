@@ -1,8 +1,9 @@
 from django import forms
 
-from annotations.forms import LabelField, SegmentSelectMixin
+from annotations.forms import AddFragmentsForm, LabelField, SegmentSelectMixin
 
-from .models import Selection, Word
+from .management.commands.add_pre_fragments import process_file
+from .models import Selection, Word, Tense
 
 
 class SelectionForm(SegmentSelectMixin, forms.ModelForm):
@@ -28,6 +29,8 @@ class SelectionForm(SegmentSelectMixin, forms.ModelForm):
         selected_words = self.fragment.selected_words()
 
         super(SelectionForm, self).__init__(*args, **kwargs)
+
+        self.fields['tense'].queryset = Tense.objects.filter(language=self.fragment.language)
         self.fields['words'].queryset = Word.objects.filter(sentence__fragment=self.fragment)
 
         # Allow to select for tense if the Corpus is tense/aspect-based.
@@ -80,3 +83,14 @@ class SelectionForm(SegmentSelectMixin, forms.ModelForm):
                     self.add_error(field, 'Please choose a label.')
 
         return cleaned_data
+
+
+class AddPreProcessFragmentsForm(AddFragmentsForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.corpus:
+            del self.fields['annotation_type']
+
+    def save(self):
+        data = self.cleaned_data
+        process_file(data['fragment_file'], data['corpus'])
