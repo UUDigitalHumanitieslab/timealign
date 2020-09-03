@@ -344,3 +344,8 @@ def bind_annotations_to_xml(source):
         failed_lookups.append(word.get('fragment', word.get('annotation')))
 
     return tree, failed_lookups
+
+
+def labels_to_choices(queryset):
+    return [(label['pk'], '{}:{}'.format(label['key__title'], label['title']))
+            for label in queryset.values('pk', 'key__title', 'title')]

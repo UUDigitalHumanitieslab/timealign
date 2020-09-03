@@ -33,7 +33,7 @@
                     </td>
                     <td>
                         <a title="Translated fragment" data-toggle="popover"
-                        data-content='{% include "annotations/_sentences.html" with sentences=translation.sentence_set.all annotated_words=annotation.words.all %}'>
+                        data-content='{% include "annotations/_sentences.html" with sentences=translation.sentence_set.all annotated_words=annotation.words.all filtered=filter.form.word_in_target.value %}'>
                             {{ annotation.selected_words }}
                             {% if annotation.label %}({{ annotation.label }}){% endif %}
                         </a>
@@ -78,8 +78,9 @@ $(function() {
          html: true,
          placement: "bottom",
      });
-     $('#id_original_tense').parent().before('<h4>Source</h4>')
-     $('#id_tense').parent().before('<h4>Target</h4>')
+     $('#id_source_tense').parent().before('<h4>Source</h4>')
+     $('#id_tense').parent().before('<h4>Translation</h4>')
+     $('#id_o').parent().before('<h4>Ordering</h4>')
      $('select').select2();
      $('button[type="reset"]').click(function(event) {
          var form = $(event.target).closest('form');

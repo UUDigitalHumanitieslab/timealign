@@ -1,6 +1,8 @@
 from django_filters import FilterSet, CharFilter, OrderingFilter, ModelChoiceFilter, MultipleChoiceFilter
 
 from annotations.models import Corpus, Tense, Label
+from annotations.utils import labels_to_choices
+
 from .models import Selection
 
 
@@ -8,7 +10,8 @@ class SelectionFilter(FilterSet):
     word_in_fragment = CharFilter(label='Word in fragment',
                                   field_name='fragment__sentence__word__word',
                                   lookup_expr='iexact',
-                                  help_text='Use this to filter for words in the text (case-insensitive)')
+                                  help_text='Use this to filter for words in the text (case-insensitive)',
+                                  distinct=True)
     corpus = ModelChoiceFilter(label='Corpus',
                                field_name='fragment__document__corpus',
                                queryset=Corpus.objects.all())
@@ -26,9 +29,6 @@ class SelectionFilter(FilterSet):
         model = Selection
         fields = ['corpus', 'is_no_target', 'selected_by', 'tense', 'labels']
 
-    def _labels_to_choices(self, queryset):
-        return [(label['pk'], '{}:{}'.format(label['key__title'], label['title'])) for label in queryset.values('pk', 'key__title', 'title')]
-
     def __init__(self, language, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.filters['tense'].queryset = Tense.objects.filter(language__iso=language)
@@ -39,4 +39,4 @@ class SelectionFilter(FilterSet):
 
         self.filters['labels'] = MultipleChoiceFilter(label='Labels',
                                                       field_name='labels',
-                                                      choices=self._labels_to_choices(labels_queryset))
+                                                      choices=labels_to_choices(labels_queryset))

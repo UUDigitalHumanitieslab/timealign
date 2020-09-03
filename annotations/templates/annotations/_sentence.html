@@ -11,7 +11,7 @@
             class="word
             {% if word.is_target or word in annotated_words %} selected {% endif %}
             {% if word.is_other_target %} other {% endif %}
-            {% if word.word == filtered %} filtered {% endif %}
+            {% if word.word|lower == filtered|lower %} filtered {% endif %}
             {% if word.is_in_dialogue %} in-dialogue {% endif %}">
             {{ word.word }}</span>
 
