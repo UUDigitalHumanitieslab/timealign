@@ -34,7 +34,9 @@ class ScenarioAdmin(BaseDjangoObjectActions, admin.ModelAdmin):
             'fields': ('title', 'description', 'is_test', )
         }),
         ('Filters', {
-            'fields': ('corpus', 'documents', 'subcorpora', ('formal_structure', 'formal_structure_strict', ), 'sentence_function', )
+            'fields': ('corpus', 'documents', 'subcorpora',
+                       ('formal_structure', 'formal_structure_strict', ),
+                       'sentence_function', )
         }),
         ('Multidimensional Scaling', {
             'classes': ('collapse',),

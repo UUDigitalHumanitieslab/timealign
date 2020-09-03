@@ -19,10 +19,13 @@ class Scenario(models.Model):
     documents = models.ManyToManyField(Document, blank=True)
     subcorpora = models.ManyToManyField(SubCorpus, blank=True)
 
-    formal_structure = models.PositiveIntegerField('Formal structure', choices=Fragment.FORMAL_STRUCTURES, default=Fragment.FS_NONE)
-    formal_structure_strict = models.BooleanField('Require translations to be in the same formal structure', default=True)
+    formal_structure = models.PositiveIntegerField(
+        'Formal structure', choices=Fragment.FORMAL_STRUCTURES, default=Fragment.FS_NONE)
+    formal_structure_strict = models.BooleanField(
+        'Require translations to be in the same formal structure', default=True)
 
-    sentence_function = models.PositiveIntegerField('Sentence function', choices=Fragment.SENTENCE_FUNCTIONS, default=Fragment.SF_NONE)
+    sentence_function = models.PositiveIntegerField(
+        'Sentence function', choices=Fragment.SENTENCE_FUNCTIONS, default=Fragment.SF_NONE)
 
     mds_dimensions = models.PositiveIntegerField(
         'Number of dimensions',
@@ -37,7 +40,8 @@ class Scenario(models.Model):
     mds_stress = models.FloatField('MDS stress', null=True)
     mds_allow_partial = models.BooleanField(
         'Allow partial tuples in model', default=False,
-        help_text='When enabled, the model will include tuples where one or more of the target languages have no Annotation')
+        help_text='When enabled, the model will include tuples '
+                  'where one or more of the target languages have no Annotation')
 
     last_run = models.DateTimeField(blank=True, null=True)
 
@@ -80,14 +84,16 @@ class ScenarioLanguage(models.Model):
     use_tenses = models.BooleanField(default=True)
 
     use_labels = models.BooleanField(default=False)
-    include_keys = models.ManyToManyField(LabelKey, blank=True, related_name='+',
-                                          help_text='Keys selected here will be used as components of the fragment tuples.')
-    include_labels = models.ManyToManyField(Label, blank=True, related_name='+',
-                                            verbose_name='Filter by labels',
-                                            help_text='Fragments will be included in the scenario only when '
-                                            'they are assigned one of the selected labels. Leave emtpy to include all fragments.')
+    include_keys = models.ManyToManyField(
+        LabelKey, blank=True, related_name='+',
+        help_text='Keys selected here will be used as components of the fragment tuples.')
+    include_labels = models.ManyToManyField(
+        Label, blank=True, related_name='+',
+        verbose_name='Filter by labels',
+        help_text='Fragments will be included in the scenario only '
+                  'when they are assigned one of the selected labels. Leave emtpy to include all fragments.')
 
-    # backward compatability
+    # backward compatibility
     @property
     def use_other_label(self):
         return self.use_labels

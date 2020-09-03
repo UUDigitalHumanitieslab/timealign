@@ -40,7 +40,8 @@ class ScenarioLanguageForm(forms.ModelForm):
                 labels.append((label.pk, '{}:{}'.format(label.key.title, label.title)))
             self.fields['include_labels'].choices = labels
 
-            self.fields['include_keys'].queryset = self.fields['include_keys'].queryset.filter(corpora=self.instance.scenario.corpus)
+            self.fields['include_keys'].queryset = self.fields['include_keys'].queryset \
+                .filter(corpora=self.instance.scenario.corpus)
 
     def clean(self):
         """

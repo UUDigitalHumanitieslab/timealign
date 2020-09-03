@@ -178,7 +178,9 @@ def run_mds(scenario):
 
 
 def get_labels(model, scenario_language):
-    return model.get_labels(as_pk=True, include_tense=scenario_language.use_tenses, include_labels=scenario_language.use_labels,
+    return model.get_labels(as_pk=True,
+                            include_tense=scenario_language.use_tenses,
+                            include_labels=scenario_language.use_labels,
                             include_keys=scenario_language.include_keys.all())
 
 
@@ -285,6 +287,7 @@ def get_tense_properties_from_cache(tense_identifier, tense_cache, seq=0, allow_
     For integers, this method finds the label, color and TenseCategory label.
     For strings, this method generates a color based on a sequence number.
     :param tense_identifier: identifier of the Tense, int or string
+    :param tense_cache: the current Tense cache
     :param seq: current sequence number of assigned colors (for strings)
     :param allow_empty: allow #000000 (black) as color instead of an assigned color
     :return: label, color, and category for the given tense identifier

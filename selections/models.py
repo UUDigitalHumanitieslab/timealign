@@ -33,10 +33,12 @@ class Selection(models.Model):
     comments = models.TextField(blank=True)
     fragment = models.ForeignKey(PreProcessFragment, on_delete=models.CASCADE)
 
-    selected_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='selected_by', on_delete=models.SET_NULL)
+    selected_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, related_name='selected_by', on_delete=models.SET_NULL)
     selected_at = models.DateTimeField(auto_now_add=True)
 
-    last_modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='selection_last_modified_by', on_delete=models.SET_NULL)
+    last_modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, related_name='selection_last_modified_by', on_delete=models.SET_NULL)
     last_modified_at = models.DateTimeField(auto_now=True)
 
     tense = models.ForeignKey(Tense, on_delete=models.CASCADE, null=True)

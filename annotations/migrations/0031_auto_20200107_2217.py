@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='corpus',
             name='tense_based',
-            field=models.BooleanField(default=True, verbose_name='Check this to use tenses for annotation, Uncheck to configure lables'),
+            field=models.BooleanField(default=True, verbose_name='Check this to use tenses for annotation, uncheck to configure labels'),
         ),
         migrations.CreateModel(
             name='LabelKey',

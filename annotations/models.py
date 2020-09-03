@@ -71,7 +71,7 @@ class Corpus(models.Model):
         'SubCorpus', blank=True, null=True, related_name='current_subcorpus', on_delete=models.SET_NULL)
 
     tense_based = models.BooleanField(
-        'Check this to use tenses for annotation, Uncheck to configure lables',
+        'Check this to use tenses for annotation, uncheck to configure labels',
         default=True)
 
     check_structure = models.BooleanField(
