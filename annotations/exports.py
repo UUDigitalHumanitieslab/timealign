@@ -1,8 +1,9 @@
 from django.db.models import Count, Max
 
 from annotations.models import Annotation, Fragment, Word
-from .management.commands.utils import open_csv, open_xlsx, pad_list
 from core.utils import XLSX
+
+from .management.commands.utils import open_csv, open_xlsx, pad_list
 
 
 def labels_fixed(annotation, label_keys):

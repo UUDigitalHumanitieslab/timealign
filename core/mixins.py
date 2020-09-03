@@ -24,7 +24,7 @@ class CheckOwnerOrStaff(UserPassesTestMixin):
 
     def test_func(self):
         return self.get_object().annotated_by == self.request.user or \
-            self.request.user.is_staff or self.request.user.is_superuser
+               self.request.user.is_staff or self.request.user.is_superuser
 
 
 class SelectSegmentMixin:

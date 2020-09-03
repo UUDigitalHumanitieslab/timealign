@@ -134,9 +134,9 @@ class SelectionCreate(SelectionMixin, generic.CreateView):
         """Go to the choose-view to select a new Alignment"""
         if self.is_final():
             return reverse('selections:choose', args=(self.get_fragment().document.corpus.pk,
-                                                      self.get_fragment().language.iso, ))
+                                                      self.get_fragment().language.iso,))
         else:
-            return reverse('selections:create', args=(self.get_fragment().pk, ))
+            return reverse('selections:create', args=(self.get_fragment().pk,))
 
     def form_valid(self, form):
         """Sets the User and Fragment on the created instance"""
@@ -178,7 +178,7 @@ class SelectionUpdate(SelectionUpdateMixin, generic.UpdateView):
         if self.is_final():
             return reverse('selections:list', args=(self.get_fragment().language.iso,))
         else:
-            return reverse('selections:create', args=(self.get_fragment().pk, ))
+            return reverse('selections:create', args=(self.get_fragment().pk,))
 
     def form_valid(self, form):
         """Sets the last modified by on the instance"""
@@ -204,9 +204,9 @@ class SelectionChoose(PermissionRequiredMixin, generic.RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
         """Redirects to a random Alignment"""
-        l = Language.objects.get(iso=self.kwargs['language'])
+        language = Language.objects.get(iso=self.kwargs['language'])
         corpus = Corpus.objects.get(pk=int(self.kwargs['corpus'])) if 'corpus' in self.kwargs else None
-        new_alignment = get_random_fragment(self.request.user, l, corpus)
+        new_alignment = get_random_fragment(self.request.user, language, corpus)
 
         # If no new alignment has been found, redirect to the status overview
         if not new_alignment:
@@ -242,7 +242,7 @@ class SelectionList(PermissionRequiredMixin, FilterView):
                                            'fragment__document',
                                            'fragment__document__corpus',
                                            'tense',
-                                           'selected_by')\
+                                           'selected_by') \
             .prefetch_related('fragment__sentence_set__word_set',
                               'words')
         return queryset

@@ -46,12 +46,12 @@ def open_xlsx(filename):
     writer.close()
 
 
-def pad_list(l, pad_length):
+def pad_list(orig_list, pad_length):
     """
     Pads a list with empty items
     Copied from http://stackoverflow.com/a/3438818/3710392
-    :param l: the original list
+    :param orig_list: the original list
     :param pad_length: the length of the list
     :return: the resulting, padded list
     """
-    return l + [''] * (pad_length - len(l))
+    return orig_list + [''] * (pad_length - len(orig_list))

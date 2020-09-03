@@ -5,12 +5,13 @@ from django.http import HttpResponseRedirect
 
 from django_object_actions import DjangoObjectActions
 from reversion.admin import VersionAdmin
-import nested_admin
+from nested_admin.nested import NestedModelAdmin, NestedTabularInline
+
+from core.utils import COLOR_LIST
 
 from .forms import SubSentenceFormSet, SubSentenceForm
 from .models import Language, TenseCategory, Tense, Corpus, Document, Source, Fragment, \
     Sentence, Word, Alignment, Annotation, SubCorpus, SubSentence, Label, LabelKey
-from stats.utils import COLOR_LIST
 
 
 @admin.register(Language)
@@ -49,19 +50,19 @@ class SourceAdmin(admin.ModelAdmin):
     list_filter = ('document__corpus', 'language', )
 
 
-class WordInline(nested_admin.NestedTabularInline):
+class WordInline(NestedTabularInline):
     model = Word
     extra = 0
 
 
-class SentenceInline(nested_admin.NestedTabularInline):
+class SentenceInline(NestedTabularInline):
     model = Sentence
     extra = 0
     inlines = [WordInline]
 
 
 @admin.register(Fragment)
-class FragmentAdmin(DjangoObjectActions, nested_admin.NestedModelAdmin, VersionAdmin):
+class FragmentAdmin(DjangoObjectActions, NestedModelAdmin, VersionAdmin):
     list_display = ('pk', 'language', 'xml_ids', 'full', 'target_words', 'label', )
     list_filter = ('document__corpus', 'language', )
     list_per_page = 20

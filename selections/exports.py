@@ -1,9 +1,10 @@
 from django.db.models import Count, Max
 
-from selections.models import Selection
 from annotations.exports import labels_fixed
 from annotations.management.commands.utils import open_csv, open_xlsx, pad_list
 from core.utils import CSV, XLSX
+
+from .models import Selection
 
 
 def export_selections(filename, format_, corpus, language,

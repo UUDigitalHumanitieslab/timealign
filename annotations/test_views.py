@@ -2,7 +2,6 @@ from django.contrib.auth.models import Permission
 from django.test import Client
 from django.urls import reverse
 
-from .views import IntroductionView, StatusView
 from .test_models import BaseTestCase
 
 

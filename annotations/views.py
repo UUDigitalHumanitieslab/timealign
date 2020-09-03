@@ -5,16 +5,16 @@ from tempfile import NamedTemporaryFile
 from lxml import etree
 
 from django.contrib import messages
+from django.contrib.admin.utils import construct_change_message
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.contrib.admin.utils import construct_change_message
 from django.db.models import Count, Prefetch, QuerySet
-from django.urls import reverse
 from django.http import HttpResponse, JsonResponse, QueryDict
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
-from django.views import generic
+from django.urls import reverse
 from django.utils.http import urlquote
+from django.views import generic
 
 from django_filters.views import FilterView
 from reversion.models import Version
@@ -22,6 +22,7 @@ from reversion.revisions import add_to_revision, set_comment
 from reversion.views import RevisionMixin
 
 from core.mixins import ImportMixin, CheckOwnerOrStaff, SelectSegmentMixin
+from core.utils import find_in_enum, XLSX
 
 from .exports import export_pos_file
 from .filters import AnnotationFilter
@@ -30,8 +31,6 @@ from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, 
     TenseCategory, Tense, Source, Sentence, Word, LabelKey
 from .utils import get_random_alignment, get_available_corpora, get_xml_sentences, bind_annotations_to_xml, \
     natural_sort_key
-
-from core.utils import XLSX
 
 
 ##############
@@ -51,7 +50,8 @@ class InstructionsView(generic.TemplateView):
     def get_context_data(self, **kwargs):
         context = super(InstructionsView, self).get_context_data(**kwargs)
 
-        context['is_no_target_title'] = Annotation._meta.get_field('is_no_target').verbose_name.format('present perfect')
+        context['is_no_target_title'] = Annotation._meta.get_field('is_no_target').verbose_name.format(
+            'present perfect')
         context['is_translation_title'] = Annotation._meta.get_field('is_translation').verbose_name
 
         return context
@@ -254,16 +254,18 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
 ############
 # CRUD Fragment
 ############
-class FragmentDetail(LoginRequiredMixin, generic.DetailView):
+class FragmentDetailMixin(LoginRequiredMixin):
     model = Fragment
 
     def get_object(self, queryset=None):
         qs = Fragment.objects \
             .select_related('document__corpus', 'language', 'tense') \
             .prefetch_related('original', 'sentence_set__word_set')
-        fragment = super(FragmentDetail, self).get_object(qs)
+        fragment = super().get_object(qs)
         return fragment
 
+
+class FragmentDetail(FragmentDetailMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(FragmentDetail, self).get_context_data(**kwargs)
 
@@ -277,28 +279,16 @@ class FragmentDetail(LoginRequiredMixin, generic.DetailView):
         return context
 
 
-class FragmentDetailPlain(LoginRequiredMixin, generic.DetailView):
-    model = Fragment
+class FragmentDetailPlain(FragmentDetailMixin, generic.DetailView):
     template_name = 'annotations/fragment_detail_plain.html'
-
-    def get_object(self, queryset=None):
-        qs = Fragment.objects \
-            .select_related('document__corpus', 'language', 'tense') \
-            .prefetch_related('original', 'sentence_set__word_set')
-        fragment = super(FragmentDetailPlain, self).get_object(qs)
-        return fragment
 
 
 class FragmentRevisionWithCommentMixin(RevisionWithCommentMixin):
-    def find_in_enum(self, key, enum):
-        # the type of enum expected here is actually an iterable of key-value tuples
-        return dict(enum).get(key, 'unknown')
-
     def format_change_for_field(self, field, value):
         if field == 'formal_structure':
-            return 'formal structure to ' + self.find_in_enum(value, Fragment.FORMAL_STRUCTURES)
+            return 'formal structure to ' + find_in_enum(value, Fragment.FORMAL_STRUCTURES)
         if field == 'sentence_function':
-            return 'sentence function to ' + self.find_in_enum(value, Fragment.SENTENCE_FUNCTIONS)
+            return 'sentence function to ' + find_in_enum(value, Fragment.SENTENCE_FUNCTIONS)
         return super().format_change_for_field(field, value)
 
 
@@ -370,11 +360,10 @@ class CorpusDetail(LoginRequiredMixin, generic.DetailView):
 
         return context
 
+
 ############
 # CRUD Document
 ############
-
-
 class DocumentDetail(LoginRequiredMixin, generic.DetailView):
     model = Document
 
@@ -396,7 +385,8 @@ class SourceDetail(LoginRequiredMixin, generic.DetailView):
 
         source = self.object
         tree, failed_lookups = bind_annotations_to_xml(source)
-        additional_sources = Source.objects.filter(document=source.document) \
+        additional_sources = Source.objects \
+            .filter(document=source.document) \
             .exclude(pk=source.pk) \
             .select_related('language')
 
