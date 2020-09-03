@@ -351,8 +351,11 @@ class CorpusDetail(LoginRequiredMixin, generic.DetailView):
             language = d.get('alignment__translated_fragment__language__title')
             document_pk = d.get('alignment__translated_fragment__document__pk')
 
-            index = document_pks.index(document_pk)
-            languages[language][index] = d.get('pk__count')
+            # Additional sanity check:
+            # happens if the language is not defined as a Corpus language, but nevertheless Annotations exist.
+            if languages.get(language):
+                index = document_pks.index(document_pk)
+                languages[language][index] = d.get('pk__count')
 
         # And finally, append the list of Document and Languages to the context
         context['documents'] = documents_sorted
