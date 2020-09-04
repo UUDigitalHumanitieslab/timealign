@@ -65,26 +65,26 @@ class LabelFormMixin(forms.Form):
             self.fields[key.symbol()] = field
 
         # hide the original field for labels.
-        # we still need this field defined in AnnotationForm.fields, otherwise
-        # the value set in AnnotationForm.clean() will not be used when submitting the form.
+        # we still need this field defined in fields of the Form, otherwise
+        # the value set in clean() will not be used when submitting the form.
         del self.fields['labels']
 
     def clean(self):
         cleaned_data = super(LabelFormMixin, self).clean()
 
-        # construct a value for Annotation.labels based on the individual label fields
+        # construct a value for Annotation/Fragment/PreProcessFragment.labels based on the individual label fields
         fields = [key.symbol() for key in self.corpus.label_keys.all()]
         cleaned_data['labels'] = [cleaned_data[field] for field in fields if cleaned_data[field]]
 
         return cleaned_data
 
     @property
-    def corpus(self):
-        return NotImplementedError
+    def corpus(self) -> Corpus:
+        raise NotImplementedError
 
     @property
-    def language(self):
-        return NotImplementedError
+    def language(self) -> Language:
+        raise NotImplementedError
 
 
 class SegmentSelectMixin(forms.Form):
