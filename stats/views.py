@@ -287,12 +287,12 @@ class DescriptiveStatsView(ScenarioDetail):
 
         cache = prepare_label_cache(self.object.corpus)
 
-        for l in languages:
+        for language in languages:
             c_tenses = Counter()
             c_tensecats = Counter()
             n = 0
             labels = set()
-            for t in tenses[l.iso]:
+            for t in tenses[language.iso]:
                 tense_labels, tense_color, tense_category = get_tense_properties_from_cache(t, cache, len(labels))
 
                 # multiple labels are expected, handle single tense labels
@@ -310,12 +310,12 @@ class DescriptiveStatsView(ScenarioDetail):
                 c_tensecats.update([tense_category])
                 n += 1
 
-            counters_tenses[l] = c_tenses.most_common()
-            counters_tensecats[l] = c_tensecats
+            counters_tenses[language] = c_tenses.most_common()
+            counters_tensecats[language] = c_tensecats
 
         tensecat_table = defaultdict(list)
-        for l in languages:
-            tensecat_counts = counters_tensecats[l]
+        for language in languages:
+            tensecat_counts = counters_tensecats[language]
             for tensecat in distinct_tensecats:
                 if tensecat in list(tensecat_counts.keys()):
                     tensecat_table[tensecat].append(tensecat_counts[tensecat])
