@@ -283,6 +283,7 @@ class DescriptiveStatsView(ScenarioDetail):
         counters_tensecats = dict()
         tuples = defaultdict(tuple)
         colors = dict()
+        tensecats = dict()
         distinct_tensecats = set()
 
         cache = prepare_label_cache(self.object.corpus)
@@ -303,9 +304,9 @@ class DescriptiveStatsView(ScenarioDetail):
                     labels.add(tense_label)
                     c_tenses.update([tense_label])
                     tuples[n] += (tense_label,)
+                    colors[tense_label] = tense_color
+                    tensecats[tense_label] = tense_category
 
-                    if tense_label not in colors:
-                        colors[tense_label] = tense_color
                 distinct_tensecats.add(tense_category)
                 c_tensecats.update([tense_category])
                 n += 1
@@ -330,6 +331,7 @@ class DescriptiveStatsView(ScenarioDetail):
         context['tensecat_table'] = tensecat_table_ordered
         context['tuples'] = Counter(list(tuples.values())).most_common()
         context['colors_json'] = json.dumps(colors)
+        context['tensecats_json'] = json.dumps(tensecats)
         context['languages'] = languages
         context['languages_json'] = json.dumps({l.iso: l.title for l in languages})
 

@@ -113,7 +113,9 @@
     Tuple frequency
 </h3>
 
-<input id="toggle-text" type="checkbox" data-toggle="toggle"> Show text
+<input id="toggle-dot" type="checkbox" checked data-toggle="toggle"> Show colors
+<input id="toggle-cat" type="checkbox" data-toggle="toggle"> Show categories
+<input id="toggle-txt" type="checkbox" data-toggle="toggle"> Show labels
 <table id="tuples-table" class="table table-striped">
     <thead>
         <tr>
@@ -129,6 +131,7 @@
             {% for tense in t %}
             <td>
                 <span class="dot" title="{{ tense }}"></span>
+                <span class="cat" title="{{ tense }}"></span>
                 <span class="txt">{{ tense }}</span>
             </td>
             {% endfor %}
@@ -143,8 +146,9 @@
   // {'language': ['tense':100, 'another_tense':200]}
   var counters = {{ counters_json|safe }};
 
-  // system-assigned color for each tense
+  // system-assigned color/category for each tense
   var colors = {{ colors_json|safe }};
+  var tensecats = {{ tensecats_json|safe }};
 
   // languages lookup (iso: label)
   var languages = {{ languages_json | safe }};
@@ -196,10 +200,22 @@
     $(this).css('background-color', colors[$(this).attr('title')]);
   });
 
-  $('.txt').hide();
+  $('.cat').each(function() {
+    $(this).text(tensecats[$(this).attr('title')]);
+  });
 
-  $('#toggle-text').change(function() {
+  $('.txt').hide();
+  $('.cat').hide();
+
+  $('#toggle-dot').change(function() {
     $('.dot').toggle();
+  });
+
+  $('#toggle-cat').change(function() {
+    $('.cat').toggle();
+  });
+
+  $('#toggle-txt').change(function() {
     $('.txt').toggle();
   });
 
