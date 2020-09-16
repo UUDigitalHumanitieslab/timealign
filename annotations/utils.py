@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
+import os
 import re
 
 from lxml import etree
@@ -156,7 +157,7 @@ def get_xml_sentences(fragment, limit):
 
     results = []
 
-    if source and source.xml_file:
+    if source and source.xml_file and os.path.exists(source.xml_file.path):
         xml_id = fragment.xml_ids()  # TODO: this works, as source Fragments have only one Sentence
         # TODO: limit to Fragments that are the source of an Alignment
         related_fragments = Fragment.objects.filter(
