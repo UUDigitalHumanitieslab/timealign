@@ -229,6 +229,34 @@ function MDSView(flat_data, series_list, clusters, options) {
             select_neighbours(d);
         });
 
+    // Adding convex hulls
+    function redrawHulls() {
+        scalingContainer.selectAll(".hull").remove();
+
+        if (options.hulls) {
+            var vertices = {};
+            scalingContainer.selectAll(".dot").data().forEach(function(d) {
+                vertices[d.color] = [];
+            });
+            scalingContainer.selectAll(".dot").data().forEach(function(d) {
+                vertices[d.color].push([xMap(clusters[d.cluster]), yMap(clusters[d.cluster])]);
+            });
+
+            for (color in vertices) {
+                if (vertices[color].length > 2) {
+                    var hull = scalingContainer.append("path")
+                        .attr("class", "hull")
+                        .style("fill", color)
+                        .style("fill-opacity", "0.05")
+                        .style("stroke", color)
+                        .style("stroke-width", "1px")
+                        .style("stroke-linejoin", "round");
+                    hull.datum(d3.geom.hull(vertices[color])).attr("d", function(d) { return "M" + d.join("L") + "Z"; });
+                }
+            }
+        }
+    }
+
     if (options.clusterLabels) {
         scalingContainer.selectAll('.cluster-label')
             .data(flat_data)
@@ -325,7 +353,14 @@ function MDSView(flat_data, series_list, clusters, options) {
         return loc;
     }
 
+    d3.selection.prototype.moveToFront = function() {
+        return this.each(function(){
+            this.parentNode.appendChild(this);
+        });
+    };
+
     d3.select('svg').call(zoom);
+    zoomed();
     function zoomed() {
         d3.select('.x.axis').call(xAxis);
         d3.select('.y.axis').call(yAxis);
@@ -336,7 +371,9 @@ function MDSView(flat_data, series_list, clusters, options) {
             .attr('cy', function (d) { return yMap(clusters[d.cluster]); });
         scalingContainer.selectAll('.cluster-label')
             .attr('x', function (d) { return xMap(clusters[d.cluster]); })
-            .attr("y", function (d) { return yMap(clusters[d.cluster]) - 5 - cluster_size(clusters[d.cluster]); })
+            .attr("y", function (d) { return yMap(clusters[d.cluster]) - 5 - cluster_size(clusters[d.cluster]); });
+        redrawHulls();
+        scalingContainer.selectAll('.dot').moveToFront();
         update_location_hash();
     }
 
