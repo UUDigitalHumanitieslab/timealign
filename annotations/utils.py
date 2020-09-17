@@ -272,12 +272,12 @@ def bind_annotations_to_xml(source):
         filter(alignment__translated_fragment__language=source.language,
                alignment__translated_fragment__document=source.document). \
         select_related('alignment__original_fragment', 'tense'). \
-        prefetch_related('words')
+        prefetch_related('labels', 'words')
     # Only include correct Annotations
     annotations = annotations.filter(is_no_target=False, is_translation=True)
     tree = etree.parse(source.xml_file)
 
-    tense_cache = prepare_label_cache(source.document.corpus)
+    label_cache = prepare_label_cache(source.document.corpus)
     labels = set()
     failed_lookups = []
 
@@ -287,24 +287,24 @@ def bind_annotations_to_xml(source):
     if annotations:
         # Attach Annotations to the XML tree
         for annotation in annotations:
-            tense_label, tense_color, _ = get_tense_properties_from_cache(
-                annotation.get_labels(as_pk=True), tense_cache, len(labels))
-            labels.add(tense_label)
+            label, color, _ = get_tense_properties_from_cache(
+                annotation.get_labels(as_pk=True, include_labels=True), label_cache, len(labels))
+            labels.add(label)
 
             words = annotation.words.all()
             for w in words:
-                words_by_xml_id[w.xml_id] = dict(annotation=annotation, tense=tense_label, color=tense_color, found=False)
+                words_by_xml_id[w.xml_id] = dict(annotation=annotation, label=label, color=color, found=False)
 
         for xml_w in all_w_elements:
             word = words_by_xml_id.get(xml_w.get('id'))
             if word:
                 annotation = word['annotation']
-                tense_label = word['tense']
-                tense_color = word['color']
+                label = word['label']
+                color = word['color']
                 xml_w.set('annotation-pk', str(annotation.pk))
                 xml_w.set('fragment-pk', str(annotation.alignment.original_fragment.pk))
-                xml_w.set('tense', tense_label)
-                xml_w.set('color', tense_color)
+                xml_w.set('label', label)
+                xml_w.set('color', color)
                 del words_by_xml_id[xml_w.get('id')]
     else:
         # Assume we are dealing with a source language here
@@ -315,28 +315,29 @@ def bind_annotations_to_xml(source):
         fragments = Fragment.objects.filter(language=source.language, document=source.document). \
             exclude(pk__in=pp_fragments). \
             select_related('tense'). \
-            prefetch_related(Prefetch('sentence_set', queryset=target_words, to_attr='targets_prefetched'))
+            prefetch_related('labels',
+                             Prefetch('sentence_set', queryset=target_words, to_attr='targets_prefetched'))
 
         # Attach Fragments to the XML tree
         for fragment in fragments:
-            tense_label, tense_color, _ = get_tense_properties_from_cache(
-                fragment.get_labels(as_pk=True), tense_cache, len(labels))
-            labels.add(tense_label)
+            label, color, _ = get_tense_properties_from_cache(
+                fragment.get_labels(as_pk=True, include_labels=True), label_cache, len(labels))
+            labels.add(label)
 
             sentences = fragment.targets_prefetched
             for s in sentences:
                 for w in s.word_set.all():
-                    words_by_xml_id[w.xml_id] = dict(fragment=fragment, tense=tense_label, color=tense_color, found=False)
+                    words_by_xml_id[w.xml_id] = dict(fragment=fragment, label=label, color=color, found=False)
 
         for xml_w in all_w_elements:
             word = words_by_xml_id.get(xml_w.get('id'))
             if word:
                 fragment = word['fragment']
-                tense_label = word['tense']
-                tense_color = word['color']
+                label = word['label']
+                color = word['color']
                 xml_w.set('fragment-pk', str(fragment.pk))
-                xml_w.set('tense', tense_label)
-                xml_w.set('color', tense_color)
+                xml_w.set('label', label)
+                xml_w.set('color', color)
                 del words_by_xml_id[xml_w.get('id')]
 
     for word in words_by_xml_id.values():

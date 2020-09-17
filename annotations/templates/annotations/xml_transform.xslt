@@ -9,7 +9,7 @@
                 <a>
                     <xsl:attribute name="href">../../show/<xsl:value-of select="@fragment-pk" /></xsl:attribute>
                     <xsl:attribute name="title">
-                        <xsl:value-of select="@tense" />
+                        <xsl:value-of select="@label" />
                     </xsl:attribute>
                     <xsl:attribute name="data-annotation-pk">
                         <xsl:value-of select="@annotation-pk" />
@@ -17,8 +17,8 @@
                     <xsl:attribute name="data-xml-id">
                         <xsl:value-of select="@id" />
                     </xsl:attribute>
-                    <xsl:attribute name="data-tense">
-                        <xsl:value-of select="@tense" />
+                    <xsl:attribute name="data-label">
+                        <xsl:value-of select="@label" />
                     </xsl:attribute>
                     <xsl:attribute name="style">
                         background-color: <xsl:value-of select="@color" />;
