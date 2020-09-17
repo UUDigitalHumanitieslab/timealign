@@ -4,6 +4,7 @@ from lxml import etree
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.db.models import Case, When
 
 from .constants import COLUMN_DOCUMENT, COLUMN_TYPE, COLUMN_IDS, COLUMN_XML, FROM_WIDTH, TO_WIDTH
 from annotations.models import Language, Tense, Corpus, Document, Fragment, Sentence, Word, Alignment, LabelKey
@@ -16,7 +17,7 @@ class Command(BaseCommand):
         parser.add_argument('corpus', type=str)
         parser.add_argument('filenames', type=str, nargs='+')
 
-        parser.add_argument('--use_label', dest='use_label')
+        parser.add_argument('--label_titles', dest='label_titles', nargs='+')
         parser.add_argument('--delete', action='store_true', dest='delete', default=False,
                             help='Delete existing Fragments (and contents) for this Corpus')
 
@@ -36,49 +37,57 @@ class Command(BaseCommand):
         for filename in options['filenames']:
             with open(filename, 'rb') as f:
                 try:
-                    process_file(f, corpus, use_label=options['use_label'])
+                    process_file(f, corpus, label_titles=options['label_titles'])
                     self.stdout.write(self.style.SUCCESS('Successfully imported fragments'))
                 except Exception as e:
                     raise CommandError(e)
 
 
-def process_file(f, corpus, use_label_pk=None, use_label=None):
+def process_file(f, corpus, label_pks=None, label_titles=None):
     lines = f.read().decode('utf-8-sig').splitlines()
     csv_reader = csv.reader(lines, delimiter=';')
-    label_key = None
-    if use_label_pk:
-        label_key = LabelKey.objects.get(pk=use_label_pk)
-    elif use_label:
-        label_key = LabelKey.objects.get(title=use_label, corpora=corpus)
+
+    # Solution to preserve order taken from https://stackoverflow.com/a/37648265
+    label_keys = LabelKey.objects.none()
+    if label_pks:
+        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(label_pks)])
+        label_keys = LabelKey.objects.filter(pk__in=label_pks).order_by(preserved)
+    elif label_titles:
+        preserved = Case(*[When(title=title, then=pos) for pos, title in enumerate(label_titles)])
+        label_keys = LabelKey.objects.filter(title__in=label_titles, corpora=corpus).order_by(preserved)
+    additional_columns = len(label_keys) - 1 if label_keys else 0
 
     for n, row in enumerate(csv_reader):
         # Retrieve the languages from the first row of the output
         if n == 0:
-            language_from, languages_to = retrieve_languages(row)
+            language_from, languages_to = retrieve_languages(row, additional_columns)
             continue
 
         # For every other line, create a Fragment and its Alignments
         with transaction.atomic():
             doc, _ = Document.objects.get_or_create(corpus=corpus, title=row[COLUMN_DOCUMENT])
 
-            from_fragment = Fragment.objects.create(language=language_from,
-                                                    document=doc)
+            from_fragment = Fragment.objects.create(language=language_from, document=doc)
 
-            type_value = row[COLUMN_TYPE]
-            # Add other_label or Tense to Fragment
-            if label_key:
-                label, _ = label_key.labels.get_or_create(title=type_value)
-                from_fragment.labels.add(label)
+            # Add Labels or Tense (the default) to Fragment
+            if label_keys:
+                for i, label_key in enumerate(label_keys):
+                    label_title = row[COLUMN_TYPE + i]
+                    label, _ = label_key.labels.get_or_create(title=label_title)
+                    from_fragment.labels.add(label)
             else:
+                tense_title = row[COLUMN_TYPE]
                 try:
-                    from_fragment.tense = Tense.objects.get(language=language_from, title=type_value)
+                    from_fragment.tense = Tense.objects.get(language=language_from, title=tense_title)
                 except Tense.DoesNotExist:
-                    raise ValueError('Unknown tense: {}'.format(type_value))
+                    raise ValueError('Unknown tense: {}'.format(tense_title))
 
             from_fragment.save()
 
             # Add Sentences to Fragment
-            add_sentences(from_fragment, row[COLUMN_XML], row[COLUMN_IDS].split(' '))
+            xml_column = row[COLUMN_XML + additional_columns]
+            ids_column = row[COLUMN_IDS + additional_columns]
+            add_sentences(from_fragment, xml_column, ids_column.split(' '))
 
             # Create the Fragments in other Languages and add the Alignment object
             create_to_fragments(doc, from_fragment, languages_to, row)
@@ -87,8 +96,7 @@ def process_file(f, corpus, use_label_pk=None, use_label=None):
 def create_to_fragments(document, from_fragment, languages_to, row):
     for m, language_to in list(languages_to.items()):
         if row[m]:
-            to_fragment = Fragment.objects.create(language=language_to,
-                                                  document=document)
+            to_fragment = Fragment.objects.create(language=language_to, document=document)
             add_sentences(to_fragment, row[m])
 
             Alignment.objects.create(original_fragment=from_fragment,
@@ -96,10 +104,12 @@ def create_to_fragments(document, from_fragment, languages_to, row):
                                      type=row[m - 1])
 
 
-def retrieve_languages(row, header_width=FROM_WIDTH):
+def retrieve_languages(row, additional_columns=0):
+    xml_column = row[COLUMN_XML + additional_columns]
+    language_from = Language.objects.get(iso=xml_column)
+
     languages_to = dict()
-    language_from = Language.objects.get(iso=row[COLUMN_XML])
-    for i in range(header_width + 1, len(row), TO_WIDTH):
+    for i in range(FROM_WIDTH + additional_columns + 1, len(row), TO_WIDTH):
         try:
             languages_to[i] = Language.objects.get(iso=row[i])
         except Language.DoesNotExist:

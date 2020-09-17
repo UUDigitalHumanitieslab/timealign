@@ -72,7 +72,7 @@ class AddPreProcessFragmentsForm(AddFragmentsForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.corpus:
-            del self.fields['annotation_type']
+            del self.fields['annotation_types']
 
     def save(self):
         data = self.cleaned_data
