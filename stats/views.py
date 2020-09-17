@@ -114,8 +114,7 @@ class MDSView(ScenarioDetail):
         tenses = scenario.get_labels()
         fragment_pks = scenario.mds_fragments
 
-        # Solution taken from https://stackoverflow.com/a/38390480
-        # query.
+        # Solution to preserve order taken from https://stackoverflow.com/a/37648265
         preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(fragment_pks)])
         fragments = list(Fragment.objects.filter(pk__in=fragment_pks).
                          order_by(preserved).
@@ -487,6 +486,7 @@ class SankeyView(ScenarioDetail):
         # Retrieve the values for the source language
         lfrom_values = []
         if lfrom_option:
+            # Solution to preserve order taken from https://stackoverflow.com/a/37648265
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(fragment_pks)])
             fragments = Fragment.objects.filter(pk__in=fragment_pks).order_by(preserved)
             for fragment in fragments:
