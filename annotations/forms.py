@@ -139,7 +139,7 @@ class AnnotationForm(LabelFormMixin, SegmentSelectMixin, forms.ModelForm):
             del self.fields['is_not_labeled_structure']
             del self.fields['is_not_same_structure']
 
-        if not self.user.has_perm('annotations.edit_labels_in_interface'):
+        if not self.user.has_perm('annotations.edit_labels_in_interface') or not self.corpus.tense_based:
             del self.fields['tense']
 
         self.fields.move_to_end('comments')
@@ -183,18 +183,22 @@ class FragmentForm(LabelFormMixin, SegmentSelectMixin, forms.ModelForm):
         - filters the words/tense field based on the translated Fragment
         - sets initial value for the words field
         - removes formal_structure and sentence_function fields if the structure needs not to be checked
+        - removes tense fields if the corpus is not tense-based
         """
         self.fragment = kwargs.get('instance')
 
         super(FragmentForm, self).__init__(*args, **kwargs)
 
-        self.fields['tense'].queryset = Tense.objects.filter(language=self.fragment.language)
+        self.fields['tense'].queryset = Tense.objects.filter(language=self.language)
         self.fields['words'].queryset = Word.objects.filter(sentence__fragment=self.fragment)
         self.fields['words'].initial = self.fragment.targets()
 
         if not self.corpus.check_structure:
             del self.fields['formal_structure']
             del self.fields['sentence_function']
+
+        if not self.corpus.tense_based:
+            del self.fields['tense']
 
     def clean(self):
         """
