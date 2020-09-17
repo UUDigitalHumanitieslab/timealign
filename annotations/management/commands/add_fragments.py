@@ -73,7 +73,7 @@ def process_file(f, corpus, label_pks=None, label_titles=None):
             if label_keys:
                 for i, label_key in enumerate(label_keys):
                     label_title = row[COLUMN_TYPE + i]
-                    label, _ = label_key.labels.get_or_create(title=label_title)
+                    label, _ = label_key.labels.get_or_create(language=language_from, title=label_title)
                     from_fragment.labels.add(label)
             else:
                 tense_title = row[COLUMN_TYPE]
