@@ -167,11 +167,11 @@ def get_xml_sentences(fragment, limit):
         )
         related_fragments = related_fragments.exclude(original=None)
 
-        # Loop over p/s elements
+        # Loop over p/head/s elements
         prev_el = []
         found = False
         added = 0
-        for _, el in etree.iterparse(source.xml_file.path, tag=['p', 's']):
+        for _, el in etree.iterparse(source.xml_file.path, tag=['p', 'head', 's']):
             if el.get('id') == xml_id:
                 found = True
 
@@ -327,7 +327,6 @@ def bind_annotations_to_xml(source):
             for s in sentences:
                 for w in s.word_set.all():
                     words_by_xml_id[w.xml_id] = dict(fragment=fragment, tense=tense_label, color=tense_color, found=False)
-
 
         for xml_w in all_w_elements:
             word = words_by_xml_id.get(xml_w.get('id'))

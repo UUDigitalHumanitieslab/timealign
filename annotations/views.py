@@ -394,7 +394,7 @@ class SourceDetail(LoginRequiredMixin, generic.DetailView):
             .select_related('language')
 
         transform = etree.XSLT(etree.fromstring(render_to_string('annotations/xml_transform.xslt').encode('utf-8')))
-        context['sentences'] = [transform(p) for p in tree.iter('p')]
+        context['sentences'] = [transform(p) for p in tree.iter('p', 'head')]
         context['failed_lookups'] = failed_lookups
         context['additional_sources'] = additional_sources
         context['rows'] = [(x,) for x in context['sentences']]
@@ -405,7 +405,7 @@ class SourceDetail(LoginRequiredMixin, generic.DetailView):
             add_tree, add_failed_lookups = bind_annotations_to_xml(source)
 
             context['additional_source'] = source
-            context['additional_sentences'] = [transform(p) for p in add_tree.iter('p')]
+            context['additional_sentences'] = [transform(p) for p in add_tree.iter('p', 'head')]
             context['failed_lookups'] = context['failed_lookups'].extend(add_failed_lookups)
             context['rows'] = zip(context['sentences'], context['additional_sentences'])
 
