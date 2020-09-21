@@ -244,7 +244,10 @@ function MDSView(flat_data, series_list, clusters, options) {
             .style("fill-opacity", "0.05")
             .style("stroke", d => d.color)
             .style("stroke-width", "1px")
-            .style("stroke-linejoin", "round");
+            .style("stroke-linejoin", "round")
+            .on("click", function(d) {
+                d3.select(this).remove();
+            });
     }
 
     if (options.clusterLabels) {

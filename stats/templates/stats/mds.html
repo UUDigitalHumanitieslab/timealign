@@ -13,9 +13,8 @@
 {% block content %}
 
 <h2>MDS visualization (scenario
-    <em>
-        <a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a>
-    </em>)</h2>
+    <em><a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a></em>)
+</h2>
 <p>
     <em>Stress: {{ stress|floatformat:"-3" }}</em>
 </p>
@@ -188,9 +187,9 @@ General size: <input type="range" min="1" max="6" value="1" class="slider" id="s
         function within_distance(origin, point, distance) {
             var dx = point.x - origin.x;
             var dy = point.y - origin.y;
-            var d = Math.sqrt(dx * dx + dy * dy)
+            var d = Math.sqrt(dx * dx + dy * dy);
 
-            return d <= distance
+            return d <= distance;
         }
     </script>
 {% endblock %}
