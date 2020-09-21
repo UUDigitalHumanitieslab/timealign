@@ -11,6 +11,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('corpus', type=str)
+        parser.add_argument('labelkey', type=str)
         parser.add_argument('filenames', type=str, nargs='+')
 
         parser.add_argument('--delete', action='store_true', dest='delete', default=False,
@@ -23,6 +24,10 @@ class Command(BaseCommand):
         except Corpus.DoesNotExist:
             raise CommandError('Corpus with title {} does not exist'.format(options['corpus']))
 
+        # Retrieve the LabelKey from the database, or create it
+        key, _ = LabelKey.objects.get_or_create(title=options['labelkey'])
+        key.corpora.add(corpus)
+
         if len(options['filenames']) == 0:
             raise CommandError('No documents specified')
 
@@ -32,18 +37,18 @@ class Command(BaseCommand):
         for filename in options['filenames']:
             with open(filename, 'rb') as f:
                 try:
-                    process_file(f, corpus)
+                    process_file(f, corpus, key)
                     self.stdout.write(self.style.SUCCESS('Successfully imported fragments'))
                 except Exception as e:
                     raise CommandError(e)
 
 
-def process_file(f, corpus):
+def process_file(f, corpus, key):
     lines = f.read().decode('utf-8').splitlines()
     csv_reader = csv.reader(lines, delimiter=';')
 
     for n, row in enumerate(csv_reader):
-        # Retrieve the languages from the first row of the output
+        # Retrieve the languages from the first row of the .csv-file
         if n == 0:
             language_from, languages_to = retrieve_languages(row)
             continue
@@ -55,7 +60,6 @@ def process_file(f, corpus):
             from_fragment = Fragment.objects.create(language=language_from, document=document)
 
             # Add Labels or Tense (the default) to Fragment
-            key = LabelKey.objects.get(title='LATE')
             if row[4]:
                 label, _ = Label.objects.get_or_create(key=key, language=language_from, title=row[4])
                 from_fragment.labels.add(label)
@@ -70,15 +74,26 @@ def process_file(f, corpus):
             for column, language_to in languages_to.items():
                 to_fragment = Fragment.objects.create(language=language_to, document=document)
                 sentence = Sentence.objects.create(fragment=to_fragment, xml_id=row[2])
-                word = Word.objects.create(sentence=sentence, xml_id=xml_id, word=row[column], is_target=True)
+
+                targets = []
+                full_text = row[column - 1]
+                label_value = row[column]
+                for i, word in enumerate(full_text.split(), start=1):  # Assumes that the input is tokenized
+                    xml_id = row[2] + '.' + str(i)
+                    w = Word.objects.create(sentence=sentence, xml_id=xml_id, word=word)
+                    if word.lower() == label_value.lower():
+                        targets.append(w)
 
                 alignment = Alignment.objects.create(original_fragment=from_fragment,
                                                      translated_fragment=to_fragment,
                                                      type='1 => 1')
                 annotation = Annotation.objects.create(alignment=alignment)
-                annotation.words.add(word)
-                if row[column]:
-                    label, _ = Label.objects.get_or_create(key=key, language=language_to, title=row[column])
+
+                for target in targets:
+                    annotation.words.add(target)
+
+                if label_value:
+                    label, _ = Label.objects.get_or_create(key=key, language=language_to, title=label_value)
                     annotation.labels.add(label)
 
 
@@ -86,7 +101,7 @@ def retrieve_languages(row):
     language_from = Language.objects.get(iso=row[4])
 
     languages_to = dict()
-    for i in range(5, len(row)):
+    for i in range(6, len(row), 2):
         try:
             languages_to[i] = Language.objects.get(iso=row[i])
         except Language.DoesNotExist:
