@@ -141,7 +141,7 @@ class Label(models.Model):
     language = models.ForeignKey(Language, on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
-        unique_together = ('key', 'title', )
+        unique_together = ('key', 'language', 'title')
 
     def __str__(self):
         return self.title
