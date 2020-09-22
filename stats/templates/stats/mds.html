@@ -13,9 +13,8 @@
 {% block content %}
 
 <h2>MDS visualization (scenario
-    <em>
-        <a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a>
-    </em>)</h2>
+    <em><a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a></em>)
+</h2>
 <p>
     <em>Stress: {{ stress|floatformat:"-3" }}</em>
 </p>
@@ -52,7 +51,7 @@ General size: <input type="range" min="1" max="6" value="1" class="slider" id="s
             <div id="language" class="btn-group" data-toggle="buttons">
                 {% for l in languages %}
                 <label class="btn btn-primary">
-                    <input type="radio" name="options" value="{{ l.iso }}" autocomplete="off">{{ l.title }}
+                    <input type="radio" name="options" value="{{ l.iso }}">{{ l.title }}
                 </label>
                 {% endfor %}
             </div>
@@ -60,18 +59,18 @@ General size: <input type="range" min="1" max="6" value="1" class="slider" id="s
             <div id="d1" class="btn-group" data-toggle="buttons">
                 {% for d in max_dimensions %}
                 <label class="btn btn-primary">
-                    <input type="radio" name="options" value="{{ d }}" autocomplete="off">{{ d }}
+                    <input type="radio" name="options" value="{{ d }}">{{ d }}
                 </label>
                 {% endfor %}
             </div>
             Dimension on y-axis:
             <div id="d2" class="btn-group" data-toggle="buttons">
                 <label class="btn btn-primary">
-                    <input type="radio" name="options" value="0" autocomplete="off">&empty;
+                    <input type="radio" name="options" value="0">&empty;
                 </label>
                 {% for d in max_dimensions %}
                 <label class="btn btn-primary">
-                    <input type="radio" name="options" value="{{ d }}" autocomplete="off">{{ d }}
+                    <input type="radio" name="options" value="{{ d }}">{{ d }}
                 </label>
                 {% endfor %}
             </div>
@@ -80,19 +79,28 @@ General size: <input type="range" min="1" max="6" value="1" class="slider" id="s
             Clustering:
             <div id="clustering" class="btn-group" data-toggle="buttons">
                 <label class="btn btn-primary">
-                    <input type="radio" name="options" value="yes" autocomplete="off">Yes
+                    <input type="radio" name="options" value="yes">Yes
                 </label>
                 <label class="btn btn-primary">
-                    <input type="radio" name="options" value="no" autocomplete="off">No
+                    <input type="radio" name="options" value="no">No
                 </label>
             </div>
             Labels:
             <div id="cluster_labels" class="btn-group" data-toggle="buttons">
                 <label class="btn btn-primary">
-                    <input type="radio" name="options" value="yes" autocomplete="off">Yes
+                    <input type="radio" name="options" value="yes">Yes
                 </label>
                 <label class="btn btn-primary">
-                    <input type="radio" name="options" value="no" autocomplete="off">No
+                    <input type="radio" name="options" value="no">No
+                </label>
+            </div>
+            Convex hulls:
+            <div id="hulls" class="btn-group" data-toggle="buttons">
+                <label class="btn btn-primary">
+                    <input type="radio" name="options" value="yes">Yes
+                </label>
+                <label class="btn btn-primary">
+                    <input type="radio" name="options" value="no">No
                 </label>
             </div>
             <button type="submit" class="btn btn-success">
@@ -123,6 +131,7 @@ General size: <input type="range" min="1" max="6" value="1" class="slider" id="s
         var options = {
             clustered: '{{ clustering }}' == 'yes',
             clusterLabels: '{{ cluster_labels }}' == 'yes',
+            hulls: '{{ hulls }}' == 'yes',
         };
         var mds = MDSView(flat_data, series_list, clusters, options);
 
@@ -146,6 +155,7 @@ General size: <input type="range" min="1" max="6" value="1" class="slider" id="s
             $("#d2 input[value='{{ d2 }}'").closest(".btn").addClass("active");
             $("#clustering input[value='{{ clustering }}'").closest(".btn").addClass("active");
             $("#cluster_labels input[value='{{ cluster_labels }}'").closest(".btn").addClass("active");
+            $("#hulls input[value='{{ hulls }}'").closest(".btn").addClass("active");
 
             $("button[type='submit']").click(function () {
                 var l = $("#language > .btn.active > input").val();
@@ -154,9 +164,11 @@ General size: <input type="range" min="1" max="6" value="1" class="slider" id="s
                 var url = "{% url 'stats:mds' scenario.pk 'language' 1111 2222 %}";
                 var clustering = $("#clustering > .btn.active > input").val();
                 var clusterLabels = $("#cluster_labels > .btn.active > input").val();
+                var hulls = $("#hulls > .btn.active > input").val();
                 window.location = url.replace("language", l).replace('1111', d1).replace('2222', d2) +
                                   '?clustering=' + clustering +
                                   '&labels=' + clusterLabels +
+                                  '&hulls=' + hulls +
                                   window.location.hash;
             });
         });
@@ -175,9 +187,9 @@ General size: <input type="range" min="1" max="6" value="1" class="slider" id="s
         function within_distance(origin, point, distance) {
             var dx = point.x - origin.x;
             var dy = point.y - origin.y;
-            var d = Math.sqrt(dx * dx + dy * dy)
+            var d = Math.sqrt(dx * dx + dy * dy);
 
-            return d <= distance
+            return d <= distance;
         }
     </script>
 {% endblock %}
