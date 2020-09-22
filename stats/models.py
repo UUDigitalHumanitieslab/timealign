@@ -68,6 +68,16 @@ class Scenario(models.Model):
         for language, values in self.mds_labels.items():
             if isinstance(values[0], int):
                 result[language] = [('Tense:{}'.format(v),) for v in values]
+            if isinstance(values[0], str):
+                labels = []
+                for v in values:
+                    try:
+                        keys = LabelKey.objects.filter(corpora=self.corpus)
+                        label = Label.objects.get(key__in=keys, title=v)
+                        labels.append(label)
+                    except:  # If all else fails, just continue...
+                        continue
+                result[language] = [('Label:{}'.format(label.pk),) for label in labels]
             else:
                 result[language] = values
         return result

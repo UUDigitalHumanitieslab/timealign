@@ -21,7 +21,7 @@ from core.utils import HTML
 
 from .filters import ScenarioFilter, FragmentFilter
 from .models import Scenario, ScenarioLanguage
-from .utils import get_tense_properties_from_cache, prepare_label_cache
+from .utils import get_label_properties_from_cache, prepare_label_cache
 
 
 class ScenarioList(LoginRequiredMixin, FilterView):
@@ -123,7 +123,7 @@ class MDSView(ScenarioDetail):
         # Turn the pickled model into a scatterplot dictionary
         points = defaultdict(list)
         clusters = []
-        tense_cache = prepare_label_cache(self.object.corpus)
+        label_cache = prepare_label_cache(self.object.corpus)
         label_set = set()
 
         clustering = self.request.GET.get('clustering', 'yes') == 'yes'
@@ -156,13 +156,14 @@ class MDSView(ScenarioDetail):
             # flatten
             label_list = []
             for t in ts:
-                label, _, _ = get_tense_properties_from_cache(t, tense_cache, len(label_set))
+                label, _, _ = get_label_properties_from_cache(t, label_cache, len(label_set))
                 label_list.append(label.replace('<', '&lt;').replace('>', '&gt;'))
                 label_set.add(label)
 
             # Add all values to the dictionary
             points[tenses[display_language][n]].append(
-                {'cluster': cluster_id, 'x': x, 'y': y, 'tenses': label_list, 'fragment_pk': fragment.pk, 'fragment': fragment.full(HTML)})
+                {'cluster': cluster_id, 'x': x, 'y': y,
+                 'tenses': label_list, 'fragment_pk': fragment.pk, 'fragment': fragment.full(HTML)})
 
         context['language'] = display_language
         context['languages'] = Language.objects.filter(iso__in=list(tenses.keys())).order_by('iso')
@@ -174,7 +175,7 @@ class MDSView(ScenarioDetail):
         context['stress'] = scenario.mds_stress
 
         # flat data representation for d3
-        flat_data, series_list = self.prepare_flat_data(points, tense_cache)
+        flat_data, series_list = self.prepare_flat_data(points, label_cache)
         context['flat_data'] = json.dumps(flat_data)
         context['series_list'] = json.dumps(series_list)
         context['clusters'] = json.dumps(clusters)
@@ -221,18 +222,18 @@ class MDSView(ScenarioDetail):
 
         return [(n, embedding, cluster_count[embedding]) for n, embedding in collect.values() if embedding not in skip]
 
-    def prepare_flat_data(self, points, tense_cache):
+    def prepare_flat_data(self, points, label_cache):
         # Transpose the dictionary to the correct format for nvd3.
         # TODO: can this be done in the loop above?
         matrix = []
         labels = set()
-        for tense, values in list(points.items()):
-            tense_label, tense_color, _ = get_tense_properties_from_cache(tense, tense_cache, len(labels))
-            labels.add(tense_label)
+        for identifier, values in list(points.items()):
+            label, color, _ = get_label_properties_from_cache(identifier, label_cache, len(labels))
+            labels.add(label)
 
             d = dict()
-            d['key'] = tense_label
-            d['color'] = tense_color
+            d['key'] = label
+            d['color'] = color
             d['values'] = values
             matrix.append(d)
 
@@ -275,62 +276,62 @@ class DescriptiveStatsView(ScenarioDetail):
     def get_context_data(self, **kwargs):
         context = super(DescriptiveStatsView, self).get_context_data(**kwargs)
 
-        tenses = self.object.get_labels()
-        languages = Language.objects.filter(iso__in=list(tenses.keys()))
+        scenario_labels = self.object.get_labels()
+        languages = Language.objects.filter(iso__in=list(scenario_labels.keys()))
 
         counters_tenses = dict()
         counters_tensecats = dict()
         tuples = defaultdict(tuple)
         colors = dict()
-        tensecats = dict()
+        categories = dict()
         distinct_tensecats = set()
 
-        cache = prepare_label_cache(self.object.corpus)
+        label_cache = prepare_label_cache(self.object.corpus)
 
         for language in languages:
             c_tenses = Counter()
             c_tensecats = Counter()
             n = 0
             labels = set()
-            for t in tenses[language.iso]:
-                tense_labels, tense_color, tense_category = get_tense_properties_from_cache(t, cache, len(labels))
+            for identifier in scenario_labels[language.iso]:
+                label, color, category = get_label_properties_from_cache(identifier, label_cache, len(labels))
 
                 # multiple labels are expected, handle single tense labels
-                if not isinstance(tense_labels, tuple):
-                    tense_labels = (tense_labels,)
+                if not isinstance(label, tuple):
+                    label = (label,)
 
-                for tense_label in tense_labels:
+                for tense_label in label:
                     labels.add(tense_label)
                     c_tenses.update([tense_label])
                     tuples[n] += (tense_label,)
-                    colors[tense_label] = tense_color
-                    tensecats[tense_label] = tense_category
+                    colors[tense_label] = color
+                    categories[tense_label] = category
 
-                distinct_tensecats.add(tense_category)
-                c_tensecats.update([tense_category])
+                distinct_tensecats.add(category)
+                c_tensecats.update([category])
                 n += 1
 
             counters_tenses[language] = c_tenses.most_common()
             counters_tensecats[language] = c_tensecats
 
-        tensecat_table = defaultdict(list)
+        categories_table = defaultdict(list)
         for language in languages:
             tensecat_counts = counters_tensecats[language]
             for tensecat in distinct_tensecats:
                 if tensecat in list(tensecat_counts.keys()):
-                    tensecat_table[tensecat].append(tensecat_counts[tensecat])
+                    categories_table[tensecat].append(tensecat_counts[tensecat])
                 else:
-                    tensecat_table[tensecat].append(0)
+                    categories_table[tensecat].append(0)
 
-        tensecat_table_ordered = OrderedDict(
-            sorted(list(tensecat_table.items()), key=lambda item: sum(item[1]) if item[0] else 0, reverse=True))
+        categories_table_ordered = OrderedDict(
+            sorted(list(categories_table.items()), key=lambda item: sum(item[1]) if item[0] else 0, reverse=True))
 
         context['counters'] = counters_tenses
         context['counters_json'] = json.dumps({language.iso: values for language, values in list(counters_tenses.items())})
-        context['tensecat_table'] = tensecat_table_ordered
+        context['tensecat_table'] = categories_table_ordered
         context['tuples'] = Counter(list(tuples.values())).most_common()
         context['colors_json'] = json.dumps(colors)
-        context['tensecats_json'] = json.dumps(tensecats)
+        context['tensecats_json'] = json.dumps(categories)
         context['languages'] = languages
         context['languages_json'] = json.dumps({l.iso: l.title for l in languages})
 
@@ -407,7 +408,7 @@ class UpsetView(ScenarioDetail):
     template_name = 'stats/upset.html'
 
     def get_context_data(self, **kwargs):
-        context = super(UpsetView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         scenario = self.object
         tenses = scenario.get_labels()
@@ -450,7 +451,7 @@ class SankeyView(ScenarioDetail):
     template_name = 'stats/sankey.html'
 
     def get_context_data(self, **kwargs):
-        context = super(SankeyView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         scenario = self.object
         mds_labels = scenario.get_labels()
@@ -528,7 +529,7 @@ class SankeyView(ScenarioDetail):
         tense_cache = prepare_label_cache(scenario.corpus)
         new_nodes = []
         for node in nodes:
-            node_label, node_color, _ = get_tense_properties_from_cache(node, tense_cache, allow_empty=True)
+            node_label, node_color, _ = get_label_properties_from_cache(node, tense_cache, allow_empty=True)
             new_node = {'id': node, 'color': node_color, 'label': node_label}
             new_nodes.append(new_node)
 
@@ -536,7 +537,7 @@ class SankeyView(ScenarioDetail):
         new_links = []
         for link, fragment_pks in links.items():
             for l0, l1, l2 in zip(link, link[1:], link[2:]):
-                l0_label, l0_color, _ = get_tense_properties_from_cache(l0, tense_cache)
+                l0_label, l0_color, _ = get_label_properties_from_cache(l0, tense_cache)
                 new_link = {'origin': l0, 'origin_label': l0_label, 'origin_color': l0_color,
                             'source': l1, 'target': l2,
                             'value': len(fragment_pks), 'fragment_pks': fragment_pks}
@@ -574,7 +575,7 @@ class SankeyManual(generic.TemplateView):
     template_name = 'stats/sankey_manual.html'
 
     def get_context_data(self, **kwargs):
-        context = super(SankeyManual, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         context['corpora'] = Corpus.objects.filter(check_structure=True)
 
