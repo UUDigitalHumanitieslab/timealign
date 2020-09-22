@@ -95,9 +95,10 @@ def run_mds(scenario):
 
         # For every Fragment, retrieve the Annotations and its labels
         for fragment in fragments:
+            from_labels = get_labels(fragment, language_from)
             fragment_annotations = annotations_dict.get(fragment.pk)
-            if not fragment_annotations:
-                # no annotations at all, skip fragment
+            if not from_labels or not fragment_annotations:
+                # No Annotations at all, skip Fragment
                 continue
 
             # Compile a list of Annotations...
@@ -118,7 +119,7 @@ def run_mds(scenario):
             # ... but only allow Fragments that have Annotations in all languages
             # unless the scenario allows partial tuples.
             if scenario.mds_allow_partial or len(annotated_labels) == len(languages_to):
-                labels = get_labels(fragment, language_from)
+                labels = from_labels
                 fragment_pks.append(fragment.pk)
 
                 # store label of source language
