@@ -9,7 +9,7 @@ from lxml import etree
 from django.db.models import Count, Prefetch
 
 from selections.models import PreProcessFragment
-from stats.utils import get_tense_properties_from_cache, prepare_label_cache
+from stats.utils import get_label_properties_from_cache, prepare_label_cache
 
 from .models import Corpus, Tense, Alignment, Source, Annotation, Fragment, Sentence, Word
 
@@ -287,7 +287,7 @@ def bind_annotations_to_xml(source):
     if annotations:
         # Attach Annotations to the XML tree
         for annotation in annotations:
-            label, color, _ = get_tense_properties_from_cache(
+            label, color, _ = get_label_properties_from_cache(
                 annotation.get_labels(as_pk=True, include_labels=True), label_cache, len(labels))
             labels.add(label)
 
@@ -320,7 +320,7 @@ def bind_annotations_to_xml(source):
 
         # Attach Fragments to the XML tree
         for fragment in fragments:
-            label, color, _ = get_tense_properties_from_cache(
+            label, color, _ = get_label_properties_from_cache(
                 fragment.get_labels(as_pk=True, include_labels=True), label_cache, len(labels))
             labels.add(label)
 

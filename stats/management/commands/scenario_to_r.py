@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from annotations.models import TenseCategory
 from stats.models import Scenario
-from stats.utils import prepare_label_cache, get_tense_properties_from_cache
+from stats.utils import prepare_label_cache, get_label_properties_from_cache
 
 
 numpy2ri.activate()
@@ -48,7 +48,7 @@ class Command(BaseCommand):
             colors = []
             cats = []
             for tense in tenses[sl.language.iso]:
-                label, color, category = get_tense_properties_from_cache(tense, cache, len(set(labels)))
+                label, color, category = get_label_properties_from_cache(tense, cache, len(set(labels)))
                 labels.append(label)
                 colors.append(color)
                 cats.append(category)

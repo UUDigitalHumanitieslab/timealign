@@ -254,60 +254,60 @@ def copy_scenario_language(scenario, scenario_language):
     copy_sl.save()
 
 
-def get_tense_properties(tense_identifier, seq=0, allow_empty=False):
+def get_label_properties(identifier, seq=0, allow_empty=False):
     """
     Fetches properties for a Tense identifier.
     For integers, this method finds the label, color and TenseCategory label.
     For strings, this method generates a color based on a sequence number.
     NOTE: Usually, one should not call this method directly, rather use get_tense_properties_from_cache below.
-    :param tense_identifier: identifier of the Tense, int or string
+    :param identifier: identifier of the Tense/Label, int or string
     :param seq: current sequence number of assigned colors (for strings)
     :param allow_empty: allow #000000 (black) as color instead of an assigned color
     :return: label, color, and category for the given tense identifier
     """
-    if not tense_identifier:
-        tense_label = '-'
-        tense_color = '#000000'
-        tense_category = None
-    elif isinstance(tense_identifier, numbers.Number):
-        tense = Tense.objects.select_related('category').get(pk=tense_identifier)
-        tense_label = tense.title
-        tense_color = tense.category.color
-        tense_category = tense.category.title
+    if not identifier:
+        label = '-'
+        color = '#000000'
+        category = None
+    elif isinstance(identifier, numbers.Number):
+        tense = Tense.objects.select_related('category').get(pk=identifier)
+        label = tense.title
+        color = tense.category.color
+        category = tense.category.title
     else:
-        tense_label = tense_identifier
-        tense_color = '#000000' if allow_empty else get_color(tense_identifier, seq)
-        tense_category = None
-    return tense_label, tense_color, tense_category
+        label = identifier
+        color = '#000000' if allow_empty else get_color(identifier, seq)
+        category = None
+    return label, color, category
 
 
-def get_tense_properties_from_cache(tense_identifier, tense_cache, seq=0, allow_empty=False):
+def get_label_properties_from_cache(identifier, label_cache, seq=0, allow_empty=False):
     """
     Fetches properties for a Tense identifier from a cache.
     For integers, this method finds the label, color and TenseCategory label.
     For strings, this method generates a color based on a sequence number.
-    :param tense_identifier: identifier of the Tense, int or string
-    :param tense_cache: the current Tense cache
+    :param identifier: identifier of the Tense/Label, int or string
+    :param label_cache: the current Tense/Label cache
     :param seq: current sequence number of assigned colors (for strings)
     :param allow_empty: allow #000000 (black) as color instead of an assigned color
     :return: label, color, and category for the given tense identifier
     """
-    if isinstance(tense_identifier, tuple) and len(tense_identifier) == 1:
-        tense_identifier = tense_identifier[0]
+    if isinstance(identifier, tuple) and len(identifier) == 1:
+        identifier = identifier[0]
 
-    if tense_identifier in tense_cache:
-        tense_label, tense_color, tense_category = tense_cache[tense_identifier]
+    if identifier in label_cache:
+        label, color, category = label_cache[identifier]
     else:
-        tense_label, tense_color, tense_category = get_tense_properties(tense_identifier, seq, allow_empty)
-        if isinstance(tense_identifier, tuple):
-            tense_label = '<{}>'.format(','.join(tense_cache[t][0] for t in tense_identifier))
-        tense_cache[tense_identifier] = (tense_label, tense_color, tense_category)
-    return tense_label, tense_color, tense_category
+        label, color, category = get_label_properties(identifier, seq, allow_empty)
+        if isinstance(identifier, tuple):
+            label = '<{}>'.format(','.join(label_cache[t][0] for t in identifier))
+        label_cache[identifier] = (label, color, category)
+    return label, color, category
 
 
 def prepare_label_cache(corpus):
     """
-    Prepares the label cache for a Corpus that is used in get_tense_properties_from_cache.
+    Prepares the Tense/Label cache for a Corpus that is used in get_label_properties_from_cache.
     :param corpus: The given Corpus.
     :return: A dictionary with label, colors and categories per label identifier.
     """
