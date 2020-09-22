@@ -9,7 +9,7 @@
 
 {% block content %}
 <!-- Form for changing the tense category -->
-<form action="{% url 'annotations:download' %}" target="_blank">
+<form>
     <div class="form-group">
         <label for="tc">Tense category:</label>
         <select id="tc" class="form-control" name="tc">
@@ -60,7 +60,6 @@ $(document).ready(function() {
 
     $("#tc").change(function() {
         var tc = $(this).children("option:selected").val();
-        console.log(tc);
         var url = "{% url 'stats:upset' scenario.pk 123 %}";
         window.location = url.replace("123", tc);
     });
