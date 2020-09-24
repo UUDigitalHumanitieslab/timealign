@@ -93,3 +93,7 @@ td {
     display: inline-block;
     font-size: 12px;
 }
+
+.btn-group {
+    margin-right: 20px;
+}

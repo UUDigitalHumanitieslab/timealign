@@ -234,33 +234,43 @@ function MDSView(flat_data, series_list, clusters, options) {
     }
 
     // Adding convex hulls (actual location is set on zoom)
-    if (options.hulls) {
-        var hulls = scalingContainer.selectAll(".hull")
-            .data(series_list)
-            .enter()
-            .append("path")
-            .attr("class", "hull")
-            .style("fill", d => d.color)
-            .style("fill-opacity", "0.05")
-            .style("stroke", d => d.color)
-            .style("stroke-width", "1px")
-            .style("stroke-linejoin", "round")
-            .on("click", function(d) {
-                d3.select(this).remove();
-            });
+    function draw_hulls() {
+        if (options.hulls) {
+            scalingContainer.selectAll(".hull")
+                .data(series_list)
+                .enter()
+                .append("path")
+                .attr("class", "hull")
+                .style("fill", d => d.color)
+                .style("fill-opacity", "0.05")
+                .style("stroke", d => d.color)
+                .style("stroke-width", "1px")
+                .style("stroke-linejoin", "round")
+                .on("click", function(d) {
+                    d3.select(this).remove();
+                });
+        }
+        else {
+            scalingContainer.selectAll(".hull").remove()
+        }
     }
 
-    if (options.clusterLabels) {
-        scalingContainer.selectAll('.cluster-label')
-            .data(flat_data)
-            .enter()
-            .append('text')
-            .attr('class', 'cluster-label')
-            .filter(function(d) { return clusters[d.cluster].count > 1; })
-            .attr("x", function (d) { return xMap(clusters[d.cluster]); })
-            .attr("y", function (d) { return yMap(clusters[d.cluster]) - 5 - cluster_size(clusters[d.cluster]); })
-            .attr('text-anchor', 'middle')
-            .text(function (d) { return clusters[d.cluster].count;});
+    function draw_labels() {
+        if (options.clusterLabels) {
+            scalingContainer.selectAll('.cluster-label')
+                .data(flat_data)
+                .enter()
+                .append('text')
+                .attr('class', 'cluster-label')
+                .filter(function(d) { return clusters[d.cluster].count > 1; })
+                .attr("x", function (d) { return xMap(clusters[d.cluster]); })
+                .attr("y", function (d) { return yMap(clusters[d.cluster]) - 5 - cluster_size(clusters[d.cluster]); })
+                .attr('text-anchor', 'middle')
+                .text(function (d) { return clusters[d.cluster].count;});
+        }
+        else {
+            scalingContainer.selectAll('.cluster-label').remove()
+        }
     }
 
     function show_tooltip(d) {
@@ -363,9 +373,13 @@ function MDSView(flat_data, series_list, clusters, options) {
         scalingContainer.selectAll('.dot')
             .attr('cx', function (d) { return xMap(clusters[d.cluster]); })
             .attr('cy', function (d) { return yMap(clusters[d.cluster]); });
+
+        draw_labels();
         scalingContainer.selectAll('.cluster-label')
             .attr('x', function (d) { return xMap(clusters[d.cluster]); })
             .attr("y", function (d) { return yMap(clusters[d.cluster]) - 5 - cluster_size(clusters[d.cluster]); });
+
+        draw_hulls();
         scalingContainer.selectAll('.hull').each(function(d, i) {
             d3.select(this)
                 .datum(d3.geom.hull(vertices(d.key)))
@@ -373,8 +387,11 @@ function MDSView(flat_data, series_list, clusters, options) {
                 .attr("d", d => "M" + d.join("L") + "Z");
         });
         // Restore previous data attachment to allow for filtering
-        hulls.data(series_list).enter();
+        scalingContainer.selectAll('.hull').data(series_list).enter();
+
+        // Move dots to the front to enable drillthrough
         scalingContainer.selectAll('.dot').moveToFront();
+
         update_location_hash();
     }
 
@@ -404,6 +421,7 @@ function MDSView(flat_data, series_list, clusters, options) {
 
     return {
         rescale: rescale,
-        configure_from_hash: configure_from_hash
+        configure_from_hash: configure_from_hash,
+        zoomed: zoomed,
     };
 };
