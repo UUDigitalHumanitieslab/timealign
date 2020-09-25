@@ -279,9 +279,9 @@ class DescriptiveStatsView(ScenarioDetail):
         context = super(DescriptiveStatsView, self).get_context_data(**kwargs)
 
         scenario_labels = self.object.get_labels()
-        languages = Language.objects.filter(iso__in=list(scenario_labels.keys()))
+        languages = Language.objects.filter(iso__in=list(scenario_labels.keys())).order_by('iso')
 
-        counters_tenses = dict()
+        counters_tenses = OrderedDict()
         counters_tensecats = dict()
         tuples = defaultdict(tuple)
         colors = dict()
@@ -329,13 +329,13 @@ class DescriptiveStatsView(ScenarioDetail):
             sorted(list(categories_table.items()), key=lambda item: sum(item[1]) if item[0] else 0, reverse=True))
 
         context['counters'] = counters_tenses
-        context['counters_json'] = json.dumps({language.iso: values for language, values in list(counters_tenses.items())})
+        context['counters_json'] = json.dumps({language.iso: vs for language, vs in list(counters_tenses.items())})
         context['tensecat_table'] = categories_table_ordered
         context['tuples'] = Counter(list(tuples.values())).most_common()
         context['colors_json'] = json.dumps(colors)
         context['tensecats_json'] = json.dumps(categories)
         context['languages'] = languages
-        context['languages_json'] = json.dumps({l.iso: l.title for l in languages})
+        context['languages_json'] = json.dumps({language.iso: language.title for language in languages})
 
         return context
 
