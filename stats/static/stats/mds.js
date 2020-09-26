@@ -1,10 +1,28 @@
 /*global d3, _*/
+/* eslint-disable camelcase */
 
 function MDSView(flat_data, series_list, clusters, options) {
     var containerWidth = d3.select(".container").node().getBoundingClientRect().width,
         margin = { top: 20, right: 20, bottom: 30, left: 40 },
         width = containerWidth - margin.left - margin.right,
         height = 490 - margin.top - margin.bottom;
+
+    function round_up(num, precision) {
+        var precision = Math.pow(10, precision);
+        return Math.ceil(num * precision) / precision;
+    }
+
+    function calculate_domain(dataset) {
+        var min = Math.min(
+            d3.min(dataset, function (d) { return d.x }),
+            d3.min(dataset, function (d) { return d.y }));
+        var max = Math.max(
+            d3.max(dataset, function (d) { return d.x }),
+            d3.max(dataset, function (d) { return d.y }));
+
+        var limit = round_up(Math.max(Math.abs(min), Math.abs(max)), 1);
+        return [limit * -1, limit];
+    }
 
     // calculate axis boundaries
     calculate_domain(flat_data);
@@ -42,6 +60,11 @@ function MDSView(flat_data, series_list, clusters, options) {
     var clipPath = svg.append("clipPath").attr("id", "clip")
         .append("rect").attr("x", -margin.left).attr("y", -margin.top).attr("width", width).attr("height", height);
 
+    // add the tooltip area to the webpage
+    var tooltip = d3.select("#chart").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
     var container = svg
         .append("g")
         .attr("class", "chart-container")
@@ -49,11 +72,6 @@ function MDSView(flat_data, series_list, clusters, options) {
         .on("mouseout", function (d) {
             tooltip.style("opacity", 0);
         });
-
-    // add the tooltip area to the webpage
-    var tooltip = d3.select("#chart").append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
 
     // x-axis
     container.append("g")
@@ -124,7 +142,7 @@ function MDSView(flat_data, series_list, clusters, options) {
             .filter(function(e) { return key === e.key; })
             .classed("active", true);
         d3.selectAll(".legendCheckbox")
-            .filter(function(e) { return key === e.key })
+            .filter(function(e) { return key === e.key; })
             .attr("class", "legendCheckbox glyphicon glyphicon-check");
         set_dots(key, true);
     }
@@ -134,13 +152,13 @@ function MDSView(flat_data, series_list, clusters, options) {
             .filter(function(e) { return key === e.key; })
             .classed("active", false);
         d3.selectAll(".legendCheckbox")
-            .filter(function(e) { return key === e.key })
+            .filter(function(e) { return key === e.key; })
             .attr("class", "legendCheckbox glyphicon glyphicon-unchecked");
         set_dots(key, false);
     }
 
     //add legend entries
-    var keys = _.chain(series_list).map(function (item) { return item.key }).uniq().value();
+    var keys = _.chain(series_list).map(function (item) { return item.key; }).uniq().value();
     var legend = d3.select("#chartLegend").selectAll(".legend")
         .data(series_list)
         .enter()
@@ -154,7 +172,7 @@ function MDSView(flat_data, series_list, clusters, options) {
                 if (active) {
                     var only_active = d3.selectAll(".legendEntry")
                         .filter(".active")
-                        .size() === 1
+                        .size() === 1;
                     //if the clicked legend is the only active: activate all legends
                     if (only_active) {
                         _.each(keys, activate_legend);
@@ -190,13 +208,13 @@ function MDSView(flat_data, series_list, clusters, options) {
 
     legend.append("span")
         .attr("class", "legendCheckbox glyphicon glyphicon-check")
-        .style("color", function (d) { return d.color; })
+        .style("color", function (d) { return d.color; });
 
     // draw legend text
     legend.append("span")
         .attr("class", "legendText")
         .style("color", function (d) { return d.color; })
-        .text(function (d) { return d.key; })
+        .text(function (d) { return d.key; });
 
     var scalingContainer = container
         .append("g")
@@ -204,75 +222,12 @@ function MDSView(flat_data, series_list, clusters, options) {
         .attr("class", "scaling-container")
         .attr("clip-path", "url(#clip)");
 
-    //add data points
-    scalingContainer.selectAll(".dot")
-        .data(flat_data)
-        .enter()
-        .append("circle")
-        .attr("class", options.clustered ? "dot clustered" : "dot")
-        .attr("r", function (d) { return cluster_size(clusters[d.cluster]); })
-        .attr("cx", function (d) { return xMap(clusters[d.cluster]); })
-        .attr("cy", function (d) { return yMap(clusters[d.cluster]); })
-        .style("fill", function (d) { return cValue(d); })
-        .on("mouseover", show_tooltip)
-        .on("mouseout", function (d) {
-            d3.select(this).style("fill-opacity", 1);
-            tooltip.style("opacity", 0);
-        })
-        .on("click", function (d) {
-            $(".loading-overlay").show();
-            select_neighbours(d);
-        });
-
-    // Retrieve vertices for a key (used to calculate convex hulls)
-    function vertices(key) {
-        result = []
-        flat_data.forEach(function(d) {
-            if (d.key === key) {
-                result.push([xMap(clusters[d.cluster]), yMap(clusters[d.cluster])]);
-            }
-        });
-        return result;
-    }
-
-    // Adding convex hulls (actual location is set on zoom)
-    function draw_hulls() {
-        if (options.hulls) {
-            scalingContainer.selectAll(".hull")
-                .data(series_list)
-                .enter()
-                .append("path")
-                .attr("class", "hull")
-                .style("fill", d => d.color)
-                .style("fill-opacity", "0.05")
-                .style("stroke", d => d.color)
-                .style("stroke-width", "1px")
-                .style("stroke-linejoin", "round")
-                .on("click", function(d) {
-                    d3.select(this).remove();
-                });
-        }
-        else {
-            scalingContainer.selectAll(".hull").remove()
-        }
-    }
-
-    function draw_labels() {
-        if (options.clusterLabels) {
-            scalingContainer.selectAll(".cluster-label")
-                .data(flat_data)
-                .enter()
-                .append("text")
-                .attr("class", "cluster-label")
-                .filter(function(d) { return clusters[d.cluster].count > 1; })
-                .attr("x", function (d) { return xMap(clusters[d.cluster]); })
-                .attr("y", function (d) { return yMap(clusters[d.cluster]) - 5 - cluster_size(clusters[d.cluster]); })
-                .attr("text-anchor", "middle")
-                .text(function (d) { return clusters[d.cluster].count;});
-        }
-        else {
-            scalingContainer.selectAll(".cluster-label").remove()
-        }
+    var cluster_size_a;
+    var cluster_size_b;
+    function cluster_size(cluster) {
+        cluster_size_a = cluster_size_a || 0.5;
+        cluster_size_b = cluster_size_b || 1;
+        return Math.max(3, Math.pow(cluster.count, cluster_size_a) * cluster_size_b);
     }
 
     function show_tooltip(d) {
@@ -296,30 +251,75 @@ function MDSView(flat_data, series_list, clusters, options) {
             .style("top", (d3.event.pageY - 28) + "px");
     }
 
-    var cluster_size_a;
-    var cluster_size_b;
-    function cluster_size(cluster) {
-        cluster_size_a = cluster_size_a || 0.5;
-        cluster_size_b = cluster_size_b || 1;
-        return Math.max(3, Math.pow(cluster.count, cluster_size_a) * cluster_size_b);
+    //add data points
+    scalingContainer.selectAll(".dot")
+        .data(flat_data)
+        .enter()
+        .append("circle")
+        .attr("class", options.clustered ? "dot clustered" : "dot")
+        .attr("r", function (d) { return cluster_size(clusters[d.cluster]); })
+        .attr("cx", function (d) { return xMap(clusters[d.cluster]); })
+        .attr("cy", function (d) { return yMap(clusters[d.cluster]); })
+        .style("fill", function (d) { return cValue(d); })
+        .on("mouseover", show_tooltip)
+        .on("mouseout", function (d) {
+            d3.select(this).style("fill-opacity", 1);
+            tooltip.style("opacity", 0);
+        })
+        .on("click", function (d) {
+            $(".loading-overlay").show();
+            select_neighbours(d);
+        });
+
+    // Retrieve vertices for a key (used to calculate convex hulls)
+    function vertices(key) {
+        var result = [];
+        flat_data.forEach(function(d) {
+            if (d.key === key) {
+                result.push([xMap(clusters[d.cluster]), yMap(clusters[d.cluster])]);
+            }
+        });
+        return result;
     }
 
-    function calculate_domain(dataset) {
-        min = Math.min(
-            d3.min(dataset, function (d) { return d.x }),
-            d3.min(dataset, function (d) { return d.y }))
-        max = Math.max(
-            d3.max(dataset, function (d) { return d.x }),
-            d3.max(dataset, function (d) { return d.y }))
-
-        limit = round_up(Math.max(Math.abs(min), Math.abs(max)), 1)
-
-        return [limit * -1, limit]
+    // Adding convex hulls (actual location is set on zoom)
+    function draw_hulls() {
+        if (options.hulls) {
+            scalingContainer.selectAll(".hull")
+                .data(series_list)
+                .enter()
+                .append("path")
+                .attr("class", "hull")
+                .style("fill", (d) => d.color)
+                .style("fill-opacity", "0.05")
+                .style("stroke", (d) => d.color)
+                .style("stroke-width", "1px")
+                .style("stroke-linejoin", "round")
+                .on("click", function(d) {
+                    d3.select(this).remove();
+                });
+        }
+        else {
+            scalingContainer.selectAll(".hull").remove();
+        }
     }
 
-    function round_up(num, precision) {
-        precision = Math.pow(10, precision)
-        return Math.ceil(num * precision) / precision
+    function draw_labels() {
+        if (options.clusterLabels) {
+            scalingContainer.selectAll(".cluster-label")
+                .data(flat_data)
+                .enter()
+                .append("text")
+                .attr("class", "cluster-label")
+                .filter(function(d) { return clusters[d.cluster].count > 1; })
+                .attr("x", function (d) { return xMap(clusters[d.cluster]); })
+                .attr("y", function (d) { return yMap(clusters[d.cluster]) - 5 - cluster_size(clusters[d.cluster]); })
+                .attr("text-anchor", "middle")
+                .text(function (d) { return clusters[d.cluster].count;});
+        }
+        else {
+            scalingContainer.selectAll(".cluster-label").remove();
+        }
     }
 
     function select_neighbours(origin, distance = .1) {
@@ -385,8 +385,8 @@ function MDSView(flat_data, series_list, clusters, options) {
         scalingContainer.selectAll(".hull").each(function(d, i) {
             d3.select(this)
                 .datum(d3.geom.hull(vertices(d.key)))
-                .filter(d => d.length > 1)
-                .attr("d", d => "M" + d.join("L") + "Z");
+                .filter((d) => d.length > 1)
+                .attr("d", (d) => "M" + d.join("L") + "Z");
         });
         // Restore previous data attachment to allow for filtering
         scalingContainer.selectAll(".hull").data(series_list).enter();
