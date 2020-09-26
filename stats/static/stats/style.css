@@ -1,20 +1,19 @@
-/* Loading Animation */
+/* Loading Animation
+   - half width/height of the spinner gif
+   - height of the spinner gif +2px to fix IE8 issue
+*/
 
 .spinner {
   position: fixed;
   top: 50%;
   left: 50%;
   margin-left: -50px;
-  /* half width of the spinner gif */
   margin-top: -50px;
-  /* half height of the spinner gif */
   text-align: center;
   z-index: 1234;
   overflow: auto;
   width: 100px;
-  /* width of the spinner gif */
   height: 102px;
-  /*hight of the spinner gif +2px to fix IE8 issue */
 }
 
 .loading-overlay {
@@ -29,7 +28,6 @@
   width: 100vw;
   height: 100vh;
 }
-
 
 /* Points */
 
@@ -52,7 +50,7 @@ td {
 
 /* Graph */
 
-#chart>.tooltip {
+#chart > .tooltip {
   border-radius: 4px;
   border: 1px solid black;
   background-color: white;
