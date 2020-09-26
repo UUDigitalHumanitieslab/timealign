@@ -174,13 +174,5 @@ General size: <input type="range" min="1" max="6" value="1" class="slider" id="s
         var dy = p2.y - p1.y;
         return Math.sqrt(dx * dx + dy * dy);
     };
-
-    function within_distance(origin, point, distance) {
-        var dx = point.x - origin.x;
-        var dy = point.y - origin.y;
-        var d = Math.sqrt(dx * dx + dy * dy);
-
-        return d <= distance;
-    }
 </script>
 {% endblock %}

@@ -8,17 +8,17 @@ function MDSView(flat_data, series_list, clusters, options) {
         height = 490 - margin.top - margin.bottom;
 
     function round_up(num, precision) {
-        var precision = Math.pow(10, precision);
+        precision = Math.pow(10, precision);
         return Math.ceil(num * precision) / precision;
     }
 
     function calculate_domain(dataset) {
         var min = Math.min(
-            d3.min(dataset, function (d) { return d.x }),
-            d3.min(dataset, function (d) { return d.y }));
+            d3.min(dataset, function (d) { return d.x; }),
+            d3.min(dataset, function (d) { return d.y; }));
         var max = Math.max(
-            d3.max(dataset, function (d) { return d.x }),
-            d3.max(dataset, function (d) { return d.y }));
+            d3.max(dataset, function (d) { return d.x; }),
+            d3.max(dataset, function (d) { return d.y; }));
 
         var limit = round_up(Math.max(Math.abs(min), Math.abs(max)), 1);
         return [limit * -1, limit];
@@ -251,6 +251,36 @@ function MDSView(flat_data, series_list, clusters, options) {
             .style("top", (d3.event.pageY - 28) + "px");
     }
 
+    function within_distance(origin, point, distance) {
+        var dx = point.x - origin.x;
+        var dy = point.y - origin.y;
+        var d = Math.sqrt(dx * dx + dy * dy);
+
+        return d <= distance;
+    }
+
+    function select_neighbours(origin, distance = .1) {
+        var brushedNodes = [];
+
+        var data = d3.selectAll(".dot");
+        for (var circle of data[0]) {
+            var f = circle.__data__
+            if (f !== undefined) {
+                if (within_distance(origin, f, distance)) {
+                    if (_.isEqual(f.tenses.concat().sort(), origin.tenses.concat().sort())) {
+                        brushedNodes.push(f.fragment_pk);
+                        circle.className.baseVal = "selected";
+                        circle.className.animVal = "selected";
+                        d3.selectAll(".selected").style("fill", "yellow").attr("r", 5);
+                    }
+                }
+            }
+        }
+        $("input[name='tenses']").val(JSON.stringify(origin.tenses));
+        $("input[name='fragment_ids']").val(JSON.stringify(brushedNodes));
+        $("form[name='fragmentform']").submit();
+    }
+
     //add data points
     scalingContainer.selectAll(".dot")
         .data(flat_data)
@@ -322,51 +352,10 @@ function MDSView(flat_data, series_list, clusters, options) {
         }
     }
 
-    function select_neighbours(origin, distance = .1) {
-        var brushedNodes = [];
-
-        var data = d3.selectAll(".dot");
-        for (circle of data[0]) {
-            var f = circle.__data__
-            if (f != undefined) {
-                if (within_distance(origin, f, distance)) {
-                    if (_.isEqual(f.tenses.concat().sort(), origin.tenses.concat().sort())) {
-                        brushedNodes.push(f.fragment_pk)
-                        circle.className.baseVal = "selected"
-                        circle.className.animVal = "selected"
-                        d3.selectAll(".selected").style("fill", "yellow").attr("r", 5)
-                    }
-                }
-            }
-        }
-        $("input[name='tenses']").val(JSON.stringify(origin.tenses));
-        $("input[name='fragment_ids']").val(JSON.stringify(brushedNodes));
-        $("form[name='fragmentform']").submit();
+    function update_location_hash() {
+        window.location.hash = [zoom.scale(), zoom.translate(), cluster_size_a, cluster_size_b].join(",");
     }
 
-    var zoom = d3.behavior.zoom()
-        .x(xScale)
-        .y(yScale)
-        .scaleExtent([1, 10])
-        .on("zoom", zoomed);
-
-    // override d3's mouse position handler, to take our margins into account
-    var d3_mouse = d3.mouse;
-    d3.mouse = function (container) {
-        var loc = d3_mouse(container);
-        loc[0] -= margin.left;
-        loc[1] -= margin.top;
-        return loc;
-    }
-
-    d3.selection.prototype.moveToFront = function() {
-        return this.each(function(){
-            this.parentNode.appendChild(this);
-        });
-    };
-
-    d3.select("svg").call(zoom).on("dblclick.zoom", null);
-    zoomed();
     function zoomed() {
         d3.select(".x.axis").call(xAxis);
         d3.select(".y.axis").call(yAxis);
@@ -397,21 +386,40 @@ function MDSView(flat_data, series_list, clusters, options) {
         update_location_hash();
     }
 
+    var zoom = d3.behavior.zoom()
+        .x(xScale)
+        .y(yScale)
+        .scaleExtent([1, 10])
+        .on("zoom", zoomed);
+
+    // override d3's mouse position handler, to take our margins into account
+    var d3_mouse = d3.mouse;
+    d3.mouse = function (container) {
+        var loc = d3_mouse(container);
+        loc[0] -= margin.left;
+        loc[1] -= margin.top;
+        return loc;
+    };
+
+    d3.selection.prototype.moveToFront = function() {
+        return this.each(function(){
+            this.parentNode.appendChild(this);
+        });
+    };
+
+    d3.select("svg").call(zoom).on("dblclick.zoom", null);
+
     function rescale(a, b) {
         cluster_size_a = a;
         cluster_size_b = b;
         d3.selectAll(".dot")
-            .attr("r", function (d) { return cluster_size(clusters[d.cluster]); })
+            .attr("r", function (d) { return cluster_size(clusters[d.cluster]); });
         update_location_hash();
-    }
-
-    function update_location_hash() {
-        window.location.hash = [zoom.scale(), zoom.translate(), cluster_size_a, cluster_size_b].join(",");
     }
 
     function configure_from_hash(hash) {
         var parts = hash.split(",");
-        if (parts.length < 3) return;
+        if (parts.length < 3) { return; }
         var scale = parseFloat(parts[0]);
         var translate = [parseFloat(parts[1]), parseFloat(parts[2])];
         var cluster_size = [parseFloat(parts[3]), parseFloat(parts[4])];
@@ -421,9 +429,11 @@ function MDSView(flat_data, series_list, clusters, options) {
         zoomed();
     }
 
+    zoomed();
+
     return {
         rescale: rescale,
         configure_from_hash: configure_from_hash,
         zoomed: zoomed,
     };
-};
+}
