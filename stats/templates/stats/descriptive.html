@@ -126,20 +126,26 @@
         </tr>
     </thead>
     <tbody>
-        {% for t, c in tuples %}
+        {% for tuple, fs in tuples_with_fragments.items %}
         <tr>
-            {% for tense in t %}
+            {% for label in tuple %}
             <td>
-                <span class="dot" title="{{ tense }}"></span>
-                <span class="cat" title="{{ tense }}"></span>
-                <span class="txt">{{ tense }}</span>
+                <span class="dot" title="{{ label }}"></span>
+                <span class="cat" title="{{ label }}"></span>
+                <span class="txt">{{ label }}</span>
             </td>
             {% endfor %}
-            <td>{{ c }}</td>
+            <td><a class="tuple-count" data-fragments="{{ fs|join:',' }}">{{ fs|length }}</a></td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+<!-- Form for posting fragment_ids to server -->
+<form name="fragmentform" action="." method="post">
+    {% csrf_token %}
+    <input type="hidden" name="fragment_ids">
+</form>
 
 <script>
   // contains occurrence counts for tenses by language, in the following format:
@@ -227,6 +233,12 @@
     colReorder: true,
   });
 
+
+  // Drill-through to fragments
+  $(".tuple-count").click(function() {
+    $('input[name="fragment_ids"]').val(JSON.stringify($(this).attr("data-fragments").split(",")));
+    $('form[name="fragmentform"]').submit();
+  });
 </script>
 
 {% endblock %}

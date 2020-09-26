@@ -278,6 +278,7 @@ class DescriptiveStatsView(ScenarioDetail):
     def get_context_data(self, **kwargs):
         context = super(DescriptiveStatsView, self).get_context_data(**kwargs)
 
+        fragment_pks = self.object.mds_fragments
         scenario_labels = self.object.get_labels()
         languages = Language.objects.filter(iso__in=list(scenario_labels.keys())).order_by('iso')
 
@@ -293,9 +294,8 @@ class DescriptiveStatsView(ScenarioDetail):
         for language in languages:
             c_tenses = Counter()
             c_tensecats = Counter()
-            n = 0
             labels = set()
-            for identifier in scenario_labels[language.iso]:
+            for n, identifier in enumerate(scenario_labels[language.iso]):
                 label, color, category = get_label_properties_from_cache(identifier, label_cache, len(labels))
 
                 # multiple labels are expected, handle single tense labels
@@ -311,7 +311,6 @@ class DescriptiveStatsView(ScenarioDetail):
 
                 distinct_tensecats.add(category)
                 c_tensecats.update([category])
-                n += 1
 
             counters_tenses[language] = c_tenses.most_common()
             counters_tensecats[language] = c_tensecats
@@ -328,16 +327,25 @@ class DescriptiveStatsView(ScenarioDetail):
         categories_table_ordered = OrderedDict(
             sorted(list(categories_table.items()), key=lambda item: sum(item[1]) if item[0] else 0, reverse=True))
 
+        tuples_with_fragments = defaultdict(list)
+        for n, label_tuple in enumerate(tuples.values()):
+            tuples_with_fragments[label_tuple].append(fragment_pks[n])
+
         context['counters'] = counters_tenses
         context['counters_json'] = json.dumps({language.iso: vs for language, vs in list(counters_tenses.items())})
         context['tensecat_table'] = categories_table_ordered
-        context['tuples'] = Counter(list(tuples.values())).most_common()
+        context['tuples_with_fragments'] = dict(tuples_with_fragments)
         context['colors_json'] = json.dumps(colors)
         context['tensecats_json'] = json.dumps(categories)
         context['languages'] = languages
         context['languages_json'] = json.dumps({language.iso: language.title for language in languages})
 
         return context
+
+    def post(self, request, pk, *args, **kwargs):
+        request.session['scenario_pk'] = pk
+        request.session['fragment_pks'] = json.loads(request.POST['fragment_ids'])
+        return HttpResponseRedirect(reverse('stats:fragment_table'))
 
 
 class FragmentTableView(LoginRequiredMixin, FilterView):
@@ -366,18 +374,37 @@ class FragmentTableView(LoginRequiredMixin, FilterView):
         context = super(FragmentTableView, self).get_context_data(**kwargs)
 
         scenario_pk = self.request.session.get('scenario_pk')
+        fragment_pks = self.request.session.get('fragment_pks')
 
-        if not scenario_pk:
+        print(scenario_pk)
+
+        if not scenario_pk or not fragment_pks:
             return Http404
 
-        # Don't fetch the PickledObjectFields
+        # Don't fetch some of the PickledObjectFields
         scenario = Scenario.objects \
-            .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels') \
+            .defer('mds_model', 'mds_matrix') \
             .get(pk=scenario_pk)
-        tenses = self.request.session.get('tenses', [])
+
+        # Find the index of the first Fragment
+        index = 0
+        for n, fragment in enumerate(scenario.mds_fragments):
+            if int(fragment_pks[0]) == fragment:
+                index = n
+                break
+
+        # Retrieve the labels for this specific Fragment
+        label_cache = prepare_label_cache(scenario.corpus)
+        labels = []
+        for values in scenario.get_labels().values():
+            for n, value in enumerate(values):
+                if index == n:
+                    label, _, _ = get_label_properties_from_cache(value, label_cache)
+                    labels.append(label)
+                    break
 
         context['scenario'] = scenario
-        context['tenses'] = tenses
+        context['labels'] = labels
 
         return context
 
