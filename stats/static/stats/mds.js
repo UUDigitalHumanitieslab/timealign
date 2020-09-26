@@ -339,9 +339,9 @@ function MDSView(flat_data, series_list, clusters, options) {
                 }
             }
         }
-        $("input[name="tenses"]").val(JSON.stringify(origin.tenses));
-        $("input[name="fragment_ids"]").val(JSON.stringify(brushedNodes));
-        $("form[name="fragmentform"]").submit();
+        $("input[name='tenses']").val(JSON.stringify(origin.tenses));
+        $("input[name='fragment_ids']").val(JSON.stringify(brushedNodes));
+        $("form[name='fragmentform']").submit();
     }
 
     var zoom = d3.behavior.zoom()
