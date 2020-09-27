@@ -1,51 +1,52 @@
 /* Footer styling */
 
 footer {
-    border-top: 5px solid;
-    margin-top: 20px;
-    padding-top: 20px;
+  border-top: 5px solid;
+  margin-top: 20px;
+  padding-top: 20px;
 }
 
 footer img {
-    margin: auto;
-    display: block;
+  margin: auto;
+  display: block;
 }
 
 footer p {
-    text-align: center;
+  text-align: center;
 }
+
 
 /* Annotation styling */
 
 .selected {
-    background-color: lightgreen;
+  background-color: lightgreen;
 }
 
 .other {
-    background-color: lightyellow;
+  background-color: lightyellow;
 }
 
 .filtered {
-    border: 1px solid black;
+  border: 1px solid black;
 }
 
 .in-dialogue {
-    font-style: italic;
+  font-style: italic;
 }
 
 .popover {
-    max-width: 40em;
+  max-width: 40em;
 }
 
 .progress {
-    margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 .endpoint {
-    background-color: lightblue;
+  background-color: lightblue;
 }
 
 .selection-tool {
-    text-align: right;
-    margin-top: 5px;
+  text-align: right;
+  margin-top: 5px;
 }

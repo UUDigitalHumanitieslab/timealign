@@ -14,10 +14,8 @@ If you want to use MySQL as your database backend (recommended) use the followin
     sudo yum install mariadb-server mariadb-devel python3-devel
     sudo yum groupinstall 'Development Tools'
 
-
 #### Ubuntu 18.04
     sudo apt-get install python3-dev default-libmysqlclient-dev libssl-dev mysql-server
-
 
 ### Setting up TimeAlign in a virtual environment
     # Clone the repository
@@ -40,7 +38,6 @@ If you want to use MySQL as your database backend (recommended) use the followin
 
     # Run the tests
     python manage.py test
-
 
 If the test runs OK, you should be ready to roll! Run the webserver using:
 
