@@ -18,7 +18,7 @@ footer p {
 
 /* Annotation styling */
 
-.selected {
+.selected, .selected.other {
   background-color: lightgreen;
 }
 
