@@ -3,12 +3,12 @@
 from django.core.management.base import BaseCommand, CommandError
 
 from annotations.models import Corpus, SubCorpus, Document
-from annotations.exports import export_pos_file
+from annotations.exports import export_annotations
 from core.utils import CSV, XLSX
 
 
 class Command(BaseCommand):
-    help = 'Exports existing (correct) Annotations with POS tags for the given languages'
+    help = 'Exports Annotations for the given Corpus and Languages (one file per language)'
 
     def add_arguments(self, parser):
         parser.add_argument('corpus', type=str)
@@ -45,13 +45,13 @@ class Command(BaseCommand):
         format_ = XLSX if options['format_xlsx'] else CSV
         for language in options['languages']:
             if not corpus.languages.filter(iso=language):
-                raise CommandError('Language {} does not exist'.format(language))
+                raise CommandError('Language {} does not exist for Corpus {}'.format(language, corpus))
 
-            filename = 'pos_{lang}.{ext}'.format(lang=language, ext=format_)
-            export_pos_file(filename, format_, corpus, language,
-                            subcorpus=subcorpus,
-                            document=document,
-                            include_non_targets=options['include_non_targets'],
-                            add_lemmata=options['add_lemmata'],
-                            add_indices=options['add_indices'],
-                            formal_structure=options['formal_structure'])
+            filename = '{corpus}_{iso}.{ext}'.format(corpus=corpus.title, iso=language, ext=format_)
+            export_annotations(filename, format_, corpus, language,
+                               subcorpus=subcorpus,
+                               document=document,
+                               include_non_targets=options['include_non_targets'],
+                               add_lemmata=options['add_lemmata'],
+                               add_indices=options['add_indices'],
+                               formal_structure=options['formal_structure'])

@@ -3,12 +3,12 @@
 from django.core.management.base import BaseCommand, CommandError
 
 from annotations.models import Corpus
-from annotations.exports import export_fragments_file
+from annotations.exports import export_fragments
 from core.utils import CSV, XLSX
 
 
 class Command(BaseCommand):
-    help = 'Exports existing Fragments with POS tags for the given languages'
+    help = 'Exports existing Fragments for the given Corpus and Languages'
 
     def add_arguments(self, parser):
         parser.add_argument('corpus', type=str)
@@ -32,8 +32,8 @@ class Command(BaseCommand):
                 raise CommandError('Language {} does not exist'.format(language))
 
             filename = 'fragments_{lang}.{ext}'.format(lang=language, ext=format_)
-            export_fragments_file(filename, format_, corpus, language,
-                                  document=options['document'],
-                                  add_lemmata=options['add_lemmata'],
-                                  add_indices=options['add_indices'],
-                                  formal_structure=options['formal_structure'])
+            export_fragments(filename, format_, corpus, language,
+                             document=options['document'],
+                             add_lemmata=options['add_lemmata'],
+                             add_indices=options['add_indices'],
+                             formal_structure=options['formal_structure'])
