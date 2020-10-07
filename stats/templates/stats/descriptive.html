@@ -135,7 +135,7 @@
                 <span class="txt">{{ label }}</span>
             </td>
             {% endfor %}
-            <td><a class="tuple-count" data-fragments="{{ fs|join:',' }}">{{ fs|length }}</a></td>
+            <td><a class="tuple-count" href="#" data-fragments="{{ fs|join:',' }}">{{ fs|length }}</a></td>
         </tr>
         {% endfor %}
     </tbody>
@@ -148,20 +148,19 @@
 </form>
 
 <script>
-  // contains occurrence counts for tenses by language, in the following format:
-  // {'language': ['tense':100, 'another_tense':200]}
+  // contains occurrence counts for labels by language, in the following format:
+  // {'language': ['label':100, 'another_label':200]}
   var counters = {{ counters_json|safe }};
 
-  // system-assigned color/category for each tense
+  // system-assigned color/category for each label
   var colors = {{ colors_json|safe }};
   var tensecats = {{ tensecats_json|safe }};
 
   // languages lookup (iso: label)
   var languages = {{ languages_json | safe }};
 
-  // used for calculating the total amount of tokens per language
+  // Calculates the total amount of tokens per language
   var totals = {};
-
   for(var language in counters) {
     totals[language] = 0;
     for(var i=0; i<counters[language].length; i++) {
@@ -169,6 +168,7 @@
     }
   }
 
+  // Adds graphs per language
   function graphLanguage(language) {
     nv.addGraph(function() {
       var chart = nv.models.discreteBarChart()
@@ -187,7 +187,7 @@
       // Add the data to the chart and start creating the chart
       var div = d3.select('#charts')
         .append('div')
-          .attr('class', 'chart');
+        .attr('class', 'chart');
 
       div.append('h5').text(languages[language]);
 
@@ -202,6 +202,7 @@
 
   Object.keys(counters).sort().forEach(graphLanguage);
 
+  // Showing the dots, categories and labels in the tuples table
   $('.dot').each(function() {
     $(this).css('background-color', colors[$(this).attr('title')]);
   });
@@ -225,6 +226,7 @@
     $('.txt').toggle();
   });
 
+  // Render tuples table as a DataTable
   var indexLastColumn = $('#tuples-table').find('tr')[0].cells.length - 1;
   $('#tuples-table').DataTable({
     order: [[ indexLastColumn, 'desc' ]],
@@ -233,9 +235,15 @@
     colReorder: true,
   });
 
-
-  // Drill-through to fragments
-  $(".tuple-count").click(function() {
+  // Drill-through to fragments (allow to open in new tab if CTRL is pressed)
+  $(".tuple-count").click(function(e) {
+    e.preventDefault();
+    if (e.ctrlKey) {
+        $('form[name="fragmentform"]').attr("target", "_blank");
+    }
+    else {
+        $('form[name="fragmentform"]').attr("target", "_self");
+    }
     $('input[name="fragment_ids"]').val(JSON.stringify($(this).attr("data-fragments").split(",")));
     $('form[name="fragmentform"]').submit();
   });
