@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 
-from core.utils import check_format, CSV, HTML, XLSX
+from core.utils import check_format, CSV, HTML, XLSX, COLOR_LIST
 
 
 class HasLabelsMixin:
@@ -27,8 +27,15 @@ class HasLabelsMixin:
 
     @property
     def label(self):
-        """used by admin views"""
         return self.get_labels()
+
+    def label_colors(self):
+        label_colors = dict()
+        if self.tense:
+            label_colors[self.tense.title] = self.tense.category.color
+        for i, label in enumerate(self.labels.all()):
+            label_colors[label.title] = label.color or COLOR_LIST[i % len(COLOR_LIST)]
+        return label_colors
 
 
 class Language(models.Model):
