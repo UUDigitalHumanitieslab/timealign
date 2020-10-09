@@ -46,7 +46,6 @@
     Descriptive statistics for <em>{{ scenario.title }}</em>
 </h2>
 
-
 <div id="charts">
 </div>
 
@@ -113,9 +112,9 @@
     Tuple frequency
 </h3>
 
-<input id="toggle-dot" type="checkbox" checked data-toggle="toggle"> Show colors
+<input id="toggle-dot" type="checkbox" data-toggle="toggle"> Show colors
 <input id="toggle-cat" type="checkbox" data-toggle="toggle"> Show categories
-<input id="toggle-txt" type="checkbox" data-toggle="toggle"> Show labels
+<input id="toggle-txt" type="checkbox" checked data-toggle="toggle"> Show labels
 <table id="tuples-table" class="table table-striped">
     <thead>
         <tr>
@@ -168,11 +167,20 @@
     }
   }
 
+  function escapeHtml(unsafe) {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+ }
+
   // Adds graphs per language
   function graphLanguage(language) {
     nv.addGraph(function() {
       var chart = nv.models.discreteBarChart()
-          .x(function(d) { return d[0]; })
+          .x(function(d) { return escapeHtml(d[0]); })
           .y(function(d) { return d[1]/totals[language]; })
           .color(function(d) { return colors[d[0]]; })
           .showXAxis(false)
@@ -211,7 +219,7 @@
     $(this).text(tensecats[$(this).attr('title')]);
   });
 
-  $('.txt').hide();
+  $('.dot').hide();
   $('.cat').hide();
 
   $('#toggle-dot').change(function() {
@@ -233,6 +241,7 @@
     paging: false,
     info: false,
     colReorder: true,
+    autoWidth: false,
   });
 
   // Drill-through to fragments (allow to open in new tab if CTRL is pressed)

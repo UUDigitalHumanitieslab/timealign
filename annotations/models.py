@@ -32,9 +32,9 @@ class HasLabelsMixin:
     def label_colors(self):
         label_colors = dict()
         if self.tense:
-            label_colors[self.tense.title] = self.tense.category.color
-        for i, label in enumerate(self.labels.all()):
-            label_colors[label.title] = label.color or COLOR_LIST[i % len(COLOR_LIST)]
+            label_colors[self.tense.title] = (self.tense.category.title, self.tense.category.color)
+        for i, label in enumerate(self.labels.all().prefetch_related('key')):
+            label_colors[label] = (label.key.title, label.color or COLOR_LIST[i % len(COLOR_LIST)])
         return label_colors
 
 
@@ -149,6 +149,7 @@ class Label(models.Model):
 
     class Meta:
         unique_together = ('key', 'language', 'title')
+        ordering = ['key', 'language', 'title']
 
     def __str__(self):
         return self.title
