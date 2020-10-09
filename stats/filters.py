@@ -1,8 +1,8 @@
 from django import forms
 
-from django_filters import FilterSet, BooleanFilter, CharFilter
+from django_filters import FilterSet, BooleanFilter, CharFilter, OrderingFilter
 
-from .models import Scenario, Fragment
+from .models import Scenario, Fragment, Document
 
 
 class ScenarioFilter(FilterSet):
@@ -27,14 +27,18 @@ class ScenarioFilter(FilterSet):
         fields = ['corpus', 'scenariolanguage__language', 'title', 'is_test', 'current_user_is_owner']
 
     def __init__(self, *args, **kwargs):
-        super(ScenarioFilter, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.filters['scenariolanguage__language'].label = 'Language'
 
 
 class FragmentFilter(FilterSet):
-    def filter_document(self, queryset, name, value):
-        return queryset if value else queryset.filter(**{name: False})
+    o = OrderingFilter(fields=('document', ))
 
     class Meta:
         model = Fragment
-        fields = ['formal_structure', 'sentence_function']
+        fields = ['document', 'formal_structure', 'sentence_function']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        fragment = self.queryset.first()
+        self.filters['document'].queryset = Document.objects.filter(corpus=fragment.document.corpus)

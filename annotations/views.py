@@ -24,7 +24,7 @@ from reversion.views import RevisionMixin
 from core.mixins import ImportMixin, CheckOwnerOrStaff, SelectSegmentMixin
 from core.utils import find_in_enum, XLSX
 
-from .exports import export_pos_file
+from .exports import export_annotations
 from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm, AddFragmentsForm, FragmentForm
 from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, \
@@ -621,8 +621,8 @@ class ExportPOSPrepare(PermissionRequiredMixin, generic.View):
 
         filename = '{}-{}-{}.xlsx'.format(urlquote(corpus.title), urlquote(document_title), language)
         self.request.session['pos_filename'] = filename
-        export_pos_file(pos_file.name, XLSX, corpus, language, include_non_targets=include_non_targets,
-                        subcorpus=subcorpus, document=document)
+        export_annotations(pos_file.name, XLSX, corpus, language, include_non_targets=include_non_targets,
+                           subcorpus=subcorpus, document=document)
 
         return JsonResponse(dict(done=True))
 

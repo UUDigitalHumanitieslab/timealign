@@ -3,15 +3,15 @@
 {% load bootstrap3 %}
 
 {% block head %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.css">
 
 <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
 <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
 
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/dt-1.10.21/datatables.min.css"/>
-<script type="text/javascript" src="https://cdn.datatables.net/v/bs/dt-1.10.21/datatables.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs/dt-1.10.22/cr-1.5.2/datatables.min.css"/>
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs/dt-1.10.22/cr-1.5.2/datatables.min.js"></script>
 
 <style>
   .chart {
@@ -45,7 +45,6 @@
 <h2>
     Descriptive statistics for <em>{{ scenario.title }}</em>
 </h2>
-
 
 <div id="charts">
 </div>
@@ -113,9 +112,9 @@
     Tuple frequency
 </h3>
 
-<input id="toggle-dot" type="checkbox" checked data-toggle="toggle"> Show colors
+<input id="toggle-dot" type="checkbox" data-toggle="toggle"> Show colors
 <input id="toggle-cat" type="checkbox" data-toggle="toggle"> Show categories
-<input id="toggle-txt" type="checkbox" data-toggle="toggle"> Show labels
+<input id="toggle-txt" type="checkbox" checked data-toggle="toggle"> Show labels
 <table id="tuples-table" class="table table-striped">
     <thead>
         <tr>
@@ -126,36 +125,41 @@
         </tr>
     </thead>
     <tbody>
-        {% for t, c in tuples %}
+        {% for tuple, fs in tuples_with_fragments.items %}
         <tr>
-            {% for tense in t %}
+            {% for label in tuple %}
             <td>
-                <span class="dot" title="{{ tense }}"></span>
-                <span class="cat" title="{{ tense }}"></span>
-                <span class="txt">{{ tense }}</span>
+                <span class="dot" title="{{ label }}"></span>
+                <span class="cat" title="{{ label }}"></span>
+                <span class="txt">{{ label }}</span>
             </td>
             {% endfor %}
-            <td>{{ c }}</td>
+            <td><a class="tuple-count" href="#" data-fragments="{{ fs|join:',' }}">{{ fs|length }}</a></td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
+<!-- Form for posting fragment_ids to server -->
+<form name="fragmentform" action="." method="post">
+    {% csrf_token %}
+    <input type="hidden" name="fragment_ids">
+</form>
+
 <script>
-  // contains occurrence counts for tenses by language, in the following format:
-  // {'language': ['tense':100, 'another_tense':200]}
+  // contains occurrence counts for labels by language, in the following format:
+  // {'language': ['label':100, 'another_label':200]}
   var counters = {{ counters_json|safe }};
 
-  // system-assigned color/category for each tense
+  // system-assigned color/category for each label
   var colors = {{ colors_json|safe }};
   var tensecats = {{ tensecats_json|safe }};
 
   // languages lookup (iso: label)
   var languages = {{ languages_json | safe }};
 
-  // used for calculating the total amount of tokens per language
+  // Calculates the total amount of tokens per language
   var totals = {};
-
   for(var language in counters) {
     totals[language] = 0;
     for(var i=0; i<counters[language].length; i++) {
@@ -163,10 +167,20 @@
     }
   }
 
+  function escapeHtml(unsafe) {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+ }
+
+  // Adds graphs per language
   function graphLanguage(language) {
     nv.addGraph(function() {
       var chart = nv.models.discreteBarChart()
-          .x(function(d) { return d[0]; })
+          .x(function(d) { return escapeHtml(d[0]); })
           .y(function(d) { return d[1]/totals[language]; })
           .color(function(d) { return colors[d[0]]; })
           .showXAxis(false)
@@ -181,7 +195,7 @@
       // Add the data to the chart and start creating the chart
       var div = d3.select('#charts')
         .append('div')
-          .attr('class', 'chart');
+        .attr('class', 'chart');
 
       div.append('h5').text(languages[language]);
 
@@ -196,6 +210,7 @@
 
   Object.keys(counters).sort().forEach(graphLanguage);
 
+  // Showing the dots, categories and labels in the tuples table
   $('.dot').each(function() {
     $(this).css('background-color', colors[$(this).attr('title')]);
   });
@@ -204,7 +219,7 @@
     $(this).text(tensecats[$(this).attr('title')]);
   });
 
-  $('.txt').hide();
+  $('.dot').hide();
   $('.cat').hide();
 
   $('#toggle-dot').change(function() {
@@ -219,13 +234,28 @@
     $('.txt').toggle();
   });
 
+  // Render tuples table as a DataTable
   var indexLastColumn = $('#tuples-table').find('tr')[0].cells.length - 1;
   $('#tuples-table').DataTable({
     order: [[ indexLastColumn, 'desc' ]],
     paging: false,
     info: false,
+    colReorder: true,
+    autoWidth: false,
   });
 
+  // Drill-through to fragments (allow to open in new tab if CTRL is pressed)
+  $(".tuple-count").click(function(e) {
+    e.preventDefault();
+    if (e.ctrlKey) {
+        $('form[name="fragmentform"]').attr("target", "_blank");
+    }
+    else {
+        $('form[name="fragmentform"]').attr("target", "_self");
+    }
+    $('input[name="fragment_ids"]').val(JSON.stringify($(this).attr("data-fragments").split(",")));
+    $('form[name="fragmentform"]').submit();
+  });
 </script>
 
 {% endblock %}

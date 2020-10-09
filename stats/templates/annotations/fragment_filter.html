@@ -18,6 +18,10 @@
             <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
             Sankey
         </a>
+        <a href="{% url 'stats:descriptive' scenario.pk %}" class="btn btn-primary" role="button">
+            <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>
+            Descriptive
+        </a>
     </div>
     <h2>Fragment overview (scenario
         <em>
@@ -25,10 +29,10 @@
         </em>)
     </h2>
     <p>
-        {% if tenses %}
+        {% if labels %}
         {{ page_obj.paginator.count }} fragments with labels:
         <em>
-        {% for tense in tenses %} {{tense|safe}}{%if not forloop.last%},{%endif%} {% endfor %}
+            {{ labels|join:", " }}
         </em>
         {% endif %}
     </p>

@@ -1,51 +1,60 @@
-/* Loading Animation */
+/* Loading Animation
+   - half width/height of the spinner gif
+   - height of the spinner gif +2px to fix IE8 issue
+*/
+
 .spinner {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    margin-left: -50px; /* half width of the spinner gif */
-    margin-top: -50px; /* half height of the spinner gif */
-    text-align:center;
-    z-index:1234;
-    overflow: auto;
-    width: 100px; /* width of the spinner gif */
-    height: 102px; /*hight of the spinner gif +2px to fix IE8 issue */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin-left: -50px;
+  margin-top: -50px;
+  text-align: center;
+  z-index: 1234;
+  overflow: auto;
+  width: 100px;
+  height: 102px;
 }
 
 .loading-overlay {
-    background: #e9e9e9;
-    display: none;        
-    position: absolute;   
-    top: 0;                  
-    right: 0;                
-    bottom: 0;
-    left: 0;
-    opacity: 0.7;
-    width: 100vw;
-    height: 100vh;
+  background: #e9e9e9;
+  display: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  opacity: 0.7;
+  width: 100vw;
+  height: 100vh;
 }
 
 /* Points */
+
 .selected {
-    fill: 'yellow'
+  fill: 'yellow';
 }
 
+
 /* Table */
+
 th {
-    background-color: white;
-    color: black;
+  background-color: white;
+  color: black;
 }
 
 td {
-    cursor: defxault;    
+  cursor: default;
 }
 
+
 /* Graph */
+
 #chart > .tooltip {
-    border-radius: 4px;
-    border: 1px solid black;
-    background-color: white;
-    pointer-events: none;
+  border-radius: 4px;
+  border: 1px solid black;
+  background-color: white;
+  pointer-events: none;
 }
 
 .axis path,
@@ -62,34 +71,38 @@ td {
 }
 
 .grid {
-    stroke: lightgrey;
-    stroke-opacity: 0.7;
-    shape-rendering: crispEdges;
-  }
+  stroke: lightgrey;
+  stroke-opacity: 0.7;
+  shape-rendering: crispEdges;
+}
 
 .legendEntry {
-    display: inline;
-    padding-left: 15px;
-  }
+  display: inline;
+  padding-left: 15px;
+}
 
 .noselect {
-    -webkit-touch-callout: none;
-      -webkit-user-select: none; 
-       -khtml-user-select: none; 
-         -moz-user-select: none; 
-          -ms-user-select: none; 
-              user-select: none; 
-  }
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
 
 .legendCheckbox {
-    width: 10px;
-    height: 10px;
-    display: inline-block;
-    margin-right: 3px;
-    font-size: 12px;
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  margin-right: 3px;
+  font-size: 12px;
 }
 
 .legendText {
-    display: inline-block;
-    font-size: 12px;
+  display: inline-block;
+  font-size: 12px;
+}
+
+.btn-group {
+  margin-right: 20px;
 }

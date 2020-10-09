@@ -25,9 +25,7 @@ from .utils import get_label_properties_from_cache, prepare_label_cache
 
 
 class ScenarioList(LoginRequiredMixin, FilterView):
-    """
-    Shows a list of scenarios
-    """
+    """Shows a list of Scenarios"""
     model = Scenario
     context_object_name = 'scenarios'
     filterset_class = ScenarioFilter
@@ -52,9 +50,7 @@ class ScenarioList(LoginRequiredMixin, FilterView):
 
 
 class ScenarioDetail(LoginRequiredMixin, generic.DetailView):
-    """
-    Shows details of a selected scenario
-    """
+    """Shows details of a selected Scenario"""
     model = Scenario
 
     def get_object(self, queryset=None):
@@ -64,19 +60,25 @@ class ScenarioDetail(LoginRequiredMixin, generic.DetailView):
         qs = Scenario.objects \
             .select_related('corpus') \
             .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels')  # Don't fetch the PickledObjectFields
-        scenario = super(ScenarioDetail, self).get_object(qs)
+        scenario = super().get_object(qs)
         if scenario.corpus not in get_available_corpora(self.request.user):
             raise PermissionDenied
         if not scenario.last_run:
             raise Http404('Scenario has not been run')
         return scenario
 
+    def post(self, request, pk, *args, **kwargs):
+        request.session['scenario_pk'] = pk
+        request.session['fragment_pks'] = json.loads(request.POST['fragment_ids'])
+        return HttpResponseRedirect(reverse('stats:fragment_table'))
+
 
 class ScenarioManual(generic.TemplateView):
+    """Provides the manual for adding Scenarios"""
     template_name = 'stats/scenario_manual.html'
 
     def get_context_data(self, **kwargs):
-        context = super(ScenarioManual, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         first_scenario = Scenario.objects \
             .exclude(last_run=None) \
@@ -94,7 +96,7 @@ class MDSView(ScenarioDetail):
     template_name = 'stats/mds.html'
 
     def get_context_data(self, **kwargs):
-        context = super(MDSView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         # Retrieve kwargs
         scenario = self.object
@@ -126,8 +128,9 @@ class MDSView(ScenarioDetail):
         label_cache = prepare_label_cache(self.object.corpus)
         label_set = set()
 
-        clustering = self.request.GET.get('clustering', 'yes') == 'yes'
-        cluster_labels = self.request.GET.get('labels', 'yes') == 'yes'
+        clustering = self.request.GET.get('clustering', 'on') == 'on'
+        cluster_labels = self.request.GET.get('labels', 'on') == 'on'
+        hulls = self.request.GET.get('hulls', 'on') == 'on'
         if clustering:
             reduced = self.reduce_model(model, tenses)
         else:
@@ -169,8 +172,9 @@ class MDSView(ScenarioDetail):
         context['languages'] = Language.objects.filter(iso__in=list(tenses.keys())).order_by('iso')
         context['d1'] = d1
         context['d2'] = d2
-        context['clustering'] = 'yes' if clustering else 'no'
-        context['cluster_labels'] = 'yes' if cluster_labels else 'no'
+        context['clustering'] = 'on' if clustering else 'off'
+        context['cluster_labels'] = 'on' if cluster_labels else 'off'
+        context['hulls'] = 'on' if hulls else 'off'
         context['max_dimensions'] = list(range(1, len(model[0]) + 1))  # We choose dimensions to be 1-based
         context['stress'] = scenario.mds_stress
 
@@ -201,7 +205,8 @@ class MDSView(ScenarioDetail):
                 for a, b in zip(origin, other):
                     d += (a - b) ** 2
                 d = math.sqrt(d)
-                return d < 0.1 and d > 0
+                return 0.1 > d > 0
+
             return _distance
 
         # Look among close points for overlap in label tuples
@@ -257,7 +262,6 @@ class MDSView(ScenarioDetail):
     def post(self, request, pk, *args, **kwargs):
         request.session['scenario_pk'] = pk
         request.session['fragment_pks'] = json.loads(request.POST['fragment_ids'])
-        request.session['tenses'] = json.loads(request.POST['tenses'])
         return HttpResponseRedirect(reverse('stats:fragment_table_mds'))
 
 
@@ -267,19 +271,18 @@ class MDSViewOld(MDSView):
 
 
 class DescriptiveStatsView(ScenarioDetail):
-    """
-    Shows descriptive statistics of a selected scenario
-    """
+    """Shows descriptive statistics of a selected Scenario"""
     model = Scenario
     template_name = 'stats/descriptive.html'
 
     def get_context_data(self, **kwargs):
-        context = super(DescriptiveStatsView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
+        fragment_pks = self.object.mds_fragments
         scenario_labels = self.object.get_labels()
-        languages = Language.objects.filter(iso__in=list(scenario_labels.keys()))
+        languages = Language.objects.filter(iso__in=list(scenario_labels.keys())).order_by('iso')
 
-        counters_tenses = dict()
+        counters_labels = OrderedDict()
         counters_tensecats = dict()
         tuples = defaultdict(tuple)
         colors = dict()
@@ -289,11 +292,10 @@ class DescriptiveStatsView(ScenarioDetail):
         label_cache = prepare_label_cache(self.object.corpus)
 
         for language in languages:
-            c_tenses = Counter()
+            c_labels = Counter()
             c_tensecats = Counter()
-            n = 0
             labels = set()
-            for identifier in scenario_labels[language.iso]:
+            for n, identifier in enumerate(scenario_labels[language.iso]):
                 label, color, category = get_label_properties_from_cache(identifier, label_cache, len(labels))
 
                 # multiple labels are expected, handle single tense labels
@@ -302,16 +304,15 @@ class DescriptiveStatsView(ScenarioDetail):
 
                 for tense_label in label:
                     labels.add(tense_label)
-                    c_tenses.update([tense_label])
+                    c_labels.update([tense_label])
                     tuples[n] += (tense_label,)
                     colors[tense_label] = color
                     categories[tense_label] = category
 
                 distinct_tensecats.add(category)
                 c_tensecats.update([category])
-                n += 1
 
-            counters_tenses[language] = c_tenses.most_common()
+            counters_labels[language] = c_labels.most_common()
             counters_tensecats[language] = c_tensecats
 
         categories_table = defaultdict(list)
@@ -326,19 +327,24 @@ class DescriptiveStatsView(ScenarioDetail):
         categories_table_ordered = OrderedDict(
             sorted(list(categories_table.items()), key=lambda item: sum(item[1]) if item[0] else 0, reverse=True))
 
-        context['counters'] = counters_tenses
-        context['counters_json'] = json.dumps({language.iso: values for language, values in list(counters_tenses.items())})
+        tuples_with_fragments = defaultdict(list)
+        for n, label_tuple in enumerate(tuples.values()):
+            tuples_with_fragments[label_tuple].append(fragment_pks[n])
+
+        context['counters'] = counters_labels
+        context['counters_json'] = json.dumps({language.iso: vs for language, vs in list(counters_labels.items())})
         context['tensecat_table'] = categories_table_ordered
-        context['tuples'] = Counter(list(tuples.values())).most_common()
+        context['tuples_with_fragments'] = dict(tuples_with_fragments)
         context['colors_json'] = json.dumps(colors)
         context['tensecats_json'] = json.dumps(categories)
         context['languages'] = languages
-        context['languages_json'] = json.dumps({l.iso: l.title for l in languages})
+        context['languages_json'] = json.dumps({language.iso: language.title for language in languages})
 
         return context
 
 
 class FragmentTableView(LoginRequiredMixin, FilterView):
+    """Shows the drill-through to Fragments"""
     model = Fragment
     context_object_name = 'fragments'
     filterset_class = FragmentFilter
@@ -361,26 +367,44 @@ class FragmentTableView(LoginRequiredMixin, FilterView):
             .order_by('pk')
 
     def get_context_data(self, **kwargs):
-        context = super(FragmentTableView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         scenario_pk = self.request.session.get('scenario_pk')
+        fragment_pks = self.request.session.get('fragment_pks')
 
-        if not scenario_pk:
+        if not scenario_pk or not fragment_pks:
             return Http404
 
-        # Don't fetch the PickledObjectFields
+        # Don't fetch some of the PickledObjectFields
         scenario = Scenario.objects \
-            .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels') \
+            .defer('mds_model', 'mds_matrix') \
             .get(pk=scenario_pk)
-        tenses = self.request.session.get('tenses', [])
+
+        # Find the index of the first Fragment
+        index = 0
+        for n, fragment in enumerate(scenario.mds_fragments):
+            if int(fragment_pks[0]) == fragment:
+                index = n
+                break
+
+        # Retrieve the labels for this specific Fragment
+        label_cache = prepare_label_cache(scenario.corpus)
+        labels = []
+        for values in scenario.get_labels().values():
+            for n, value in enumerate(values):
+                if index == n:
+                    label, _, _ = get_label_properties_from_cache(value, label_cache)
+                    labels.append(label)
+                    break
 
         context['scenario'] = scenario
-        context['tenses'] = tenses
+        context['labels'] = labels
 
         return context
 
 
 class FragmentTableViewMDS(FragmentTableView):
+    """Shows the drill-through for Fragments coming from the MDS solution"""
     def get_queryset(self):
         fragment_pks = self.request.session.get('fragment_pks', [])
         scenario_pk = self.request.session.get('scenario_pk')
@@ -440,11 +464,6 @@ class UpsetView(ScenarioDetail):
 
         return context
 
-    def post(self, request, pk, *args, **kwargs):
-        request.session['scenario_pk'] = pk
-        request.session['fragment_pks'] = json.loads(request.POST['fragment_ids'])
-        return HttpResponseRedirect(reverse('stats:fragment_table'))
-
 
 class SankeyView(ScenarioDetail):
     model = Scenario
@@ -481,8 +500,8 @@ class SankeyView(ScenarioDetail):
         nodes = set()
         for language, ls in labels.items():
             if language in [language_from, language_to]:
-                for l in ls:
-                    nodes.add(l) if l else nodes.add('-')
+                for label in ls:
+                    nodes.add(label) if label else nodes.add('-')
 
         # Retrieve the values for the source language
         lfrom_values = []
@@ -514,9 +533,9 @@ class SankeyView(ScenarioDetail):
 
         # Count the links  # TODO: can we do this in a more generic way?
         list_of_lists = [labels[language_from]]
-        for l in [lfrom_values, labels[language_to], lto_values]:
-            if l:
-                list_of_lists.append(l)
+        for label in [lfrom_values, labels[language_to], lto_values]:
+            if label:
+                list_of_lists.append(label)
 
         links = defaultdict(list)
         for l1, l2 in zip(list_of_lists, list_of_lists[1:]):
@@ -542,7 +561,7 @@ class SankeyView(ScenarioDetail):
                             'source': l1, 'target': l2,
                             'value': len(fragment_pks), 'fragment_pks': fragment_pks}
                 new_links.append(new_link)
-        new_links = sorted(new_links, key=lambda n: n['origin_color'])
+        new_links = sorted(new_links, key=lambda l: l['origin_color'])
 
         # JSONify the data and add it to the context
         context['data'] = json.dumps({'nodes': new_nodes, 'links': new_links})
@@ -564,11 +583,6 @@ class SankeyView(ScenarioDetail):
         context['selected_lto_option'] = lto_option
 
         return context
-
-    def post(self, request, pk, *args, **kwargs):
-        request.session['scenario_pk'] = pk
-        request.session['fragment_pks'] = json.loads(request.POST['fragment_ids'])
-        return HttpResponseRedirect(reverse('stats:fragment_table'))
 
 
 class SankeyManual(generic.TemplateView):
