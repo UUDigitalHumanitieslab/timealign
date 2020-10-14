@@ -383,6 +383,9 @@ function MDSView(flat_data, series_list, clusters, options) {
         // Move dots to the front to enable drillthrough
         scalingContainer.selectAll(".dot").moveToFront();
 
+        // Remove dots, labels, and hulls linked to inactive legendEntries
+        d3.selectAll(".legendEntry:not(.active)").each(d => set_dots(d.key, false));
+
         update_location_hash();
     }
 
