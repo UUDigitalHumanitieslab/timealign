@@ -4,7 +4,7 @@ from django.test import TestCase
 from annotations.models import Language, Corpus, Document, Sentence, Word
 
 from .models import PreProcessFragment, Selection
-from .utils import get_random_fragment, get_open_fragments, get_selection_order
+from .utils import get_next_fragment, get_open_fragments, get_selection_order
 
 
 class SelectionTestCase(TestCase):
@@ -42,7 +42,7 @@ class SelectionTestCase(TestCase):
         self.assertEqual(1, get_open_fragments(self.u1, self.en).count())
         self.assertEqual(1, get_open_fragments(self.u2, self.en).count())
 
-        f = get_random_fragment(self.u1, self.en)
+        f = get_next_fragment(self.u1, self.en)
         self.assertEqual(self.f2, f)
 
         o = get_selection_order(self.f2, self.u1)
@@ -70,7 +70,7 @@ class SelectionTestCase(TestCase):
         for n, w in enumerate('He could enter and leave in two minutes'.split()):
             Word.objects.create(word=w, sentence=sentence)
 
-        f = get_random_fragment(self.u1, self.en)
+        f = get_next_fragment(self.u1, self.en)
         self.assertEqual(self.f3, f)
 
         o = get_selection_order(self.f3, self.u1)

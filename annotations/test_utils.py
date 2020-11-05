@@ -1,5 +1,5 @@
 from .models import Corpus, Annotation, Tense
-from .utils import get_random_alignment, get_available_corpora, get_tenses, get_most_frequent_tenses, is_before, sort_key
+from .utils import get_next_alignment, get_available_corpora, get_tenses, get_most_frequent_tenses, is_before, sort_key
 from .test_models import BaseTestCase
 
 
@@ -15,23 +15,23 @@ class UtilsTestCase(BaseTestCase):
         self.assertListEqual(list(c), list(Corpus.objects.filter(pk=self.c2.pk)))
 
     def test_random_alignment(self):
-        a = get_random_alignment(self.u1, self.en, self.nl)
+        a = get_next_alignment(self.u1, self.en, self.nl)
         self.assertEqual(a, self.alignment)
 
-        a = get_random_alignment(self.u1, self.en, self.nl, self.c1)
+        a = get_next_alignment(self.u1, self.en, self.nl, self.c1)
         self.assertEqual(a, self.alignment)
 
-        a = get_random_alignment(self.u1, self.nl, self.en, self.c2)
+        a = get_next_alignment(self.u1, self.nl, self.en, self.c2)
         self.assertIsNone(a)
 
-        a = get_random_alignment(self.u1, self.en, self.nl, self.c2)
+        a = get_next_alignment(self.u1, self.en, self.nl, self.c2)
         self.assertIsNone(a)
 
-        a = get_random_alignment(self.u2, self.en, self.nl)
+        a = get_next_alignment(self.u2, self.en, self.nl)
         self.assertIsNone(a)
 
         Annotation.objects.create(alignment=self.alignment, annotated_by=self.u1)
-        a = get_random_alignment(self.u1, self.en, self.nl)
+        a = get_next_alignment(self.u1, self.en, self.nl)
         self.assertIsNone(a)
 
     def test_get_tenses(self):

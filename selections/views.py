@@ -19,7 +19,7 @@ from .exports import export_selections
 from .filters import SelectionFilter
 from .forms import AddPreProcessFragmentsForm, SelectionForm
 from .models import PreProcessFragment, Selection
-from .utils import get_random_fragment, get_selection_order
+from .utils import get_next_fragment, get_selection_order
 
 
 ##############
@@ -203,17 +203,17 @@ class SelectionChoose(PermissionRequiredMixin, generic.RedirectView):
     permission_required = 'selections.change_selection'
 
     def get_redirect_url(self, *args, **kwargs):
-        """Redirects to a random Alignment"""
+        """Redirects to the next open PreProcessFragment"""
         language = Language.objects.get(iso=self.kwargs['language'])
         corpus = Corpus.objects.get(pk=int(self.kwargs['corpus'])) if 'corpus' in self.kwargs else None
-        new_alignment = get_random_fragment(self.request.user, language, corpus)
+        next_fragment = get_next_fragment(self.request.user, language, corpus)
 
-        # If no new alignment has been found, redirect to the status overview
-        if not new_alignment:
+        # If no next PreProcessFragment has been found, redirect to the status overview
+        if not next_fragment:
             messages.success(self.request, 'All work is done for this language!')
             return reverse('selections:status')
 
-        return super(SelectionChoose, self).get_redirect_url(new_alignment.pk)
+        return super().get_redirect_url(next_fragment.pk)
 
 
 ############

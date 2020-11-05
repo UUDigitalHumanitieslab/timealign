@@ -85,6 +85,10 @@ class Corpus(models.Model):
         'Check for formal structure in the Annotations',
         default=False)
 
+    random_next_item = models.BooleanField(
+        'Randomly select the next item for annotation',
+        default=True)
+
     class Meta:
         verbose_name_plural = 'Corpora'
 
@@ -99,8 +103,7 @@ class Corpus(models.Model):
     def get_annotators(self):
         result = 'none'
         if self.annotators.exists():
-            result = ', '.join(
-                [user.username for user in self.annotators.all()])
+            result = ', '.join([user.username for user in self.annotators.all()])
         return result
 
     get_annotators.short_description = 'Annotators'

@@ -3,9 +3,9 @@ from annotations.utils import get_available_corpora
 from .models import PreProcessFragment, Selection
 
 
-def get_random_fragment(user, language, corpus=None):
+def get_next_fragment(user, language, corpus=None):
     """
-    Retrieves a random, open PreProcessFragment from the database.
+    Retrieves the next open PreProcessFragment from the database.
     :param user: The current User
     :param language: The current Language
     :param corpus: (if supplied) The Corpus where to draw an PreProcessFragment from
@@ -21,7 +21,13 @@ def get_random_fragment(user, language, corpus=None):
         if corpus.current_subcorpus:
             fragments = fragments.filter(pk__in=corpus.current_subcorpus.get_fragments())
 
-    return fragments.order_by('?').first()
+    if not fragments:
+        return None
+    elif corpora[0].random_next_item:
+        return fragments.order_by('?').first()
+    else:
+        # Sort by Document and Sentence.xml_id
+        return sorted(fragments, key=lambda f: (f.document.title, f.sort_key()))[0]
 
 
 def get_open_fragments(user, language):
@@ -34,7 +40,9 @@ def get_open_fragments(user, language):
     return PreProcessFragment.objects \
         .filter(language=language) \
         .filter(document__corpus__in=get_available_corpora(user)) \
-        .exclude(selection__is_final=True)
+        .exclude(selection__is_final=True) \
+        .select_related('document') \
+        .prefetch_related('sentence_set')
 
 
 def get_selection_order(fragment, user):
