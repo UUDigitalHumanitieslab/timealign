@@ -29,7 +29,7 @@ from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm, AddFragmentsForm, FragmentForm
 from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, \
     TenseCategory, Tense, Source, Sentence, Word, LabelKey
-from .utils import get_random_alignment, get_available_corpora, get_xml_sentences, bind_annotations_to_xml, \
+from .utils import get_next_alignment, get_available_corpora, get_xml_sentences, bind_annotations_to_xml, \
     natural_sort_key
 
 
@@ -235,20 +235,19 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
     permission_required = 'annotations.change_annotation'
 
     def get_redirect_url(self, *args, **kwargs):
-        """Redirects to a random Alignment"""
+        """Redirects to the next open Alignment"""
         l1 = Language.objects.get(iso=self.kwargs['l1'])
         l2 = Language.objects.get(iso=self.kwargs['l2'])
         corpus = Corpus.objects.get(pk=int(self.kwargs['corpus'])) if 'corpus' in self.kwargs else None
-        new_alignment = get_random_alignment(self.request.user, l1, l2, corpus)
+        next_alignment = get_next_alignment(self.request.user, l1, l2, corpus)
 
-        # If no new alignment has been found, redirect to the status overview
-        if not new_alignment:
-            messages.success(
-                self.request, 'All work is done for this language pair!')
+        # If no next Alignment has been found, redirect to the status overview
+        if not next_alignment:
+            messages.success(self.request, 'All work is done for this language pair!')
             return reverse('annotations:status')
 
-        corpus_pk = new_alignment.original_fragment.document.corpus.pk
-        return super(AnnotationChoose, self).get_redirect_url(corpus_pk, new_alignment.pk)
+        corpus_pk = next_alignment.original_fragment.document.corpus.pk
+        return super().get_redirect_url(corpus_pk, next_alignment.pk)
 
 
 ############

@@ -14,7 +14,7 @@ from stats.utils import get_label_properties_from_cache, prepare_label_cache
 from .models import Corpus, Tense, Alignment, Source, Annotation, Fragment, Sentence, Word
 
 
-def get_random_alignment(user, language_from, language_to, corpus=None):
+def get_next_alignment(user, language_from, language_to, corpus=None):
     """
     Retrieves a random Alignment from the database.
     :param user: The current User
@@ -27,7 +27,9 @@ def get_random_alignment(user, language_from, language_to, corpus=None):
     alignments = Alignment.objects \
         .filter(original_fragment__language=language_from) \
         .filter(translated_fragment__language=language_to) \
-        .filter(annotation=None)
+        .filter(annotation=None) \
+        .select_related('original_fragment__document') \
+        .prefetch_related('original_fragment__sentence_set')
 
     corpora = [corpus] if corpus else get_available_corpora(user)
     alignments = alignments.filter(original_fragment__document__corpus__in=corpora)
@@ -36,7 +38,14 @@ def get_random_alignment(user, language_from, language_to, corpus=None):
         if corpus.current_subcorpus:
             alignments = alignments.filter(original_fragment__in=corpus.current_subcorpus.get_fragments())
 
-    return alignments.order_by('?').first()
+    if not alignments:
+        return None
+    elif corpora[0].random_next_item:
+        return alignments.order_by('?').first()
+    else:
+        # Sort by Document and Sentence.xml_id
+        return sorted(alignments, key=lambda a: (a.original_fragment.document.title,
+                                                 a.original_fragment.sort_key()))[0]
 
 
 def get_available_corpora(user):
