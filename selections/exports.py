@@ -23,7 +23,10 @@ def export_selections(filename, format_, corpus, language,
         if document is not None:
             selections = selections.filter(fragment__document__title=document)
 
-        selections = selections.select_related().annotate(annotated_words=Count('words'))
+        selections = selections \
+            .select_related('fragment__document', 'tense') \
+            .prefetch_related('fragment__sentence_set__word_set', 'words') \
+            .annotate(annotated_words=Count('words'))
         max_words = selections.aggregate(Max('annotated_words'))['annotated_words__max']
 
         # Sort by sentence.xml_id and order
@@ -55,9 +58,9 @@ def get_header(max_words, add_lemmata, label_keys_titles):
 
 
 def get_row(selection, add_lemmata, max_words, label_keys):
-    s_details = [selection.pk, selection.tense]
+    s_details = [selection.pk, selection.tense.title if selection.tense else '']
     s_details.extend(labels_fixed(selection, label_keys))
-    s_details.extend(['no' if selection.is_no_target else 'yes'])
+    s_details.append('no' if selection.is_no_target else 'yes')
 
     words = selection.words.all()
     w = [word.word for word in words]
@@ -66,6 +69,6 @@ def get_row(selection, add_lemmata, max_words, label_keys):
     w_details = pad_list(w, max_words) + pad_list(pos, max_words) + (pad_list(lemma, max_words) if add_lemmata else [])
 
     fragment = selection.fragment
-    f_details = [selection.comments, selection.order, fragment.first_sentence().xml_id, fragment.full(CSV)]
+    f_details = [selection.comments, selection.order, fragment.first_sentence().xml_id, fragment.full(CSV, selection)]
 
     return s_details + w_details + f_details
