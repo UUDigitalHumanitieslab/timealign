@@ -609,6 +609,7 @@ class ExportPOSPrepare(PermissionRequiredMixin, generic.View):
         subcorpus_id = self.request.GET['subcorpus']
         document_id = self.request.GET['document']
         include_non_targets = 'include_non_targets' in self.request.GET
+        add_lemmata = 'add_lemmata' in self.request.GET
 
         pos_file = NamedTemporaryFile(delete=False)
         self.request.session['pos_file'] = pos_file.name
@@ -620,8 +621,9 @@ class ExportPOSPrepare(PermissionRequiredMixin, generic.View):
 
         filename = '{}-{}-{}.xlsx'.format(urlquote(corpus.title), urlquote(document_title), language)
         self.request.session['pos_filename'] = filename
-        export_annotations(pos_file.name, XLSX, corpus, language, include_non_targets=include_non_targets,
-                           subcorpus=subcorpus, document=document)
+        export_annotations(pos_file.name, XLSX, corpus, language,
+                           subcorpus=subcorpus, document=document,
+                           include_non_targets=include_non_targets, add_lemmata=add_lemmata)
 
         return JsonResponse(dict(done=True))
 

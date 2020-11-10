@@ -1,8 +1,9 @@
+import os
 from tempfile import NamedTemporaryFile
 
 from django.contrib import messages
 from django.urls import reverse
-from django.http import HttpResponse, HttpResponseRedirect, QueryDict
+from django.http import HttpResponse, HttpResponseRedirect, QueryDict, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views import generic
 from django.utils.http import urlquote
@@ -271,7 +272,7 @@ class PrepareDownload(generic.TemplateView):
     template_name = 'selections/download.html'
 
     def get_context_data(self, **kwargs):
-        context = super(PrepareDownload, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         corpora = get_available_corpora(self.request.user)
         language = Language.objects.get(iso=kwargs['language'])
@@ -286,31 +287,43 @@ class PrepareDownload(generic.TemplateView):
         return context
 
 
-class SelectionsDownload(PermissionRequiredMixin, generic.View):
+class SelectionsPrepare(PermissionRequiredMixin, generic.View):
     permission_required = 'selections.change_selection'
 
     def get(self, request, *args, **kwargs):
         language = request.GET['language']
         corpus_id = request.GET['corpus']
         document_id = request.GET['document']
+        add_lemmata = 'add_lemmata' in self.request.GET
 
-        with NamedTemporaryFile() as file_:
-            corpus = Corpus.objects.get(id=int(corpus_id))
-            if document_id == 'all':
-                export_selections(file_.name, XLSX, corpus, language)
-                title = 'all'
-            else:
-                document = Document.objects.get(id=int(document_id))
-                export_selections(file_.name, XLSX, corpus, language, document=document)
-                title = document.title
+        pos_file = NamedTemporaryFile(delete=False)
+        self.request.session['pos_file'] = pos_file.name
 
-            response = HttpResponse(file_, content_type='application/xlsx')
-            filename = '{}-{}-{}.xlsx'.format(urlquote(corpus.title),
-                                              urlquote(title),
-                                              language)
-            response['Content-Disposition'] = \
-                'attachment; filename={}'.format(filename)
-            return response
+        corpus = Corpus.objects.get(pk=int(corpus_id))
+        document = Document.objects.get(pk=int(document_id)) if document_id != 'all' else None
+        document_title = document.title if document_id != 'all' else 'all'
+
+        filename = '{}-{}-{}.xlsx'.format(urlquote(corpus.title), urlquote(document_title), language)
+        self.request.session['pos_filename'] = filename
+        export_selections(pos_file.name, XLSX, corpus, language,
+                          document=document, add_lemmata=add_lemmata)
+
+        return JsonResponse(dict(done=True))
+
+
+class SelectionsDownload(PermissionRequiredMixin, generic.View):
+    permission_required = 'selections.change_selection'
+
+    def get(self, request, *args, **kwargs):
+        pos_file = self.request.session['pos_file']
+        pos_filename = self.request.session['pos_filename']
+
+        with open(pos_file, 'rb') as f:
+            contents = f.read()
+        os.unlink(pos_file)
+        response = HttpResponse(contents, content_type='application/xlsx')
+        response['Content-Disposition'] = 'attachment; filename={}'.format(pos_filename)
+        return response
 
 
 ##############

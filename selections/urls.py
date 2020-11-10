@@ -2,7 +2,7 @@ from django.conf.urls import url
 
 from .views import InstructionsView, IntroductionView, StatusView, \
     SelectionCreate, SelectionUpdate, SelectionDelete, SelectionChoose, SelectionList, \
-    PrepareDownload, SelectionsDownload, AddPreProcessFragmentsView
+    PrepareDownload, SelectionsPrepare, SelectionsDownload, AddPreProcessFragmentsView
 
 urlpatterns = [
     # Static views
@@ -24,7 +24,8 @@ urlpatterns = [
     # Downloads
     url(r'^prepare_download/(?P<language>\w+)/(?P<corpus>\w+)$', PrepareDownload.as_view(), name='prepare_download'),
     url(r'^prepare_download/(?P<language>\w+)$', PrepareDownload.as_view(), name='prepare_download'),
-    url(r'^download$', SelectionsDownload.as_view(), name='download'),
+    url(r'^download$', SelectionsPrepare.as_view(), name='download_start'),
+    url(r'^download_ready$', SelectionsDownload.as_view(), name='download_ready'),
 
     # Imports
     url(r'^add_fragments/$', AddPreProcessFragmentsView.as_view(), name='add-fragments'),

@@ -1,20 +1,25 @@
 {% extends "base/base.html" %}
 
 {% load bootstrap3 %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{% static 'annotations/spinner.css' %}" />
+{% endblock %}
 
 {% block content %}
 <div class="container">
-  <h1>Download Selection File: {{ language.title }}</h1>
+  <h1>Download Selections for {{ language.title }}</h1>
   <p class="lead">
-    Please select the required corpus and documents below:
+    Please select the required corpus and document(s) below:
   </p>
 
-  <form action="{% url 'selections:download' %}" target="_blank">
+  <form id="download" action="{% url 'selections:download_start' %}" target="_blank">
     <div class="form-group">
       <label for="corpus">Corpus:</label>
       <select id="corpus" class="form-control" name="corpus">
         {% for corpus in corpora %}
-        <option value="{{corpus.id}}" {% if corpus.id == selected_corpus.id %}selected="selected"{% endif %}>{{corpus.title}}</option>
+        <option value="{{ corpus.pk }}" {% if corpus.pk == selected_corpus.pk %}selected="selected"{% endif %}>{{ corpus.title }}</option>
         {% endfor %}
       </select>
     </div>
@@ -30,7 +35,16 @@
     </div>
 
     <div class="form-group">
-      <button id="download" class="btn btn-primary">Download</button>
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" name="add_lemmata"> Include lemmata in output
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <button class="download btn btn-primary">Download</button>
+      <span class="loading"><div class="lds-dual-ring"></div></span>
     </div>
     <input type="hidden" name="language" value="{{ language.iso }}"/>
   </form>
@@ -40,6 +54,25 @@
     $('#corpus').change(function(event) {
       var corpus_id = $('#corpus').val();
       window.location.href = "{% url 'selections:prepare_download' language=language.iso %}" + '/' + corpus_id;
+    });
+
+    $('#download').submit(function(event) {
+      var form = $(this);
+
+      $('button.download').attr('disabled', true);
+      $('.loading').show();
+
+      $.ajax({
+        method: 'GET',
+        url: form.attr('action'),
+        data: form.serialize(),
+        success: function() {
+          window.location.href = "{% url 'selections:download_ready' %}";
+          $('button.download').attr('disabled', false);
+          $('.loading').hide();
+        }
+      });
+      event.preventDefault();
     });
   });
 </script>
