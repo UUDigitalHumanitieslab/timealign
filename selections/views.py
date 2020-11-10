@@ -294,6 +294,7 @@ class SelectionsPrepare(PermissionRequiredMixin, generic.View):
         language = request.GET['language']
         corpus_id = request.GET['corpus']
         document_id = request.GET['document']
+        add_lemmata = 'add_lemmata' in self.request.GET
 
         pos_file = NamedTemporaryFile(delete=False)
         self.request.session['pos_file'] = pos_file.name
@@ -304,7 +305,8 @@ class SelectionsPrepare(PermissionRequiredMixin, generic.View):
 
         filename = '{}-{}-{}.xlsx'.format(urlquote(corpus.title), urlquote(document_title), language)
         self.request.session['pos_filename'] = filename
-        export_selections(pos_file.name, XLSX, corpus, language, document=document, add_lemmata=True)
+        export_selections(pos_file.name, XLSX, corpus, language,
+                          document=document, add_lemmata=add_lemmata)
 
         return JsonResponse(dict(done=True))
 
