@@ -13,7 +13,7 @@ from django_filters.views import FilterView
 
 from annotations.models import Language, Corpus, Document
 from annotations.utils import get_available_corpora
-from core.mixins import ImportMixin, SelectSegmentMixin
+from core.mixins import ImportMixin, SelectSegmentMixin, FluidMixin
 from core.utils import XLSX
 
 from .exports import export_selections
@@ -220,7 +220,7 @@ class SelectionChoose(PermissionRequiredMixin, generic.RedirectView):
 ############
 # List views
 ############
-class SelectionList(PermissionRequiredMixin, FilterView):
+class SelectionList(PermissionRequiredMixin, FluidMixin, FilterView):
     context_object_name = 'selections'
     filterset_class = SelectionFilter
     paginate_by = 25
@@ -258,11 +258,6 @@ class SelectionList(PermissionRequiredMixin, FilterView):
         elif session_key in request.session:
             kwargs['data'] = QueryDict(request.session[session_key])
         return filterset_class(language, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['container_fluid'] = True
-        return context
 
 
 ##############

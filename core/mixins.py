@@ -38,3 +38,10 @@ class SelectSegmentMixin:
         """save user preferred selection tool on the session"""
         self.request.session['select_segment'] = form.cleaned_data['select_segment']
         return super(SelectSegmentMixin, self).form_valid(form)
+
+
+class FluidMixin(generic.base.ContextMixin):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['container_fluid'] = True
+        return context
