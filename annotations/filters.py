@@ -45,9 +45,9 @@ class AnnotationFilter(FilterSet):
         # match labels in the relevant languages, or labels that are not language specific
         l1_labels_queryset = Label.objects.filter(language__isnull=True) | Label.objects.filter(language__iso=l1)
         l2_labels_queryset = Label.objects.filter(language__isnull=True) | Label.objects.filter(language__iso=l2)
-        if kwargs['data'] and kwargs['data']['corpus']:
-            l1_labels_queryset = l1_labels_queryset.filter(key__corpora=kwargs['data']['corpus'])
-            l2_labels_queryset = l2_labels_queryset.filter(key__corpora=kwargs['data']['corpus'])
+        if kwargs.get('data') and kwargs.get('data').get('corpus'):
+            l1_labels_queryset = l1_labels_queryset.filter(key__corpora=kwargs.get('data').get('corpus'))
+            l2_labels_queryset = l2_labels_queryset.filter(key__corpora=kwargs.get('data').get('corpus'))
 
         self.filters['source_labels'] = MultipleChoiceFilter(label='Labels',
                                                              field_name='alignment__original_fragment__labels',

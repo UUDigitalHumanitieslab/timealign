@@ -34,8 +34,8 @@ class SelectionFilter(FilterSet):
         self.filters['tense'].queryset = Tense.objects.filter(language__iso=language)
         # match labels in the relevant languages, or labels that are not language specific
         labels_queryset = Label.objects.filter(language__isnull=True) | Label.objects.filter(language__iso=language)
-        if kwargs['data'] and kwargs['data']['corpus']:
-            labels_queryset = labels_queryset.filter(key__corpora=kwargs['data']['corpus'])
+        if kwargs.get('data') and kwargs.get('data').get('corpus'):
+            labels_queryset = labels_queryset.filter(key__corpora=kwargs.get('data').get('corpus'))
 
         self.filters['labels'] = MultipleChoiceFilter(label='Labels',
                                                       field_name='labels',

@@ -21,7 +21,7 @@ from reversion.models import Version
 from reversion.revisions import add_to_revision, set_comment
 from reversion.views import RevisionMixin
 
-from core.mixins import ImportMixin, CheckOwnerOrStaff, SelectSegmentMixin
+from core.mixins import ImportMixin, CheckOwnerOrStaff, SelectSegmentMixin, FluidMixin
 from core.utils import find_in_enum, XLSX
 
 from .exports import export_annotations
@@ -413,7 +413,7 @@ class SourceDetail(LoginRequiredMixin, generic.DetailView):
 ############
 # List views
 ############
-class AnnotationList(PermissionRequiredMixin, FilterView):
+class AnnotationList(PermissionRequiredMixin, FluidMixin, FilterView):
     context_object_name = 'annotations'
     filterset_class = AnnotationFilter
     paginate_by = 15
@@ -455,11 +455,6 @@ class AnnotationList(PermissionRequiredMixin, FilterView):
         elif session_key in request.session:
             kwargs['data'] = QueryDict(request.session[session_key])
         return filterset_class(l1, l2, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['container_fluid'] = True
-        return context
 
 
 class FragmentList(PermissionRequiredMixin, generic.ListView):
@@ -504,7 +499,7 @@ class FragmentList(PermissionRequiredMixin, generic.ListView):
         return context
 
 
-class TenseCategoryList(PermissionRequiredMixin, generic.ListView):
+class TenseCategoryList(PermissionRequiredMixin, FluidMixin, generic.ListView):
     model = TenseCategory
     context_object_name = 'tensecategories'
     template_name = 'annotations/tenses.html'
@@ -534,14 +529,13 @@ class TenseCategoryList(PermissionRequiredMixin, generic.ListView):
                 tense = tense_cache.get((tc.title, language.iso), '')
                 tenses[tc].append(tense)
 
-        context['container_fluid'] = True
         context['tenses'] = sorted(list(tenses.items()), key=lambda item: item[0].pk)
         context['languages'] = languages
 
         return context
 
 
-class LabelList(PermissionRequiredMixin, generic.ListView):
+class LabelList(PermissionRequiredMixin, FluidMixin, generic.ListView):
     model = LabelKey
     context_object_name = 'labelkeys'
     template_name = 'annotations/labels.html'
@@ -556,7 +550,6 @@ class LabelList(PermissionRequiredMixin, generic.ListView):
             corpus = get_available_corpora(self.request.user)[0]
         self.object_list = self.object_list.filter(corpora=corpus)
 
-        context['container_fluid'] = True
         context['label_keys'] = self.object_list
         labels = [key.labels.all() for key in self.object_list]
 
