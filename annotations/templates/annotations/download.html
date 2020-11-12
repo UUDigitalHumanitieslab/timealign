@@ -9,7 +9,7 @@
 
 {% block content %}
 <div class="container">
-  <h1>Download Annotations for {{ language_to.title }}</h1>
+  <h1>Download Annotations for {{ language.title }}</h1>
   <p class="lead">
     Please select the required corpus and document(s) below:
   </p>
@@ -64,14 +64,14 @@
       <button class="download btn btn-primary">Download</button>
       <span class="loading"><div class="lds-dual-ring"></div></span>
     </div>
-    <input type="hidden" name="language" value="{{ language_to.iso }}"/>
+    <input type="hidden" name="language" value="{{ language.iso }}"/>
   </form>
 </div>
 <script>
   $(function() {
     $('#corpus').change(function(event) {
       var corpus_id = $('#corpus').val();
-      window.location.href = "{% url 'annotations:prepare_download' language=language_to.iso %}" + '/' + corpus_id;
+      window.location.href = "{% url 'annotations:prepare_download' language=language.iso %}" + '/' + corpus_id;
     });
 
     $('#download').submit(function(event) {

@@ -6,7 +6,7 @@ from lxml import etree
 
 from django.contrib import messages
 from django.contrib.admin.utils import construct_change_message
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count, Prefetch, QuerySet
 from django.http import HttpResponse, JsonResponse, QueryDict
@@ -16,17 +16,19 @@ from django.urls import reverse
 from django.utils.http import urlquote
 from django.views import generic
 
+from braces.views import SuperuserRequiredMixin
 from django_filters.views import FilterView
 from reversion.models import Version
 from reversion.revisions import add_to_revision, set_comment
 from reversion.views import RevisionMixin
 
-from core.mixins import ImportMixin, CheckOwnerOrStaff, SelectSegmentMixin, FluidMixin
+from core.mixins import ImportMixin, CheckOwnerOrStaff, FluidMixin
 from core.utils import find_in_enum, XLSX
 
 from .exports import export_annotations
 from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm, AddFragmentsForm, FragmentForm
+from .mixins import PrepareDownloadMixin, SelectSegmentMixin, ImportFragmentsMixin
 from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, Annotation, \
     TenseCategory, Tense, Source, Sentence, Word, LabelKey
 from .utils import get_next_alignment, get_available_corpora, get_xml_sentences, bind_annotations_to_xml, \
@@ -37,12 +39,16 @@ from .utils import get_next_alignment, get_available_corpora, get_xml_sentences,
 # Static views
 ##############
 class IntroductionView(generic.TemplateView):
-    """Loads a static introduction view"""
+    """
+    Loads a static introduction view.
+    """
     template_name = 'annotations/introduction.html'
 
 
 class InstructionsView(generic.TemplateView):
-    """Loads the various steps of the instructions"""
+    """
+    Loads the various steps of the instructions.
+    """
 
     def get_template_names(self):
         return 'annotations/instructions{}.html'.format(self.kwargs['n'])
@@ -58,12 +64,14 @@ class InstructionsView(generic.TemplateView):
 
 
 class StatusView(PermissionRequiredMixin, generic.TemplateView):
-    """Loads a static home view, with an overview of the annotation progress"""
+    """
+    Loads a static home view, with an overview of the annotation progress.
+    """
     template_name = 'annotations/home.html'
     permission_required = 'annotations.change_annotation'
 
     def get_context_data(self, **kwargs):
-        """Creates a list of tuples with information on the annotation progress"""
+        """Creates a list of tuples with information on the annotation progress."""
         context = super(StatusView, self).get_context_data(**kwargs)
 
         corpus_pk = self.kwargs.get('pk', None)
@@ -108,12 +116,12 @@ class AnnotationMixin(SelectSegmentMixin, SuccessMessageMixin, PermissionRequire
     permission_required = 'annotations.change_annotation'
 
     def __init__(self):
-        """Creates an attribute to cache the Alignment"""
+        """Creates an attribute to cache the Alignment."""
         super(AnnotationMixin, self).__init__()
         self.alignment = None
 
     def get_form_kwargs(self):
-        """Sets the User and the Alignment as a form kwarg"""
+        """Sets the User and the Alignment as a form kwarg."""
         kwargs = super(AnnotationMixin, self).get_form_kwargs()
         kwargs['user'] = self.request.user
         kwargs['alignment'] = self.get_alignment()
@@ -121,7 +129,7 @@ class AnnotationMixin(SelectSegmentMixin, SuccessMessageMixin, PermissionRequire
         return kwargs
 
     def get_context_data(self, **kwargs):
-        """Sets the Alignment on the context"""
+        """Sets the Alignment on the context."""
         context = super(AnnotationMixin, self).get_context_data(**kwargs)
         context['alignment'] = self.get_alignment()
         return context
@@ -130,7 +138,7 @@ class AnnotationMixin(SelectSegmentMixin, SuccessMessageMixin, PermissionRequire
         raise NotImplementedError
 
     def get_alignments(self):
-        """Retrieve related fields on Alignment to prevent extra queries"""
+        """Retrieve related fields on Alignment to prevent extra queries."""
         return Alignment.objects.select_related('original_fragment', 'translated_fragment')
 
 
@@ -174,20 +182,20 @@ class RevisionCreateMixin(RevisionMixin):
 
 class AnnotationUpdateMixin(AnnotationMixin, CheckOwnerOrStaff, RevisionWithCommentMixin):
     def get_context_data(self, **kwargs):
-        """Sets the annotated Words on the context"""
+        """Sets the annotated Words on the context."""
         context = super(AnnotationUpdateMixin, self).get_context_data(**kwargs)
         context['annotated_words'] = self.object.words.all()
         return context
 
     def get_success_url(self):
-        """Returns to the overview per language"""
+        """Returns to the overview per language."""
         alignment = self.get_alignment()
         l1 = alignment.original_fragment.language.iso
         l2 = alignment.translated_fragment.language.iso
         return reverse('annotations:list', args=(l1, l2,))
 
     def get_alignment(self):
-        """Retrieves the Alignment from the object"""
+        """Retrieves the Alignment from the object."""
         if not self.alignment:
             self.alignment = self.get_alignments().get(pk=self.object.alignment.pk)
         return self.alignment
@@ -197,20 +205,20 @@ class AnnotationCreate(AnnotationMixin, RevisionCreateMixin, generic.CreateView)
     success_message = 'Annotation created successfully'
 
     def get_success_url(self):
-        """Go to the choose-view to select a new Alignment"""
+        """Go to the choose-view to select a new Alignment."""
         alignment = self.object.alignment
         return reverse('annotations:choose', args=(alignment.original_fragment.document.corpus.pk,
                                                    alignment.original_fragment.language.iso,
                                                    alignment.translated_fragment.language.iso))
 
     def form_valid(self, form):
-        """Sets the User and Alignment on the created instance"""
+        """Sets the User and Alignment on the created instance."""
         form.instance.annotated_by = self.request.user
         form.instance.alignment = self.get_alignment()
         return super(AnnotationCreate, self).form_valid(form)
 
     def get_alignment(self):
-        """Retrieves the Alignment by the pk in the kwargs"""
+        """Retrieves the Alignment by the pk in the kwargs."""
         if not self.alignment:
             self.alignment = get_object_or_404(self.get_alignments(), pk=self.kwargs['pk'])
         return self.alignment
@@ -220,7 +228,7 @@ class AnnotationUpdate(AnnotationUpdateMixin, generic.UpdateView):
     success_message = 'Annotation edited successfully'
 
     def form_valid(self, form):
-        """Sets the last modified by on the instance"""
+        """Sets the last modified by on the instance."""
         form.instance.last_modified_by = self.request.user
         return super(AnnotationUpdate, self).form_valid(form)
 
@@ -235,7 +243,7 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
     permission_required = 'annotations.change_annotation'
 
     def get_redirect_url(self, *args, **kwargs):
-        """Redirects to the next open Alignment"""
+        """Redirects to the next open Alignment."""
         l1 = Language.objects.get(iso=self.kwargs['l1'])
         l2 = Language.objects.get(iso=self.kwargs['l2'])
         corpus = Corpus.objects.get(pk=int(self.kwargs['corpus'])) if 'corpus' in self.kwargs else None
@@ -296,7 +304,7 @@ class FragmentEdit(SelectSegmentMixin, LoginRequiredMixin, FragmentRevisionWithC
     form_class = FragmentForm
 
     def get_context_data(self, **kwargs):
-        """Sets the annotated Words on the context"""
+        """Sets the annotated Words on the context."""
         context = super(FragmentEdit, self).get_context_data(**kwargs)
         context['annotated_words'] = self.object.targets()
         return context
@@ -305,7 +313,7 @@ class FragmentEdit(SelectSegmentMixin, LoginRequiredMixin, FragmentRevisionWithC
         return reverse('annotations:show', args=(self.object.pk,))
 
     def form_valid(self, form):
-        """Updates the target words"""
+        """Updates the target words."""
         for word in Word.objects.filter(sentence__fragment=self.object):
             word.is_target = word in form.cleaned_data['words']
             word.save()
@@ -484,7 +492,7 @@ class FragmentList(PermissionRequiredMixin, generic.ListView):
 
     def get_context_data(self, **kwargs):
         """
-        Sets the current language and other_languages on the context
+        Sets the current language and other_languages on the context.
         :param kwargs: Contains the current language.
         :return: The context variables.
         """
@@ -507,7 +515,7 @@ class TenseCategoryList(PermissionRequiredMixin, FluidMixin, generic.ListView):
 
     def get_context_data(self, **kwargs):
         """
-        Sets the tenses and languages on the context
+        Sets the tenses and languages on the context.
         :return: The context variables.
         """
         context = super(TenseCategoryList, self).get_context_data(**kwargs)
@@ -574,23 +582,8 @@ class LabelList(PermissionRequiredMixin, FluidMixin, generic.ListView):
 ##############
 # Export views
 ##############
-class PrepareDownload(generic.TemplateView):
+class PrepareDownload(PrepareDownloadMixin, generic.TemplateView):
     template_name = 'annotations/download.html'
-
-    def get_context_data(self, **kwargs):
-        context = super(PrepareDownload, self).get_context_data(**kwargs)
-
-        corpora = get_available_corpora(self.request.user)
-        language = Language.objects.get(iso=kwargs['language'])
-        corpora = corpora.filter(languages=language)
-        selected_corpus = corpora.first()
-        if kwargs.get('corpus'):
-            selected_corpus = Corpus.objects.get(pk=int(kwargs['corpus']))
-
-        context['language_to'] = language
-        context['corpora'] = corpora
-        context['selected_corpus'] = selected_corpus
-        return context
 
 
 class ExportPOSPrepare(PermissionRequiredMixin, generic.View):
@@ -639,44 +632,25 @@ class ExportPOSDownload(PermissionRequiredMixin, generic.View):
 ##############
 # Import views
 ##############
-class ImportLabelsView(UserPassesTestMixin, ImportMixin):
+class ImportLabelsView(SuperuserRequiredMixin, ImportMixin):
     """
-    Allows superusers to import labels to Annotations and Fragments
+    Allows superusers to import labels to Annotations and Fragments.
     """
     form_class = LabelImportForm
     template_name = 'annotations/label_form.html'
     success_message = 'Successfully imported the labels!'
 
-    def test_func(self):
-        # limit access to superusers
-        return self.request.user.is_superuser
-
     def get_success_url(self):
         return reverse('annotations:import-labels')
 
 
-class AddFragmentsView(UserPassesTestMixin, ImportMixin):
+class AddFragmentsView(SuperuserRequiredMixin, ImportFragmentsMixin):
     """
-    Allows superusers to import labels to Annotations and Fragments
+    Allows superusers to import Fragments.
     """
     form_class = AddFragmentsForm
     template_name = 'annotations/add_fragments_form.html'
     success_message = 'Successfully added the fragments!'
-
-    def test_func(self):
-        # limit access to superusers
-        return self.request.user.is_superuser
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['corpus'] = self.request.GET.get('corpus')
-        return context
-
-    def get_form_kwargs(self):
-        """Sets the Corpus as a form kwarg"""
-        kwargs = super().get_form_kwargs()
-        kwargs['corpus'] = self.request.GET.get('corpus')
-        return kwargs
 
     def get_success_url(self):
         return reverse('annotations:add-fragments')

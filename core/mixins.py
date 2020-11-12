@@ -27,19 +27,6 @@ class CheckOwnerOrStaff(UserPassesTestMixin):
                self.request.user.is_staff or self.request.user.is_superuser
 
 
-class SelectSegmentMixin:
-    def get_form_kwargs(self):
-        """Sets select_fragment as a form kwarg"""
-        kwargs = super(SelectSegmentMixin, self).get_form_kwargs()
-        kwargs['select_segment'] = self.request.session.get('select_segment', False)
-        return kwargs
-
-    def form_valid(self, form):
-        """save user preferred selection tool on the session"""
-        self.request.session['select_segment'] = form.cleaned_data['select_segment']
-        return super(SelectSegmentMixin, self).form_valid(form)
-
-
 class FluidMixin(generic.base.ContextMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
