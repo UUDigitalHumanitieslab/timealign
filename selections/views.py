@@ -2,18 +2,20 @@ import os
 from tempfile import NamedTemporaryFile
 
 from django.contrib import messages
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect, QueryDict, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views import generic
 from django.utils.http import urlquote
 
-from django.contrib.auth.mixins import PermissionRequiredMixin, UserPassesTestMixin
+from braces.views import SuperuserRequiredMixin
 from django_filters.views import FilterView
 
+from annotations.mixins import PrepareDownloadMixin, SelectSegmentMixin, ImportFragmentsMixin
 from annotations.models import Language, Corpus, Document
 from annotations.utils import get_available_corpora
-from core.mixins import ImportMixin, SelectSegmentMixin, FluidMixin
+from core.mixins import FluidMixin
 from core.utils import XLSX
 
 from .exports import export_selections
@@ -27,24 +29,30 @@ from .utils import get_next_fragment, get_selection_order
 # Static views
 ##############
 class IntroductionView(generic.TemplateView):
-    """Loads a static introduction view"""
+    """
+    Loads a static introduction view.
+    """
     template_name = 'selections/introduction.html'
 
 
 class InstructionsView(generic.TemplateView):
-    """Loads the various steps of the instructions"""
+    """
+    Loads the various steps of the instructions.
+    """
 
     def get_template_names(self):
         return 'selections/instructions{}.html'.format(self.kwargs['n'])
 
 
 class StatusView(PermissionRequiredMixin, generic.TemplateView):
-    """Loads a static home view, with an overview of the selection progress"""
+    """
+    Loads a static home view, with an overview of the selection progress.
+    """
     template_name = 'selections/home.html'
     permission_required = 'selections.change_selection'
 
     def get_context_data(self, **kwargs):
-        """Creates a list of tuples with information on the selection progress"""
+        """Creates a list of tuples with information on the selection progress."""
         context = super(StatusView, self).get_context_data(**kwargs)
 
         corpus_pk = self.kwargs.get('pk', None)
@@ -85,19 +93,19 @@ class SelectionMixin(SelectSegmentMixin, PermissionRequiredMixin):
     permission_required = 'selections.change_selection'
 
     def __init__(self):
-        """Creates an attribute to cache the PreProcessFragment"""
+        """Creates an attribute to cache the PreProcessFragment."""
         super(SelectionMixin, self).__init__()
         self.fragment = None
 
     def get_form_kwargs(self):
-        """Sets the PreProcessFragment as a form kwarg"""
+        """Sets the PreProcessFragment as a form kwarg."""
         kwargs = super(SelectionMixin, self).get_form_kwargs()
         kwargs['fragment'] = self.get_fragment()
         kwargs['user'] = self.request.user
         return kwargs
 
     def get_context_data(self, **kwargs):
-        """Sets the PreProcessFragment on the context"""
+        """Sets the PreProcessFragment on the context."""
         context = super(SelectionMixin, self).get_context_data(**kwargs)
         context['fragment'] = self.get_fragment()
         context['selected_words'] = self.get_fragment().selected_words()
@@ -107,7 +115,7 @@ class SelectionMixin(SelectSegmentMixin, PermissionRequiredMixin):
         raise NotImplementedError
 
     def get_fragments(self):
-        """Retrieve related fields on PreProcessFragment to prevent extra queries"""
+        """Retrieve related fields on PreProcessFragment to prevent extra queries."""
         return PreProcessFragment.objects. \
             select_related('document__corpus', 'language'). \
             prefetch_related('sentence_set', 'selection_set__words')
@@ -118,13 +126,13 @@ class SelectionMixin(SelectSegmentMixin, PermissionRequiredMixin):
 
 class SelectionUpdateMixin(SelectionMixin):
     def get_context_data(self, **kwargs):
-        """Sets the selected Words on the context"""
+        """Sets the selected Words on the context."""
         context = super(SelectionUpdateMixin, self).get_context_data(**kwargs)
         context['annotated_words'] = self.object.words.all()
         return context
 
     def get_fragment(self):
-        """Retrieves the PreProcessFragment from the object"""
+        """Retrieves the PreProcessFragment from the object."""
         if not self.fragment:
             self.fragment = self.get_fragments().get(pk=self.object.fragment.pk)
         return self.fragment
@@ -132,7 +140,7 @@ class SelectionUpdateMixin(SelectionMixin):
 
 class SelectionCreate(SelectionMixin, generic.CreateView):
     def get_success_url(self):
-        """Go to the choose-view to select a new Alignment"""
+        """Go to the choose-view to select a new Alignment."""
         if self.is_final():
             return reverse('selections:choose', args=(self.get_fragment().document.corpus.pk,
                                                       self.get_fragment().language.iso,))
@@ -140,7 +148,7 @@ class SelectionCreate(SelectionMixin, generic.CreateView):
             return reverse('selections:create', args=(self.get_fragment().pk,))
 
     def form_valid(self, form):
-        """Sets the User and Fragment on the created instance"""
+        """Sets the User and Fragment on the created instance."""
 
         # Set the previous Selection to is_final when the User signals the annotation has already been completed
         if 'already_complete' in self.request.POST:
@@ -164,7 +172,7 @@ class SelectionCreate(SelectionMixin, generic.CreateView):
         return super(SelectionCreate, self).form_valid(form)
 
     def get_fragment(self):
-        """Retrieves the Fragment by the pk in the kwargs"""
+        """Retrieves the Fragment by the pk in the kwargs."""
         if not self.fragment:
             self.fragment = get_object_or_404(self.get_fragments(), pk=self.kwargs['pk'])
         return self.fragment
@@ -174,7 +182,7 @@ class SelectionUpdate(SelectionUpdateMixin, generic.UpdateView):
     def get_success_url(self):
         """
         Returns to the overview per language on final Selection,
-        otherwise, show a new Selection for the current PreProcessFragment
+        otherwise, show a new Selection for the current PreProcessFragment.
         """
         if self.is_final():
             return reverse('selections:list', args=(self.get_fragment().language.iso,))
@@ -182,7 +190,7 @@ class SelectionUpdate(SelectionUpdateMixin, generic.UpdateView):
             return reverse('selections:create', args=(self.get_fragment().pk,))
 
     def form_valid(self, form):
-        """Sets the last modified by on the instance"""
+        """Sets the last modified by on the instance."""
         form.instance.is_final = self.is_final()
         form.instance.last_modified_by = self.request.user
 
@@ -194,7 +202,7 @@ class SelectionUpdate(SelectionUpdateMixin, generic.UpdateView):
 
 class SelectionDelete(SelectionUpdateMixin, generic.DeleteView):
     def get_success_url(self):
-        """Returns to the overview per Language"""
+        """Returns to the overview per Language."""
         return reverse('selections:list', args=(self.get_fragment().language.iso,))
 
 
@@ -204,7 +212,7 @@ class SelectionChoose(PermissionRequiredMixin, generic.RedirectView):
     permission_required = 'selections.change_selection'
 
     def get_redirect_url(self, *args, **kwargs):
-        """Redirects to the next open PreProcessFragment"""
+        """Redirects to the next open PreProcessFragment."""
         language = Language.objects.get(iso=self.kwargs['language'])
         corpus = Corpus.objects.get(pk=int(self.kwargs['corpus'])) if 'corpus' in self.kwargs else None
         next_fragment = get_next_fragment(self.request.user, language, corpus)
@@ -263,23 +271,8 @@ class SelectionList(PermissionRequiredMixin, FluidMixin, FilterView):
 ##############
 # Export views
 ##############
-class PrepareDownload(generic.TemplateView):
+class PrepareDownload(PrepareDownloadMixin, generic.TemplateView):
     template_name = 'selections/download.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        corpora = get_available_corpora(self.request.user)
-        language = Language.objects.get(iso=kwargs['language'])
-        corpora = corpora.filter(languages=language)
-        selected_corpus = corpora.first()
-        if kwargs.get('corpus'):
-            selected_corpus = Corpus.objects.get(id=int(kwargs['corpus']))
-
-        context['language'] = language
-        context['corpora'] = corpora
-        context['selected_corpus'] = selected_corpus
-        return context
 
 
 class SelectionsPrepare(PermissionRequiredMixin, generic.View):
@@ -324,28 +317,13 @@ class SelectionsDownload(PermissionRequiredMixin, generic.View):
 ##############
 # Import views
 ##############
-class AddPreProcessFragmentsView(UserPassesTestMixin, ImportMixin):
+class AddPreProcessFragmentsView(SuperuserRequiredMixin, ImportFragmentsMixin):
     """
-    Allows superusers to import labels to Annotations and Fragments
+    Allows superusers to import PreProcessFragments.
     """
     form_class = AddPreProcessFragmentsForm
     template_name = 'selections/add_fragments_form.html'
     success_message = 'Successfully added the fragments!'
-
-    def test_func(self):
-        # limit access to superusers
-        return self.request.user.is_superuser
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['corpus'] = self.request.GET.get('corpus')
-        return context
-
-    def get_form_kwargs(self):
-        """Sets the Corpus as a form kwarg"""
-        kwargs = super().get_form_kwargs()
-        kwargs['corpus'] = self.request.GET.get('corpus')
-        return kwargs
 
     def get_success_url(self):
         return reverse('selections:add-fragments')
