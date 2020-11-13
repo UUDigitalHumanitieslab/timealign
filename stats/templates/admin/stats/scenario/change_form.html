@@ -76,7 +76,7 @@
          $('input[type="checkbox"]').change(function(event) {
              event.target.parentNode.classList.toggle('checked');
          });
-         $('.field-include_labels').add('.field-include_keys').each(function(idx, element) {
+         $('.field-tenses, .field-include_labels, .field-include_keys').each(function(idx, element) {
              if ($(element).closest('fieldset').find('.field-language select').val() === '') {
                  $('.related-widget-wrapper', element).replaceWith('<div class="form-row">Please choose language and save to show field.</div>');
              }
