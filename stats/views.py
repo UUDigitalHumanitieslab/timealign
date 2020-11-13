@@ -5,6 +5,7 @@ import math
 from collections import Counter, OrderedDict, defaultdict
 from itertools import chain, repeat, count
 
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Case, When, Prefetch
@@ -152,21 +153,27 @@ class MDSView(ScenarioDetail):
             cluster_id = len(clusters)
             clusters.append(dict(x=x, y=y, count=cluster_size))
 
-            fragment = fragments[n]
+            try:
+                fragment = fragments[n]
 
-            # Retrieve the labels of all languages in this context
-            ts = [tenses[language][n] for language in list(tenses.keys())]
-            # flatten
-            label_list = []
-            for t in ts:
-                label, _, _ = get_label_properties_from_cache(t, label_cache, len(label_set))
-                label_list.append(label.replace('<', '&lt;').replace('>', '&gt;'))
-                label_set.add(label)
+                # Retrieve the labels of all languages in this context
+                ts = [tenses[language][n] for language in list(tenses.keys())]
+                # flatten
+                label_list = []
+                for t in ts:
+                    label, _, _ = get_label_properties_from_cache(t, label_cache, len(label_set))
+                    label_list.append(label.replace('<', '&lt;').replace('>', '&gt;'))
+                    label_set.add(label)
 
-            # Add all values to the dictionary
-            points[tenses[display_language][n]].append(
-                {'cluster': cluster_id, 'x': x, 'y': y,
-                 'tenses': label_list, 'fragment_pk': fragment.pk, 'fragment': fragment.full(HTML)})
+                # Add all values to the dictionary
+                points[tenses[display_language][n]].append(
+                    {'cluster': cluster_id, 'x': x, 'y': y,
+                     'tenses': label_list, 'fragment_pk': fragment.pk, 'fragment': fragment.full(HTML)})
+
+            except IndexError:
+                messages.error(self.request, 'Some of the Fragments in this Scenario have been deleted. '
+                                             'Please rerun your Scenario.')
+                break
 
         context['language'] = display_language
         context['languages'] = Language.objects.filter(iso__in=list(tenses.keys())).order_by('iso')

@@ -1,5 +1,6 @@
 import logging
 from django.contrib import admin, messages
+from django.db.models import Prefetch
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
@@ -47,7 +48,11 @@ class ScenarioAdmin(BaseDjangoObjectActions, admin.ModelAdmin):
     inlines = [ScenarioLanguageInline]
 
     def get_queryset(self, request):
-        return super(ScenarioAdmin, self).get_queryset(request) \
+        languages_from = ScenarioLanguage.objects.filter(as_from=True).select_related('language')
+        languages_to = ScenarioLanguage.objects.filter(as_to=True).select_related('language')
+        return super().get_queryset(request) \
+            .prefetch_related(Prefetch('scenariolanguage_set', queryset=languages_from, to_attr='languages_from'),
+                              Prefetch('scenariolanguage_set', queryset=languages_to, to_attr='languages_to')) \
             .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels')  # Don't fetch the PickledObjectFields
 
     def run_mds(self, request, obj):
@@ -84,4 +89,4 @@ class ScenarioAdmin(BaseDjangoObjectActions, admin.ModelAdmin):
         if obj.owner is None:
             # Avoid changing ownership when editing an existing scenario
             obj.owner = request.user
-        super(ScenarioAdmin, self).save_model(request, obj, form, change)
+        super().save_model(request, obj, form, change)

@@ -216,12 +216,6 @@ function MDSView(flat_data, series_list, clusters, options) {
         .style("color", function (d) { return d.color; })
         .text(function (d) { return d.key; });
 
-    var scalingContainer = container
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-        .attr("class", "scaling-container")
-        .attr("clip-path", "url(#clip)");
-
     var cluster_size_a;
     var cluster_size_b;
     function cluster_size(cluster) {
@@ -282,7 +276,7 @@ function MDSView(flat_data, series_list, clusters, options) {
     }
 
     //add data points
-    scalingContainer.selectAll(".dot")
+    container.selectAll(".dot")
         .data(flat_data)
         .enter()
         .append("circle")
@@ -315,7 +309,7 @@ function MDSView(flat_data, series_list, clusters, options) {
     // Adding convex hulls (actual location is set on zoom)
     function draw_hulls() {
         if (options.hulls) {
-            scalingContainer.selectAll(".hull")
+            container.selectAll(".hull")
                 .data(series_list)
                 .enter()
                 .append("path")
@@ -330,13 +324,13 @@ function MDSView(flat_data, series_list, clusters, options) {
                 });
         }
         else {
-            scalingContainer.selectAll(".hull").remove();
+            container.selectAll(".hull").remove();
         }
     }
 
     function draw_labels() {
         if (options.clusterLabels) {
-            scalingContainer.selectAll(".cluster-label")
+            container.selectAll(".cluster-label")
                 .data(flat_data)
                 .enter()
                 .append("text")
@@ -348,7 +342,7 @@ function MDSView(flat_data, series_list, clusters, options) {
                 .text(function (d) { return clusters[d.cluster].count;});
         }
         else {
-            scalingContainer.selectAll(".cluster-label").remove();
+            container.selectAll(".cluster-label").remove();
         }
     }
 
@@ -361,27 +355,27 @@ function MDSView(flat_data, series_list, clusters, options) {
         d3.select(".y.axis").call(yAxis);
         d3.select(".x.grid").call(xAxisGrid);
         d3.select(".y.grid").call(yAxisGrid);
-        scalingContainer.selectAll(".dot")
+        container.selectAll(".dot")
             .attr("cx", function (d) { return xMap(clusters[d.cluster]); })
             .attr("cy", function (d) { return yMap(clusters[d.cluster]); });
 
         draw_labels();
-        scalingContainer.selectAll(".cluster-label")
+        container.selectAll(".cluster-label")
             .attr("x", function (d) { return xMap(clusters[d.cluster]); })
             .attr("y", function (d) { return yMap(clusters[d.cluster]) - 5 - cluster_size(clusters[d.cluster]); });
 
         draw_hulls();
-        scalingContainer.selectAll(".hull").each(function(d, i) {
+        container.selectAll(".hull").each(function(d, i) {
             d3.select(this)
                 .datum(d3.geom.hull(vertices(d.key)))
                 .filter((d) => d.length > 1)
                 .attr("d", (d) => "M" + d.join("L") + "Z");
         });
         // Restore previous data attachment to allow for filtering
-        scalingContainer.selectAll(".hull").data(series_list).enter();
+        container.selectAll(".hull").data(series_list).enter();
 
         // Move dots to the front to enable drillthrough
-        scalingContainer.selectAll(".dot").moveToFront();
+        container.selectAll(".dot").moveToFront();
 
         // Remove dots, labels, and hulls linked to inactive legendEntries
         d3.selectAll(".legendEntry:not(.active)").each(d => set_dots(d.key, false));
