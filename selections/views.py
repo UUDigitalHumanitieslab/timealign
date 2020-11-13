@@ -149,7 +149,6 @@ class SelectionCreate(SelectionMixin, generic.CreateView):
 
     def form_valid(self, form):
         """Sets the User and Fragment on the created instance."""
-
         # Set the previous Selection to is_final when the User signals the annotation has already been completed
         if 'already_complete' in self.request.POST:
             last_selection = self.get_fragment().selection_set.order_by('-order')[0]
@@ -166,10 +165,7 @@ class SelectionCreate(SelectionMixin, generic.CreateView):
         form.instance.order = get_selection_order(fragment, user)
         form.instance.is_final = self.is_final()
 
-        if form.instance.is_no_target:
-            form.instance.tense = ''
-
-        return super(SelectionCreate, self).form_valid(form)
+        return super().form_valid(form)
 
     def get_fragment(self):
         """Retrieves the Fragment by the pk in the kwargs."""
