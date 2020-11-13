@@ -174,7 +174,9 @@ def run_mds(scenario):
     scenario.mds_model = pos.round(3).tolist()
     scenario.mds_fragments = fragment_pks
     scenario.mds_labels = fragment_labels
-    scenario.mds_stress = mds.stress_
+    # Normalize stress as per https://stackoverflow.com/a/47501135
+    scenario.mds_stress = np.sqrt(mds.stress_ / ((matrix.ravel() ** 2).sum() / 2))
+
     scenario.save()
 
 
