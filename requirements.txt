@@ -4,7 +4,7 @@
 #
 #    pip-compile requirements.in
 #
-certifi==2020.6.20        # via requests
+certifi==2020.11.8        # via requests
 chardet==3.0.4            # via requests
 click==7.1.2              # via perfectextractor
 django-bootstrap3==14.2.0  # via -r requirements.in
@@ -28,11 +28,11 @@ perfectextractor==0.4     # via perfectextractor-ui
 pillow==8.0.1             # via -r requirements.in
 python-monkey-business==1.0.0  # via django-nested-admin
 pytz==2020.4              # via django
-requests==2.24.0          # via perfectextractor
+requests==2.25.0          # via perfectextractor
 scikit-learn==0.23.2      # via -r requirements.in
-scipy==1.5.3              # via scikit-learn
+scipy==1.5.4              # via scikit-learn
 six==1.15.0               # via django-braces, django-nested-admin, python-monkey-business
 sqlparse==0.4.1           # via django
 threadpoolctl==2.1.0      # via scikit-learn
-urllib3==1.25.11          # via requests
+urllib3==1.26.2           # via requests
 xlsxwriter==1.3.7         # via -r requirements.in
