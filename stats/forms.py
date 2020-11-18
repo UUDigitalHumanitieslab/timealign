@@ -22,6 +22,11 @@ class ScenarioForm(forms.ModelForm):
 
 class ScenarioLanguageForm(forms.ModelForm):
     class Meta:
+        fields = [
+            'language', 'as_from', 'as_to',
+            'use_tenses', 'tenses',
+            'use_labels', 'include_keys', 'include_labels'
+        ]
         widgets = {
             'include_keys': forms.CheckboxSelectMultiple,
             'include_labels': forms.CheckboxSelectMultiple

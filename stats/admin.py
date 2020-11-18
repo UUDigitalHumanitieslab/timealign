@@ -22,6 +22,10 @@ class ScenarioLanguageInline(admin.StackedInline):
     verbose_name = 'Language in Scenario'
     verbose_name_plural = 'Languages in Scenario'
 
+    fields = ('language', ('as_from', 'as_to',),
+              'use_tenses', 'tenses',
+              'use_labels', 'include_keys', 'include_labels')
+
 
 @admin.register(Scenario)
 class ScenarioAdmin(BaseDjangoObjectActions, admin.ModelAdmin):
