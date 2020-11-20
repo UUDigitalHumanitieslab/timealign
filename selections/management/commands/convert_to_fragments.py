@@ -136,12 +136,13 @@ class Command(BaseCommand):
                             continue
 
                         fragments = fragment_cache.get((doc.pk, row[COLUMN_SENTENCE]))
-                        for fragment in fragments:
-                            languages = languages_to
-                            for alignment in Alignment.objects.filter(original_fragment=fragment):
-                                languages = {key: val for key, val in list(languages.items())
-                                             if val != alignment.translated_fragment.language}
+                        if fragments:
+                            for fragment in fragments:
+                                languages = languages_to
+                                for alignment in Alignment.objects.filter(original_fragment=fragment):
+                                    languages = {key: val for key, val in list(languages.items())
+                                                 if val != alignment.translated_fragment.language}
 
-                            create_to_fragments(doc, fragment, languages, row)
+                                create_to_fragments(doc, fragment, languages, row)
 
                     self.stdout.write(self.style.SUCCESS('Line {} processed'.format(n)))
