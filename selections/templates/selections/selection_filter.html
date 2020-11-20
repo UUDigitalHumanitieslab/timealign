@@ -32,9 +32,7 @@
                         &empty;
                         {% else %}
                         {{ selection.annotated_words }}
-                        {% if fragment.document.corpus.tense_based %}
-                        ({{ selection.tense }})
-                        {% endif %}
+                        {% if selection.label %}({{ selection.label }}){% endif %}
                         {% endif %}
                     </a>
                 </td>
