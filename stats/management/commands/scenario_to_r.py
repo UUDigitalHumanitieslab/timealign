@@ -32,7 +32,7 @@ class Command(BaseCommand):
         # Retrieve the pickled data
         mds_matrix = scenario.mds_matrix
         fragment_ids = scenario.mds_fragments
-        tenses = scenario.get_labels()
+        scenario_labels = scenario.get_labels()
 
         # Assign the pickled data to R variables
         robjects.r.assign('scenario_title', scenario.title)
@@ -47,8 +47,8 @@ class Command(BaseCommand):
             labels = []
             colors = []
             cats = []
-            for tense in tenses[sl.language.iso]:
-                label, color, category = get_label_properties_from_cache(tense, cache, len(set(labels)))
+            for scenario_label in scenario_labels[sl.language.iso]:
+                label, color, category = get_label_properties_from_cache(scenario_label, cache, len(set(labels)))
                 labels.append(label)
                 colors.append(color)
                 cats.append(category)
@@ -61,7 +61,7 @@ class Command(BaseCommand):
         language_keys = [language.language.iso for language in scenario.languages().all()]
         df = container.OrdDict(
             [('fragment_id', robjects.StrVector(fragment_ids))] +
-            [(language, robjects.StrVector(tenses[language])) for language in language_keys])
+            [(language, robjects.StrVector(scenario_labels[language])) for language in language_keys])
         robjects.r.assign('df', robjects.DataFrame(df))
         df_cat = container.OrdDict(
             [('fragment_id', robjects.StrVector(fragment_ids))] +

@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 
-from annotations.models import Fragment, Word, Label, Tense
+from annotations.models import Fragment, Word, Label, Tense, HasLabelsMixin
 
 
 class PreProcessFragment(Fragment):
@@ -21,7 +21,7 @@ class PreProcessFragment(Fragment):
         return self.selection_set.filter(is_final=True).exists()
 
 
-class Selection(models.Model):
+class Selection(models.Model, HasLabelsMixin):
     is_no_target = models.BooleanField(
         'This fragment does not contain a target',
         default=False)

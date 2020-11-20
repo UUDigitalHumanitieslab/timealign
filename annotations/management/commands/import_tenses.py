@@ -3,10 +3,11 @@
 from django.core.management.base import BaseCommand, CommandError
 
 from annotations.models import Language, Tense, Annotation, Fragment, LabelKey, Label
+from selections.models import Selection
 
 
 class Command(BaseCommand):
-    help = 'Imports tenses for Annotations'
+    help = 'Imports Tenses/Labels for Annotations, Selections, and Fragments'
 
     def add_arguments(self, parser):
         parser.add_argument('language', type=str)
@@ -55,6 +56,8 @@ def process_file(f, language, model='annotation'):
 
             if model == 'annotation':
                 obj = get_annotation(encoded)
+            elif model == 'selection':
+                obj = get_selection(encoded)
             elif model == 'fragment':
                 obj = get_fragment(encoded)
             else:
@@ -74,7 +77,7 @@ def update_fields(obj, language, row, columns):
             except Tense.DoesNotExist:
                 raise ValueError('Tense with title "{}" not found.'.format(row[1]))
         elif column == 'comments':
-            if isinstance(obj, Annotation):
+            if isinstance(obj, (Annotation, Selection)):
                 obj.comments = cell
             else:
                 raise ValueError('Cannot add comments to Fragment')
@@ -96,6 +99,14 @@ def get_annotation(row):
 
     except Annotation.DoesNotExist:
         raise ValueError('Annotation with pk {} not found.'.format(row[0]))
+
+
+def get_selection(row):
+    try:
+        return Selection.objects.get(pk=row[0])
+
+    except Selection.DoesNotExist:
+        raise ValueError('Selection with pk {} not found.'.format(row[0]))
 
 
 def get_fragment(row):

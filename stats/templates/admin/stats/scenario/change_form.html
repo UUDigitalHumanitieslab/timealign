@@ -70,11 +70,27 @@
      })
 
      function main($) {
+        function toggle_children(element) {
+             var row = element.closest('div.form-row');
+             if (row.hasClass('field-use_tenses')) {
+                row.siblings('.field-tenses').toggle();
+             }
+             if (row.hasClass('field-use_labels')) {
+                row.siblings('.field-include_labels').toggle();
+                row.siblings('.field-include_keys').toggle();
+             }
+         }
+
+         $('input[type="checkbox"]').each(function(idx, element) {
+             toggle_children($(this));
+         });
          $('input[type="checkbox"]:checked').each(function(idx, element) {
              element.parentNode.className = 'checked';
+             toggle_children($(this));
          });
          $('input[type="checkbox"]').change(function(event) {
              event.target.parentNode.classList.toggle('checked');
+             toggle_children($(this));
          });
          $('.field-tenses, .field-include_labels, .field-include_keys').each(function(idx, element) {
              if ($(element).closest('fieldset').find('.field-language select').val() === '') {

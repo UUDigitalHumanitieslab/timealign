@@ -9,7 +9,9 @@ django-picklefield
 django-reversion
 lxml
 mysqlclient
+pandas
 perfectextractor-ui
 Pillow
+pyarrow
 scikit-learn
 XlsxWriter

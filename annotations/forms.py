@@ -226,9 +226,11 @@ class LabelImportForm(forms.Form):
                   'The first row (header) will not be imported.')
     language = forms.ModelChoiceField(queryset=Language.objects.all())
     model = forms.ChoiceField(
-        choices=(('annotation', 'Annotation'), ('fragment', 'Fragment'),),
+        choices=(('annotation', 'Annotation'), ('selection', 'Selection'), ('fragment', 'Fragment'),),
         initial='annotation',
-        help_text='Select Fragment in case you want to import labels for the source Fragments, '
+        help_text='Select Annotation for importing labels for TimeAlign, '
+                  'select Selection for importing labels for Preselect. '
+                  'Select Fragment in case you want to import labels for the source Fragments, '
                   'rather than the Annotations.')
 
     def save(self):

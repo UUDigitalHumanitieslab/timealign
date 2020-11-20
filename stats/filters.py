@@ -41,4 +41,6 @@ class FragmentFilter(FilterSet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         fragment = self.queryset.first()
-        self.filters['document'].queryset = Document.objects.filter(corpus=fragment.document.corpus)
+        self.filters['document'].queryset = Document.objects. \
+            filter(corpus=fragment.document.corpus). \
+            select_related('corpus')
