@@ -190,10 +190,7 @@ class SelectionUpdate(SelectionUpdateMixin, generic.UpdateView):
         form.instance.is_final = self.is_final()
         form.instance.last_modified_by = self.request.user
 
-        if form.instance.is_no_target:
-            form.instance.tense = ''
-
-        return super(SelectionUpdate, self).form_valid(form)
+        return super().form_valid(form)
 
 
 class SelectionDelete(SelectionUpdateMixin, generic.DeleteView):
