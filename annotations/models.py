@@ -219,16 +219,16 @@ class Fragment(models.Model, HasLabelsMixin):
         """
         return Word.objects.filter(sentence__in=self.sentence_set.all(), is_target=True)
 
-    def target_words(self):
+    def target_words(self, attribute='word'):
         """
-        Retrieves the target words for this Fragment.
-        :return: A string that consists of the target words.
+        Retrieves the target words or pks for this Fragment.
+        :return: A string that consists of the target words or pks.
         """
         # Check if we have the target words prefetched
         if hasattr(self, 'targets_prefetched'):
-            target_words = [w.word for s in self.targets_prefetched for w in s.word_set.all()]
+            target_words = [getattr(w, attribute) for s in self.targets_prefetched for w in s.word_set.all()]
         else:
-            target_words = [word.word for word in self.targets()]
+            target_words = [getattr(w, attribute) for w in self.targets()]
         return ' '.join(target_words)
 
     def get_alignments(self, as_original=False, as_translation=False):
@@ -301,8 +301,14 @@ class Fragment(models.Model, HasLabelsMixin):
         sentence = self.first_sentence()
         return sort_key(sentence.xml_id, sentence.XML_TAG)
 
+    def sort_key_target(self):
+        from .utils import sort_key
+
+        w = self.target_words(attribute='xml_id').split(' ')[0]
+        return sort_key(w, Word.XML_TAG)
+
     def first_sentence(self):
-        # The following code is used instead of calling sentence_set.first()
+        # sentence_set.all()[0] is used instead of calling sentence_set.first()
         # because first() triggers a new DB query, while all() makes use
         # of prefetched values when they are available.
         try:
