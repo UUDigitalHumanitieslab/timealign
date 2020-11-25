@@ -1,15 +1,17 @@
 import json
 import numbers
+import os
 import random
 import math
 from collections import Counter, OrderedDict, defaultdict
 from itertools import chain, repeat, count
+from zipfile import ZipFile
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Case, When, Prefetch
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views import generic
@@ -21,6 +23,7 @@ from annotations.utils import get_available_corpora
 from core.utils import HTML
 
 from .filters import ScenarioFilter, FragmentFilter
+from .management.commands.scenario_to_feather import export_matrix, export_fragments, export_tensecats
 from .models import Scenario, ScenarioLanguage
 from .utils import get_label_properties_from_cache, prepare_label_cache
 
@@ -601,3 +604,40 @@ class SankeyManual(generic.TemplateView):
         context['corpora'] = Corpus.objects.filter(check_structure=True)
 
         return context
+
+
+class ScenarioDownload(ScenarioDetail):
+    def get(self, request, *args, **kwargs):
+        scenario = self.get_object()
+
+        try:
+            matrix_filename = 's{}-matrix.feather'.format(scenario.pk)
+            export_matrix(matrix_filename, scenario)
+        except ValueError:
+            matrix_filename = None
+
+        tensecats_filename = 'tensecats.feather'
+        export_tensecats(tensecats_filename)
+
+        fragments_filename = 's{}-labels.feather'.format(scenario.pk)
+        export_fragments(fragments_filename, scenario)
+
+        zip_filename = 's{}.zip'.format(scenario.pk)
+        zip_file = ZipFile(zip_filename, 'w')
+        if matrix_filename:
+            zip_file.write(matrix_filename)
+        zip_file.write(tensecats_filename)
+        zip_file.write(fragments_filename)
+        zip_file.close()
+
+        with open(zip_filename, 'rb') as f:
+            contents = f.read()
+        if matrix_filename:
+            os.unlink(matrix_filename)
+        os.unlink(tensecats_filename)
+        os.unlink(fragments_filename)
+        os.unlink(zip_filename)
+
+        response = HttpResponse(contents, content_type='application/zip')
+        response['Content-Disposition'] = 'attachment; filename={}'.format(zip_filename)
+        return response

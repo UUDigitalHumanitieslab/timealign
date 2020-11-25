@@ -2,9 +2,9 @@
     <thead>
         <tr>
             <th width="10%">Corpus</th>
-            <th width="35%">Scenario</th>
+            <th width="30%">Scenario</th>
             <th width="35%">Languages</th>
-            <th width="20%">Actions</th>
+            <th width="25%">Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -35,6 +35,9 @@
                 </a>
                 <a href="{% url 'stats:show' scenario.pk %}" role="button" class="btn btn-primary btn-xs" title="Details">
                     <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                </a>
+                <a href="{% url 'stats:download' scenario.pk %}" role="button" class="btn btn-primary btn-xs" title="Download">
+                    <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
                 </a>
             </td>
         </tr>

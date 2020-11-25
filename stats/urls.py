@@ -1,6 +1,6 @@
 from django.conf.urls import url
 
-from .views import ScenarioList, ScenarioDetail, ScenarioManual, \
+from .views import ScenarioList, ScenarioDetail, ScenarioDownload, ScenarioManual, \
     MDSView, MDSViewOld, \
     DescriptiveStatsView, FragmentTableView, \
     FragmentTableViewMDS, UpsetView, SankeyView, SankeyManual
@@ -9,10 +9,13 @@ urlpatterns = [
 
     # List views
     url(r'^scenarios/$', ScenarioList.as_view(), name='scenarios'),
+
+    # Manual
     url(r'^scenarios/manual/$', ScenarioManual.as_view(), name='scenarios_manual'),
 
-    # List views
+    # Detail views
     url(r'^show/(?P<pk>\d+)/$', ScenarioDetail.as_view(), name='show'),
+    url(r'^download/(?P<pk>\d+)/$', ScenarioDownload.as_view(), name='download'),
 
     # Multidimensional Scaling
     url(r'^mds/(?P<pk>\d+)/$', MDSView.as_view(), name='mds'),
