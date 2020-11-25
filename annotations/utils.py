@@ -24,12 +24,15 @@ def get_next_alignment(user, language_from, language_to, corpus=None):
                    (otherwise: select from the available Corpora for a user)
     :return: A random Alignment object
     """
+    target_words = Sentence.objects. \
+        prefetch_related(Prefetch('word_set', queryset=Word.objects.filter(is_target=True)))
     alignments = Alignment.objects \
         .filter(original_fragment__language=language_from) \
         .filter(translated_fragment__language=language_to) \
         .filter(annotation=None) \
         .select_related('original_fragment__document') \
-        .prefetch_related('original_fragment__sentence_set')
+        .prefetch_related(Prefetch('original_fragment__sentence_set', queryset=target_words,
+                                   to_attr='targets_prefetched'),)
 
     corpora = [corpus] if corpus else get_available_corpora(user)
     alignments = alignments.filter(original_fragment__document__corpus__in=corpora)
@@ -43,9 +46,9 @@ def get_next_alignment(user, language_from, language_to, corpus=None):
     elif corpora[0].random_next_item:
         return alignments.order_by('?').first()
     else:
-        # Sort by Document and Sentence.xml_id
+        # Sort by Document title and the xml_id of the first target Word
         return sorted(alignments, key=lambda a: (a.original_fragment.document.title,
-                                                 a.original_fragment.sort_key()))[0]
+                                                 a.original_fragment.sort_key_target()))[0]
 
 
 def get_available_corpora(user):
@@ -151,8 +154,7 @@ def natural_sort_key(s, _nsre=re.compile('([0-9]+)')):
     """
     Allows natural sorting, e.g. 2.xml is before 16.xml
     """
-    return [int(text) if text.isdigit() else text.lower()
-            for text in _nsre.split(s)]
+    return [int(text) if text.isdigit() else text.lower() for text in _nsre.split(s)]
 
 
 def get_xml_sentences(fragment, limit):
