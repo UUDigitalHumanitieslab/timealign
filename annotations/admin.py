@@ -9,7 +9,7 @@ from nested_admin.nested import NestedModelAdmin, NestedTabularInline
 
 from core.utils import COLOR_LIST
 
-from .forms import SubSentenceFormSet, SubSentenceForm
+from .forms import SubSentenceForm, SubSentenceFormSet
 from .models import Language, TenseCategory, Tense, Corpus, Document, Source, Fragment, \
     Sentence, Word, Alignment, Annotation, SubCorpus, SubSentence, Label, LabelKey
 
