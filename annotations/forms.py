@@ -265,7 +265,7 @@ class AddFragmentsForm(forms.Form):
 
 class SubSentenceFormSet(forms.BaseInlineFormSet):
     def get_form_kwargs(self, index):
-        kwargs = super(SubSentenceFormSet, self).get_form_kwargs(index)
+        kwargs = super().get_form_kwargs(index)
         kwargs['subcorpus'] = self.instance
         return kwargs
 
@@ -273,8 +273,12 @@ class SubSentenceFormSet(forms.BaseInlineFormSet):
 class SubSentenceForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.subcorpus = kwargs.pop('subcorpus', None)
-        super(SubSentenceForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
-        # If the Corpus has been set, filter the Documents based on the Corpus
-        if self.subcorpus:
-            self.fields['document'].queryset = self.fields['document'].queryset.filter(corpus=self.subcorpus.corpus)
+        qs = self.fields['document'].queryset
+        # Select the Corpus to prevent queries being fired on the __str__ method
+        qs = qs.select_related('corpus')
+        # If the Corpus has been set on the SubCorpus, filter the Documents based on the Corpus
+        if hasattr(self.subcorpus, 'corpus'):
+            qs = qs.filter(corpus=self.subcorpus.corpus)
+        self.fields['document'].queryset = qs
