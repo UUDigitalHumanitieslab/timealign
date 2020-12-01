@@ -1,9 +1,11 @@
 from django import forms
 
 from annotations.forms import AddFragmentsForm, LabelFormMixin, SegmentSelectMixin
+from annotations.models import Language, Corpus, Tense, Word
 
 from .management.commands.add_pre_fragments import process_file
-from .models import Selection, Word, Tense
+from .management.commands.convert_to_fragments import convert_selections, retrieve_fragments
+from .models import Selection
 
 
 class SelectionForm(LabelFormMixin, SegmentSelectMixin, forms.ModelForm):
@@ -77,3 +79,25 @@ class AddPreProcessFragmentsForm(AddFragmentsForm):
     def save(self):
         data = self.cleaned_data
         process_file(data['fragment_file'], data['corpus'])
+
+
+class ConvertSelectionsForm(forms.Form):
+    language = forms.ModelChoiceField(queryset=Language.objects.all())
+    corpus = forms.ModelChoiceField(queryset=Corpus.objects.all())
+    alignment_file = forms.FileField(
+        help_text='This should be a .csv-file, with the following columns: '
+                  'document;sentence;'
+                  'type [language iso] (empty);words [language iso] (empty);'
+                  'ids [language iso] (empty);[language iso] (empty)'
+                  ';alignment type;[language iso];alignment;[language iso]... '
+                  'The first row (header) will not be imported.'
+    )
+    create_new = forms.BooleanField(
+        label='If checked, create Fragments from PreSelections, otherwise, use existing Fragments instead.',
+        required=False,
+    )
+
+    def save(self):
+        data = self.cleaned_data
+        fragment_cache = retrieve_fragments(data['language'], data['corpus'], create_new=data['create_new'])
+        convert_selections(data['alignment_file'], fragment_cache, data['corpus'])

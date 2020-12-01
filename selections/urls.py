@@ -2,7 +2,8 @@ from django.conf.urls import url
 
 from .views import InstructionsView, IntroductionView, StatusView, \
     SelectionCreate, SelectionUpdate, SelectionDelete, SelectionChoose, SelectionList, \
-    PrepareDownload, SelectionsPrepare, SelectionsDownload, AddPreProcessFragmentsView
+    PrepareDownload, SelectionsPrepare, SelectionsDownload, \
+    AddPreProcessFragmentsView, ConvertSelectionsView
 
 urlpatterns = [
     # Static views
@@ -29,4 +30,5 @@ urlpatterns = [
 
     # Imports
     url(r'^add_fragments/$', AddPreProcessFragmentsView.as_view(), name='add-fragments'),
+    url(r'^convert_selections/$', ConvertSelectionsView.as_view(), name='convert-selections'),
 ]
