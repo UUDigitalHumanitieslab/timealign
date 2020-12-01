@@ -15,12 +15,12 @@ from django_filters.views import FilterView
 from annotations.mixins import PrepareDownloadMixin, SelectSegmentMixin, ImportFragmentsMixin
 from annotations.models import Language, Corpus, Document
 from annotations.utils import get_available_corpora
-from core.mixins import FluidMixin
+from core.mixins import FluidMixin, ImportMixin
 from core.utils import XLSX
 
 from .exports import export_selections
 from .filters import SelectionFilter
-from .forms import AddPreProcessFragmentsForm, SelectionForm
+from .forms import AddPreProcessFragmentsForm, ConvertSelectionsForm, SelectionForm
 from .models import PreProcessFragment, Selection
 from .utils import get_next_fragment, get_selection_order
 
@@ -320,3 +320,15 @@ class AddPreProcessFragmentsView(SuperuserRequiredMixin, ImportFragmentsMixin):
 
     def get_success_url(self):
         return reverse('selections:add-fragments')
+
+
+class ConvertSelectionsView(SuperuserRequiredMixin, ImportMixin):
+    """
+    Allows superusers to import Fragments.
+    """
+    form_class = ConvertSelectionsForm
+    template_name = 'selections/convert_selections_form.html'
+    success_message = 'Successfully converted the PreSelections!'
+
+    def get_success_url(self):
+        return reverse('selections:convert-selections')

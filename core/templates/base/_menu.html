@@ -53,6 +53,7 @@
                                 {% endif %}
                                 {% if request.user.is_superuser %}
                                 <li><a href="{% url 'selections:add-fragments' %}">Add Fragments</a></li>
+                                <li><a href="{% url 'selections:convert-selections' %}">Convert Selections</a></li>
                                 {% endif %}
                                 <li><a href="https://github.com/UUDigitalHumanitieslab/timealign" target="_blank">Source Code</a></li>
                             </ul>
