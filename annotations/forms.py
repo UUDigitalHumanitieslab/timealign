@@ -1,5 +1,6 @@
 from django import forms
 
+from core.utils import COLOR_LIST
 from .models import Annotation, Word, Language, Tense, Label, Corpus, Fragment, LabelKey
 from .management.commands.import_tenses import process_file as process_labels_file
 from .management.commands.add_fragments import process_file as process_fragments_file
@@ -282,3 +283,12 @@ class SubSentenceForm(forms.ModelForm):
         if hasattr(self.subcorpus, 'corpus'):
             qs = qs.filter(corpus=self.subcorpus.corpus)
         self.fields['document'].queryset = qs
+
+
+class LabelForm(forms.ModelForm):
+    class Meta:
+        model = Label
+        fields = ('title', 'language', 'color')
+        widgets = {
+            'color': forms.Select(choices=zip(COLOR_LIST, COLOR_LIST))
+        }
