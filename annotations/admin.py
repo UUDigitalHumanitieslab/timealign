@@ -1,4 +1,3 @@
-from django import forms
 from django.contrib import admin
 from django.urls import reverse
 from django.http import HttpResponseRedirect
@@ -7,9 +6,7 @@ from django_object_actions import DjangoObjectActions
 from reversion.admin import VersionAdmin
 from nested_admin.nested import NestedModelAdmin, NestedTabularInline
 
-from core.utils import COLOR_LIST
-
-from .forms import SubSentenceForm, SubSentenceFormSet
+from .forms import SubSentenceForm, SubSentenceFormSet, LabelForm
 from .models import Language, TenseCategory, Tense, Corpus, Document, Source, Fragment, \
     Sentence, Word, Alignment, Annotation, SubCorpus, SubSentence, Label, LabelKey
 
@@ -129,15 +126,6 @@ class SubSentenceAdmin(admin.ModelAdmin):
     list_filter = ('subcorpus__corpus', )
 
 
-class CustomLabelForm(forms.ModelForm):
-    class Meta:
-        model = Label
-        fields = ('title', 'language', 'color')
-        widgets = {
-            'color': forms.Select(choices=zip(COLOR_LIST, COLOR_LIST))
-        }
-
-
 class LabelKeyInline(admin.TabularInline):
     model = LabelKey
     show_change_link = True
@@ -152,7 +140,7 @@ class CorpusAdmin(admin.ModelAdmin):
 
 class LabelInline(admin.TabularInline):
     model = Label
-    form = CustomLabelForm
+    form = LabelForm
     extra = 0
 
 
