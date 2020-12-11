@@ -9,8 +9,12 @@
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
         <span aria-hidden="true">&times;</span>
     </button>
-    This page lists all created scenarios. Please see the
-    <a href="{% url 'stats:scenarios_manual' %}" class="alert-link">manual</a> for help on scenario creation.
+    This page lists all created scenarios.
+    Create a new scenario
+    <a href="{% url 'admin:stats_scenario_add' %}" class="alert-link">in the admin interface</a>,
+    and please see the
+    <a href="{% url 'stats:scenarios_manual' %}" class="alert-link">manual</a>
+    for help on scenario creation.
 </div>
 
 {% include "stats/_scenarios.html" %}
