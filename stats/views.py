@@ -507,11 +507,11 @@ class SankeyView(ScenarioDetail):
             labels[language] = [simplify(v) for v in values]
 
         # Retrieve nodes and links
-        nodes = set()
+        nodes = defaultdict(set)
         for language, ls in labels.items():
             if language in [language_from, language_to]:
                 for label in ls:
-                    nodes.add(label) if label else nodes.add('-')
+                    nodes[language].add(label) if label else nodes[language].add('-')
 
         # Retrieve the values for the source language
         lfrom_values = []
@@ -522,7 +522,7 @@ class SankeyView(ScenarioDetail):
             for fragment in fragments:
                 lfrom_value = getattr(fragment, lfrom_option)() if lfrom_option.endswith('display') \
                     else getattr(fragment, lfrom_option)
-                nodes.add(lfrom_value)
+                nodes[language_to].add(lfrom_value)
                 lfrom_values.append(lfrom_value)
 
         # Retrieve the values for the target language
@@ -538,7 +538,7 @@ class SankeyView(ScenarioDetail):
                 lto_value = 'none'
                 if annotation:
                     lto_value = getattr(annotation, lto_option)
-                nodes.add(lto_value)
+                nodes[language_to].add(lto_value)
                 lto_values.append(lto_value)
 
         # Count the links  # TODO: can we do this in a more generic way?
@@ -555,20 +555,28 @@ class SankeyView(ScenarioDetail):
                 links[(origin, link[0], link[1])].append(fragment_pks[n])
 
         # Convert the nodes into a dictionary
-        tense_cache = prepare_label_cache(scenario.corpus)
+        label_cache = prepare_label_cache(scenario.corpus)
         new_nodes = []
-        for node in nodes:
-            node_label, node_color, _ = get_label_properties_from_cache(node, tense_cache, allow_empty=True)
-            new_node = {'id': node, 'color': node_color, 'label': node_label}
-            new_nodes.append(new_node)
+        i = 0
+        for language, nodes_per_language in nodes.items():
+            for node in nodes_per_language:
+                node_label, node_color, _ = get_label_properties_from_cache(node, label_cache, allow_empty=True)
+                new_node = {'id': i, 'language': language, 'node': node, 'color': node_color, 'label': node_label}
+                new_nodes.append(new_node)
+                i += 1
+
+        def find_by_node(list_of_dicts, l, n):
+            return next(item for item in list_of_dicts if item.get('language') == l and item.get('node') == n)
 
         # Convert the links into a dictionary
         new_links = []
         for link, fragment_pks in links.items():
             for l0, l1, l2 in zip(link, link[1:], link[2:]):
-                l0_label, l0_color, _ = get_label_properties_from_cache(l0, tense_cache)
-                new_link = {'origin': l0, 'origin_label': l0_label, 'origin_color': l0_color,
-                            'source': l1, 'target': l2,
+                l0_label, l0_color, _ = get_label_properties_from_cache(l0, label_cache)
+                new_link = {'origin': find_by_node(new_nodes, language_from, l0).get('id'),
+                            'origin_label': l0_label, 'origin_color': l0_color,
+                            'source': find_by_node(new_nodes, language_from, l1).get('id'),
+                            'target': find_by_node(new_nodes, language_to, l2).get('id'),
                             'value': len(fragment_pks), 'fragment_pks': fragment_pks}
                 new_links.append(new_link)
         new_links = sorted(new_links, key=lambda l: l['origin_color'])
