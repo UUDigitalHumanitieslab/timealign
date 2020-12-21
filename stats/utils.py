@@ -19,8 +19,8 @@ class EmptyScenario(Exception):
 
 def run_mds(scenario):
     corpus = scenario.corpus
-    languages_from = scenario.languages(as_from=True).prefetch_related('tenses')
-    languages_to = scenario.languages(as_to=True).prefetch_related('tenses')
+    languages_from = scenario.languages(as_from=True).prefetch_related('tenses', 'include_labels')
+    languages_to = scenario.languages(as_to=True).prefetch_related('tenses', 'include_labels')
 
     fragment_pks = []
 
