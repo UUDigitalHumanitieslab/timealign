@@ -522,7 +522,7 @@ class SankeyView(ScenarioDetail):
             for fragment in fragments:
                 lfrom_value = getattr(fragment, lfrom_option)() if lfrom_option.endswith('display') \
                     else getattr(fragment, lfrom_option)
-                nodes[language_to].add(lfrom_value)
+                nodes['-'].add(lfrom_value)
                 lfrom_values.append(lfrom_value)
 
         # Retrieve the values for the target language
@@ -538,7 +538,7 @@ class SankeyView(ScenarioDetail):
                 lto_value = 'none'
                 if annotation:
                     lto_value = getattr(annotation, lto_option)
-                nodes[language_to].add(lto_value)
+                nodes['-'].add(lto_value)
                 lto_values.append(lto_value)
 
         # Count the links  # TODO: can we do this in a more generic way?
@@ -565,19 +565,22 @@ class SankeyView(ScenarioDetail):
                 new_nodes.append(new_node)
                 i += 1
 
-        def find_by_node(list_of_dicts, l, n):
-            return next(item for item in list_of_dicts if item.get('language') == l and item.get('node') == n)
+        def find_node(list_of_dicts, language, node):
+            return next(item for item in list_of_dicts
+                        if item.get('language') in [language, '-'] and item.get('node') == node)
 
         # Convert the links into a dictionary
         new_links = []
         for link, fragment_pks in links.items():
             for l0, l1, l2 in zip(link, link[1:], link[2:]):
                 l0_label, l0_color, _ = get_label_properties_from_cache(l0, label_cache)
-                new_link = {'origin': find_by_node(new_nodes, language_from, l0).get('id'),
-                            'origin_label': l0_label, 'origin_color': l0_color,
-                            'source': find_by_node(new_nodes, language_from, l1).get('id'),
-                            'target': find_by_node(new_nodes, language_to, l2).get('id'),
-                            'value': len(fragment_pks), 'fragment_pks': fragment_pks}
+                new_link = {
+                    'origin': find_node(new_nodes, language_from, l0).get('id'),
+                    'origin_label': l0_label, 'origin_color': l0_color,
+                    'source': find_node(new_nodes, language_from, l1).get('id'),
+                    'target': find_node(new_nodes, language_to, l2).get('id'),
+                    'value': len(fragment_pks), 'fragment_pks': fragment_pks
+                }
                 new_links.append(new_link)
         new_links = sorted(new_links, key=lambda l: l['origin_color'])
 
@@ -590,14 +593,11 @@ class SankeyView(ScenarioDetail):
         context['selected_language_from'] = language_from
         context['selected_language_to'] = language_to
         context['lfrom_options'] = {
-            'other_label': 'Other label',
             'get_formal_structure_display': 'Formal structure',
             'get_sentence_function_display': 'Sentence function'
         }
         context['selected_lfrom_option'] = lfrom_option
-        context['lto_options'] = {
-            'other_label': 'Other label'
-        }
+        context['lto_options'] = {}  # None as of yet...
         context['selected_lto_option'] = lto_option
 
         return context
