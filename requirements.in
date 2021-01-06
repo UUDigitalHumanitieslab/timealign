@@ -10,7 +10,7 @@ django-reversion
 django-robots
 lxml
 mysqlclient
-pandas
+pandas<1.2.0
 perfectextractor-ui
 Pillow
 pyarrow

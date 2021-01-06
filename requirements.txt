@@ -56,7 +56,7 @@ numpy==1.19.5
     #   pyarrow
     #   scikit-learn
     #   scipy
-pandas==1.2.0
+pandas==1.1.5
     # via -r requirements.in
 perfectextractor-ui==0.1.7
     # via -r requirements.in
