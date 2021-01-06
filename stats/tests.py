@@ -1,14 +1,25 @@
 import numpy as np
 
-
 from annotations.test_models import BaseTestCase
 from annotations.models import Alignment, Annotation, Label, LabelKey, Sentence, Fragment, Word, Tense, TenseCategory
 from .models import Scenario, ScenarioLanguage
 from .utils import run_mds
 
+np.seterr(invalid='ignore')  # Silences the RuntimeWarnings for small Scenarios
+
 
 def label_symbol(label):
     return 'Label:{}'.format(label.id)
+
+
+def create_annotation(original, translated, label):
+    alignment = Alignment.objects.create(
+        original_fragment=original,
+        translated_fragment=translated,
+    )
+    annotation = Annotation.objects.create(alignment=alignment)
+    annotation.labels.add(label)
+    return annotation
 
 
 class ScenarioTenseTest(BaseTestCase):
@@ -91,15 +102,6 @@ class ScenarioLabelsTest(BaseTestCase):
             Word.objects.create(word=w, xml_id=xml_id, is_target=is_target, sentence=s)
         return fragment
 
-    def make_annotation_with_alignment(self, original, translated, label):
-        alignment = Alignment.objects.create(
-            original_fragment=original,
-            translated_fragment=translated,
-        )
-        annotation = Annotation.objects.create(alignment=alignment)
-        annotation.labels.add(label)
-        return annotation
-
     def test_mds_single_point(self):
         run_mds(self.scenario)
         # expect one label per language
@@ -110,7 +112,7 @@ class ScenarioLabelsTest(BaseTestCase):
     def test_mds_two_points(self):
         label_3 = Label.objects.create(title='Label3 (nl)', key=self.label_key)
 
-        self.make_annotation_with_alignment(
+        create_annotation(
             self.make_fragment('Another sentence', self.en, 'sentence', self.label_1),
             self.make_fragment('Nog een zin', self.nl, 'zin'),
             label_3).save()
@@ -134,7 +136,7 @@ class ScenarioLabelsTest(BaseTestCase):
         self.annotation.labels.add(label_3)
         self.annotation.save()
 
-        annotation = self.make_annotation_with_alignment(
+        annotation = create_annotation(
             self.make_fragment('Another sentence', self.en, 'sentence', self.label_1),
             self.make_fragment('Nog een zin', self.nl, 'zin'),
             self.label_2)
@@ -155,7 +157,7 @@ class ScenarioLabelsTest(BaseTestCase):
     def test_mds_label_filter(self):
         label_3 = Label.objects.create(title='Label3 (nl)', key=self.label_key)
 
-        self.make_annotation_with_alignment(
+        create_annotation(
             self.make_fragment('Another sentence', self.en, 'sentence', self.label_1),
             self.make_fragment('Nog een zin', self.nl, 'zin'),
             label_3).save()
@@ -183,12 +185,12 @@ class ScenarioLabelsTest(BaseTestCase):
         self.annotation.labels.add(label_4)
         self.annotation.save()
 
-        # leaving ScenarioLangage.include_keys empty, all label keys should be used
+        # leaving ScenarioLanguage.include_keys empty, all label keys should be used
         run_mds(self.scenario)
         # expecting a tuple of two labels
         self.assertEqual(len(self.scenario.mds_labels['nl'][0]), 2)
 
-        # inlcuding only one LabelKey for nl, two for en
+        # including only one LabelKey for nl, two for en
         self.l2.include_keys.clear()
         self.l2.include_keys.add(second_key)
         self.l2.save()
@@ -199,9 +201,10 @@ class ScenarioLabelsTest(BaseTestCase):
         self.assertEqual(len(self.scenario.mds_labels['nl'][0]), 1)
 
         # here we will filter by label without including the relevant label key
-        annotation = self.make_annotation_with_alignment(
+        annotation = create_annotation(
             self.make_fragment('Another sentence', self.en, 'sentence', self.label_1),
-            self.make_fragment('Nog een zin', self.nl, 'zin'), label_3)
+            self.make_fragment('Nog een zin', self.nl, 'zin'),
+            label_3)
         annotation.labels.add(label_5)
         annotation.save()
 
