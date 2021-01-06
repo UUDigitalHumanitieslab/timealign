@@ -48,5 +48,6 @@ urlpatterns = [
 
     url(r'^ckeditor/', include('ckeditor_uploader.urls')),
     url(r'^nested_admin/', include('nested_admin.urls')),
+    url(r'^robots\.txt', include('robots.urls')),
     url(r'^perfectextractor/', include('perfectextractor_ui.urls'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django_filters',
     'django_object_actions',
     'nested_admin',
+    'robots',
     'widget_tweaks',
     'perfectextractor_ui',
 
