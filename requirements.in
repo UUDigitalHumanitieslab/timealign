@@ -15,4 +15,5 @@ perfectextractor-ui
 Pillow
 pyarrow
 scikit-learn
+scipy<1.6.0
 XlsxWriter

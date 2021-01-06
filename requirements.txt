@@ -76,10 +76,12 @@ pytz==2020.5
     #   pandas
 requests==2.25.1
     # via perfectextractor
-scikit-learn==0.24.0
+scikit-learn==0.23.2
     # via -r requirements.in
-scipy==1.6.0
-    # via scikit-learn
+scipy==1.5.4
+    # via
+    #   -r requirements.in
+    #   scikit-learn
 six==1.15.0
     # via
     #   django-braces
