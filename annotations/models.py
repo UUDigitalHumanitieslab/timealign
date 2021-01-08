@@ -18,10 +18,11 @@ class HasLabelsMixin:
             if include_tense and self.tense:
                 out.append('Tense:{}'.format(self.tense.pk))
             if include_labels:
-                if not include_keys:
-                    out.extend('Label:{}'.format(label.pk) for label in self.labels.all())
+                if hasattr(self, 'labels_prefetched'):
+                    labels = self.labels_prefetched
                 else:
-                    out.extend('Label:{}'.format(label.pk) for label in self.labels.filter(key__in=include_keys))
+                    labels = self.labels.filter(key__in=include_keys) if include_keys else self.labels.all()
+                out.extend('Label:{}'.format(label.pk) for label in labels)
             return tuple(out)
         return self.labels_pretty()
 

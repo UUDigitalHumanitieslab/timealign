@@ -7,7 +7,7 @@ from collections import defaultdict
 import numpy as np
 from sklearn import manifold
 
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 
 from annotations.models import Fragment, Annotation, Tense, Label
 from core.utils import COLOR_LIST
@@ -29,10 +29,15 @@ def run_mds(scenario):
     fragment_labels = defaultdict(list)
 
     for language_from in languages_from:
-        # Fetch all Fragments, filter on Corpus and Language
-        fragments = Fragment.objects. \
-            filter(document__corpus=corpus, language=language_from.language). \
-            select_related('language', 'tense')
+        # Fetch all Fragments, filter on Corpus and Language, prefetch Language, Tense, and Labels
+        if language_from.include_keys.all():
+            filtered_labels = Label.objects.filter(key__in=language_from.include_keys.all())
+        else:
+            filtered_labels = Label.objects.all()
+        fragments = Fragment.objects \
+            .filter(document__corpus=corpus, language=language_from.language) \
+            .select_related('language', 'tense') \
+            .prefetch_related(Prefetch('labels', queryset=filtered_labels, to_attr='labels_prefetched'))
 
         # Filter on Documents (if selected)
         if scenario.documents.exists():
@@ -66,7 +71,9 @@ def run_mds(scenario):
             .filter(alignment__original_fragment__in=fragments) \
             .select_related('alignment__original_fragment',
                             'alignment__translated_fragment__language',
-                            'tense')
+                            'tense') \
+            .prefetch_related('labels')
+        # TODO: unfortunately, we can not prefetch the Labels here, as they might differ per language_to!
 
         # Filter on formal structure (if selected)
         if scenario.formal_structure != Fragment.FS_NONE and scenario.formal_structure_strict:
