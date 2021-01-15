@@ -64,25 +64,28 @@ def run_mds(scenario):
         if language_from.use_labels and language_from.include_labels.exists():
             fragments = fragments.filter(labels__in=language_from.include_labels.all())
 
-        # Fetch the Annotations
-        annotations = Annotation.objects \
-            .exclude(Q(tense=None) & Q(labels=None)) \
-            .filter(is_no_target=False, is_translation=True) \
-            .filter(alignment__original_fragment__in=fragments) \
-            .select_related('alignment__original_fragment',
-                            'alignment__translated_fragment__language',
-                            'tense') \
-            .prefetch_related('labels')
-        # TODO: unfortunately, we can not prefetch the Labels here, as they might differ per language_to!
-
-        # Filter on formal structure (if selected)
-        if scenario.formal_structure != Fragment.FS_NONE and scenario.formal_structure_strict:
-            annotations = annotations.filter(is_not_same_structure=False)
-
         # Filter on the to-languages of the Scenario
-        languages = []
+        all_annotations = Annotation.objects.none()
         for language_to in languages_to:
-            languages.append(language_to.language)
+            # Fetch the correct Annotations per Language, prefetch Fragment, Language, Tense, and Labels
+            if language_to.include_keys.all():
+                filtered_labels = Label.objects.filter(key__in=language_to.include_keys.all())
+            else:
+                filtered_labels = Label.objects.all()
+            annotations = Annotation.objects \
+                .exclude(Q(tense=None) & Q(labels=None)) \
+                .filter(is_no_target=False, is_translation=True) \
+                .filter(alignment__original_fragment__in=fragments) \
+                .filter(alignment__translated_fragment__language=language_to.language) \
+                .select_related('alignment__original_fragment',
+                                'alignment__translated_fragment__language',
+                                'tense') \
+                .prefetch_related(Prefetch('labels', queryset=filtered_labels, to_attr='labels_prefetched'))
+
+            # Filter on formal structure (if selected)
+            if scenario.formal_structure != Fragment.FS_NONE and scenario.formal_structure_strict:
+                annotations = annotations.filter(is_not_same_structure=False)
+
             # Filter on Tenses (if selected)
             if language_to.use_tenses and language_to.tenses.exists():
                 annotations = annotations.filter(~Q(alignment__translated_fragment__language=language_to.language) |
@@ -93,11 +96,11 @@ def run_mds(scenario):
                 annotations = annotations.filter(~Q(alignment__translated_fragment__language=language_to.language) |
                                                  Q(labels__in=language_to.include_labels.all()))
 
-        annotations.filter(alignment__translated_fragment__language__in=languages)
+            all_annotations |= annotations
 
         # Create a dict of Fragment -> Annotations for lookup in the for-loop below
         annotations_dict = defaultdict(list)
-        for annotation in annotations:
+        for annotation in all_annotations:
             annotations_dict[annotation.alignment.original_fragment.pk].append(annotation)
 
         # For every Fragment, retrieve the Annotations and its labels
