@@ -445,7 +445,7 @@ class UpsetView(ScenarioDetail):
         context = super().get_context_data(**kwargs)
 
         scenario = self.object
-        tenses = scenario.get_labels()
+        labels = scenario.get_labels()
         fragments = scenario.mds_fragments
 
         # Get the currently selected TenseCategory. We pick "Present Perfect" as the default here.
@@ -457,13 +457,17 @@ class UpsetView(ScenarioDetail):
         tense_cache = {t.pk: t for t in Tense.objects.select_related('category')}
         for n, fragment_pk in enumerate(fragments):
             d = {'fragment_pk': fragment_pk}
-            for language, t in list(tenses.items()):
-                t = t[n]
-
-                if isinstance(t, numbers.Number):
-                    tense = tense_cache.get(t)
-                    d[str(language)] = int(tense.category.pk == tc_pk)
-                    languages.add(language)
+            for language, label in list(labels.items()):
+                languages.add(language)
+                label = label[n]
+                if isinstance(label, numbers.Number):
+                    tense = tense_cache.get(label)
+                # TODO: below is a temporary fix to work with newer Scenarios.
+                # Ideally, we first make sure the Scenario works with Tense only.
+                if isinstance(label, tuple):
+                    tense_pk = int(label[0].split(':')[1])
+                    tense = tense_cache.get(tense_pk)
+                d[str(language)] = int(tense.category.pk == tc_pk)
 
             results.append(d)
 
