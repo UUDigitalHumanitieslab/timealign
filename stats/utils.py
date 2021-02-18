@@ -20,7 +20,7 @@ class EmptyScenario(Exception):
 def run_mds(scenario):
     corpus = scenario.corpus
     languages_from = scenario.languages(as_from=True).prefetch_related('tenses', 'include_keys', 'include_labels')
-    languages_to = scenario.languages(as_to=True).prefetch_related('tenses', 'include_keys', 'include_labels')
+    all_languages_to = scenario.languages(as_to=True).prefetch_related('tenses', 'include_keys', 'include_labels')
 
     fragment_pks = []
 
@@ -65,6 +65,7 @@ def run_mds(scenario):
             fragments = fragments.filter(labels__in=language_from.include_labels.all())
 
         # Filter on the to-languages of the Scenario
+        languages_to = all_languages_to.exclude(language=language_from.language)
         all_annotations = Annotation.objects.none()
         for language_to in languages_to:
             # Fetch the correct Annotations per Language, prefetch Fragment, Language, Tense, and Labels
