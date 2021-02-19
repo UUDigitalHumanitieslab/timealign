@@ -86,7 +86,7 @@ def run_mds(scenario):
     # Perform Multidimensional Scaling, keep the settings as close to the SMACOF implementation in R
     mds = manifold.MDS(n_components=scenario.mds_dimensions,
                        dissimilarity='precomputed',
-                       max_iter=1000, eps=1e-6)
+                       n_init=1, max_iter=1000, eps=1e-6)
     matrix = np.array(matrix)
     pos = mds.fit_transform(matrix)
 
