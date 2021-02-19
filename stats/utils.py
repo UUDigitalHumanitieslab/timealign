@@ -83,16 +83,20 @@ def run_mds(scenario):
     if len(matrix) == 0:
         raise EmptyScenario()
 
-    # Perform Multidimensional Scaling
+    # Perform Multidimensional Scaling, keep the settings as close to the SMACOF implementation in R
+    mds = manifold.MDS(n_components=scenario.mds_dimensions,
+                       dissimilarity='precomputed',
+                       max_iter=1000, eps=1e-6)
     matrix = np.array(matrix)
-    mds = manifold.MDS(n_components=scenario.mds_dimensions, dissimilarity='precomputed')
     pos = mds.fit_transform(matrix)
 
     # Pickle the created objects
     scenario.mds_matrix = matrix
     scenario.mds_fragments = fragment_pks
     scenario.mds_labels = fragment_labels
-    scenario.mds_stress = mds.stress_
+
+    # Normalize stress as per https://stackoverflow.com/a/47501135
+    scenario.mds_stress = np.nan_to_num(np.sqrt(mds.stress_ / ((matrix.ravel() ** 2).sum() / 2)))
 
     # Pickle the model. Rounding here helps cluster points which are very close,
     # and also prevents loss of accuracy from serialization and deserialization of numpy arrays

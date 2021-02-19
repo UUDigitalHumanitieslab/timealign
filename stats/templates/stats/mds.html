@@ -19,9 +19,12 @@
 <h2>MDS visualization (scenario
     <em><a href="{% url 'stats:show' scenario.pk %}" target="_blank">{{ scenario.title }}</a></em>)
 </h2>
+{% if stress %}
 <p>
-    <em>Stress: {{ stress|floatformat:"-3" }}</em>
+    Normalized stress: {{ stress|floatformat:"-3" }}
+    <em>(0 indicates perfect fit, 0.025 excellent, 0.05 good, 0.1 fair and 0.2 poor)</em>
 </p>
+{% endif %}
 
 <div class="alert alert-info alert-dismissable" role="alert">
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
