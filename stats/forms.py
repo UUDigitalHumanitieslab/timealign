@@ -61,7 +61,7 @@ class ScenarioLanguageForm(forms.ModelForm):
         """
         Check that either as_from or as_to has been set for a ScenarioLanguage.
         """
-        cleaned_data = super(ScenarioLanguageForm, self).clean()
+        cleaned_data = super().clean()
 
         if not (cleaned_data['as_from'] or cleaned_data['as_to']):
             self.add_error('language', 'For each language in the Scenario, "as from" or "as to" has to be selected')

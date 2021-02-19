@@ -17,6 +17,10 @@ class EmptyScenario(Exception):
     pass
 
 
+class ImproperScenario(Exception):
+    pass
+
+
 def run_mds(scenario):
     languages_from = scenario.languages(as_from=True).prefetch_related('tenses', 'include_keys', 'include_labels')
     languages_to = scenario.languages(as_to=True).prefetch_related('tenses', 'include_keys', 'include_labels')
@@ -30,11 +34,12 @@ def run_mds(scenario):
         fragments = retrieve_fragments(scenario, language_from)
 
         # Retrieve the Annotations from all ScenarioLanguages (except when they are also used as from-language)
-        languages_to = languages_to.exclude(language=language_from.language)
-        annotations = retrieve_annotations(scenario, languages_to, fragments)
+        languages_to_filtered = languages_to.exclude(language=language_from.language)
+        annotations = retrieve_annotations(scenario, languages_to_filtered, fragments)
 
         # Retrieve the labels
-        retrieve_labels(scenario, fragments, annotations, languages_to, fragment_labels, fragment_pks, language_from)
+        retrieve_labels(scenario, fragments, annotations, languages_to_filtered,
+                        fragment_labels, fragment_pks, language_from)
 
     # If no from-languages are provided, call the same methods without this parameter
     if not languages_from:
@@ -45,7 +50,8 @@ def run_mds(scenario):
         annotations = retrieve_annotations(scenario, languages_to, fragments)
 
         # Retrieve the labels
-        retrieve_labels(scenario, fragments, annotations, languages_to, fragment_labels, fragment_pks)
+        retrieve_labels(scenario, fragments, annotations, languages_to,
+                        fragment_labels, fragment_pks)
 
     # the following creates a transposed matrix of fragment_labels:
     # in fragment_labels we find a list of labels per language,
@@ -84,14 +90,14 @@ def run_mds(scenario):
 
     # Pickle the created objects
     scenario.mds_matrix = matrix
-
-    # Rounding helps cluster points which are very close,
-    # and also prevents loss of accuracy from serialization and deserialization
-    # of numpy arrays
-    scenario.mds_model = pos.round(3).tolist()
     scenario.mds_fragments = fragment_pks
     scenario.mds_labels = fragment_labels
     scenario.mds_stress = mds.stress_
+
+    # Pickle the model. Rounding here helps cluster points which are very close,
+    # and also prevents loss of accuracy from serialization and deserialization of numpy arrays
+    scenario.mds_model = pos.round(3).tolist()
+
     scenario.save()
 
 
@@ -171,6 +177,7 @@ def retrieve_annotations(scenario, languages_to, fragments):
                                              Q(labels__in=language_to.include_labels.all()))
 
         result |= annotations
+
     return result
 
 
@@ -229,6 +236,9 @@ def get_labels(model, scenario_language):
 def get_distance(array1, array2):
     result = 0
     total = 0
+
+    if len(array1) != len(array2):
+        raise ImproperScenario()
 
     for i in range(len(array1)):
         if not array1[i] or not array2[i]:
