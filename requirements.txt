@@ -62,7 +62,7 @@ perfectextractor-ui==0.1.7
     # via -r requirements.in
 perfectextractor==0.4
     # via perfectextractor-ui
-pillow==8.1.0
+pillow==8.1.1
     # via -r requirements.in
 pyarrow==2.0.0
     # via -r requirements.in
