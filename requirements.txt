@@ -44,7 +44,7 @@ idna==2.10
     # via requests
 joblib==1.0.0
     # via scikit-learn
-lxml==4.6.2
+lxml==4.6.3
     # via
     #   -r requirements.in
     #   perfectextractor
