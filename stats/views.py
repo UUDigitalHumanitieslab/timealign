@@ -492,16 +492,21 @@ class SankeyView(ScenarioDetail):
         languages_from = scenario.languages(as_from=True)
         languages_to = scenario.languages(as_to=True)
 
-        language_from = self.request.GET.get('language_from', languages_from.first().language.iso)
-        language_to = self.request.GET.get('language_to', languages_to.first().language.iso)
+        language_from_iso = self.request.GET.get('language_from', languages_from.first().language.iso)
+        language_to_iso = self.request.GET.get('language_to', languages_to.first().language.iso)
+        language_from = ScenarioLanguage.objects.get(scenario=scenario, language__iso=language_from_iso)
+        language_to = ScenarioLanguage.objects.get(scenario=scenario, language__iso=language_to_iso)
         lfrom_option = self.request.GET.get('lfrom_option')
         lfrom_option = None if lfrom_option == 'none' else lfrom_option
         lto_option = self.request.GET.get('lto_option')
         lto_option = None if lto_option == 'none' else lto_option
 
         # Simplify labels (from tuples to single values)
-        def simplify(value):
-            result = value[0] if isinstance(value, tuple) else value
+        def simplify(value, index=0):
+            try:
+                result = value[index] if isinstance(value, tuple) else value
+            except IndexError:
+                result = None
             if not result:
                 result = '-'
             return result
@@ -513,7 +518,7 @@ class SankeyView(ScenarioDetail):
         # Retrieve nodes and links
         nodes = defaultdict(set)
         for language, ls in labels.items():
-            if language in [language_from, language_to]:
+            if language in [language_from_iso, language_to_iso]:
                 for label in ls:
                     nodes[language].add(label) if label else nodes[language].add('-')
 
@@ -523,9 +528,9 @@ class SankeyView(ScenarioDetail):
             # Solution to preserve order taken from https://stackoverflow.com/a/37648265
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(fragment_pks)])
             fragments = Fragment.objects.filter(pk__in=fragment_pks).order_by(preserved)
-            for fragment in fragments:
+            for n, fragment in enumerate(fragments):
                 lfrom_value = getattr(fragment, lfrom_option)() if lfrom_option.endswith('display') \
-                    else getattr(fragment, lfrom_option)
+                    else simplify(mds_labels[language_from_iso][n], 1)
                 nodes['-'].add(lfrom_value)
                 lfrom_values.append(lfrom_value)
 
@@ -534,20 +539,20 @@ class SankeyView(ScenarioDetail):
         if lto_option:
             annotations = Annotation.objects \
                 .filter(alignment__original_fragment__pk__in=fragment_pks,
-                        alignment__translated_fragment__language__iso=language_to) \
+                        alignment__translated_fragment__language__iso=language_to_iso) \
                 .select_related('alignment__original_fragment')
             annotations = {a.alignment.original_fragment.pk: a for a in annotations}
-            for fragment_pk in fragment_pks:
+            for n, fragment_pk in enumerate(fragment_pks):
                 annotation = annotations.get(fragment_pk)
                 lto_value = 'none'
                 if annotation:
-                    lto_value = getattr(annotation, lto_option)
+                    lto_value = simplify(mds_labels[language_to_iso][n], 1)
                 nodes['-'].add(lto_value)
                 lto_values.append(lto_value)
 
         # Count the links  # TODO: can we do this in a more generic way?
-        list_of_lists = [labels[language_from]]
-        for label in [lfrom_values, labels[language_to], lto_values]:
+        list_of_lists = [labels[language_from_iso]]
+        for label in [lfrom_values, labels[language_to_iso], lto_values]:
             if label:
                 list_of_lists.append(label)
 
@@ -570,19 +575,26 @@ class SankeyView(ScenarioDetail):
                 i += 1
 
         def find_node(list_of_dicts, language, node):
-            return next(item for item in list_of_dicts
-                        if item.get('language') in [language, '-'] and item.get('node') == node)
+            result = {}
+            for item in list_of_dicts:
+                if item.get('language') in [language, '-'] and item.get('node') == node:
+                    result = item
+                    break
+            return result
 
         # Convert the links into a dictionary
         new_links = []
         for link, fragment_pks in links.items():
             for l0, l1, l2 in zip(link, link[1:], link[2:]):
                 l0_label, l0_color, _ = get_label_properties_from_cache(l0, label_cache)
+                source = find_node(new_nodes, language_from_iso, l1)
+                if not source:
+                    source = find_node(new_nodes, language_to_iso, l1)
                 new_link = {
-                    'origin': find_node(new_nodes, language_from, l0).get('id'),
+                    'origin': find_node(new_nodes, language_from_iso, l0).get('id'),
                     'origin_label': l0_label, 'origin_color': l0_color,
-                    'source': find_node(new_nodes, language_from, l1).get('id'),
-                    'target': find_node(new_nodes, language_to, l2).get('id'),
+                    'source': source.get('id'),
+                    'target': find_node(new_nodes, language_to_iso, l2).get('id'),
                     'value': len(fragment_pks), 'fragment_pks': fragment_pks
                 }
                 new_links.append(new_link)
@@ -594,8 +606,8 @@ class SankeyView(ScenarioDetail):
         # Add selection of languages to the context
         context['languages_from'] = languages_from
         context['languages_to'] = languages_to
-        context['selected_language_from'] = language_from
-        context['selected_language_to'] = language_to
+        context['selected_language_from'] = language_from_iso
+        context['selected_language_to'] = language_to_iso
         context['lfrom_options'] = {
             'get_formal_structure_display': 'Formal structure',
             'get_sentence_function_display': 'Sentence function'
@@ -603,6 +615,14 @@ class SankeyView(ScenarioDetail):
         context['selected_lfrom_option'] = lfrom_option
         context['lto_options'] = {}  # None as of yet...
         context['selected_lto_option'] = lto_option
+
+        if language_from.use_labels:
+            for key in language_from.include_keys.all():
+                context['lfrom_options'][key.title] = key.title
+
+        if language_to.use_labels:
+            for key in language_to.include_keys.all():
+                context['lto_options'][key.title] = key.title
 
         return context
 
