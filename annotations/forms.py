@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Q
 
 from core.utils import COLOR_LIST
 from .models import Annotation, Word, Language, Tense, Label, Corpus, Fragment, LabelKey
@@ -14,11 +15,12 @@ class LabelField(forms.ModelChoiceField):
         self._key = label_key
         self._language = language
         queryset = label_key.labels.all()
+        # If the LabelKey is language-specific, allow language-specific or generic Labels
         if self._key.language_specific:
-            queryset = queryset.filter(language=language)
+            queryset = queryset.filter(Q(language=language) | Q(language__isnull=True))
         kwargs['queryset'] = queryset
 
-        super(LabelField, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if self.is_adding_labels_allowed():
             self.widget.attrs['class'] = 'labels-field-tags'
         else:
@@ -54,7 +56,7 @@ class LabelField(forms.ModelChoiceField):
 
 class LabelFormMixin(forms.Form):
     def __init__(self, *args, **kwargs):
-        super(LabelFormMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # add a label field for each label key
         for key in self.corpus.label_keys.all():
@@ -71,7 +73,7 @@ class LabelFormMixin(forms.Form):
         del self.fields['labels']
 
     def clean(self):
-        cleaned_data = super(LabelFormMixin, self).clean()
+        cleaned_data = super().clean()
 
         # construct a value for Annotation/Fragment/PreProcessFragment.labels based on the individual label fields
         fields = [key.symbol() for key in self.corpus.label_keys.all()]
@@ -95,7 +97,7 @@ class SegmentSelectMixin(forms.Form):
     def __init__(self, *args, **kwargs):
         select_segment = kwargs.pop('select_segment', False)
 
-        super(SegmentSelectMixin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields['select_segment'].initial = select_segment
 
 
@@ -128,7 +130,7 @@ class AnnotationForm(LabelFormMixin, SegmentSelectMixin, forms.ModelForm):
         label = self.alignment.original_fragment.get_labels()
         structure = self.alignment.original_fragment.get_formal_structure_display()
 
-        super(AnnotationForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.fields['is_no_target'].label = self.fields['is_no_target'].label.format(label)
         self.fields['is_not_labeled_structure'].label = self.fields['is_not_labeled_structure'].label.format(structure)
@@ -150,7 +152,7 @@ class AnnotationForm(LabelFormMixin, SegmentSelectMixin, forms.ModelForm):
         Check for conditional requirements:
         - If is_translation is set, make sure Words have been selected
         """
-        cleaned_data = super(AnnotationForm, self).clean()
+        cleaned_data = super().clean()
 
         if not cleaned_data['is_no_target'] and cleaned_data['is_translation']:
             if not cleaned_data['words']:
@@ -188,7 +190,7 @@ class FragmentForm(LabelFormMixin, SegmentSelectMixin, forms.ModelForm):
         """
         self.fragment = kwargs.get('instance')
 
-        super(FragmentForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.fields['tense'].queryset = Tense.objects.filter(language=self.language)
         self.fields['words'].queryset = Word.objects.filter(sentence__fragment=self.fragment)
@@ -205,7 +207,7 @@ class FragmentForm(LabelFormMixin, SegmentSelectMixin, forms.ModelForm):
         """
         - make sure Words have been selected
         """
-        cleaned_data = super(FragmentForm, self).clean()
+        cleaned_data = super().clean()
 
         if not cleaned_data['words']:
             self.add_error(None, 'Please select target words.')
