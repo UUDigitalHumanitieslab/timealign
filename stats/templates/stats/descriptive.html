@@ -46,99 +46,118 @@
     Descriptive statistics for <em>{{ scenario.title }}</em>
 </h2>
 
-<div id="charts">
-</div>
+<div class="container">
 
-<div id="tables" class="container">
-<h3>
-    Totals per language
-</h3>
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#charts-tab" aria-controls="charts-tab" role="tab" data-toggle="tab">Charts</a></li>
+    <li role="presentation"><a href="#tables" aria-controls="tables" role="tab" data-toggle="tab">Tables</a></li>
+    <li role="presentation"><a href="#categories" aria-controls="categories" role="tab" data-toggle="tab">Totals per category</a></li>
+    <li role="presentation"><a href="#tuples" aria-controls="tuples" role="tab" data-toggle="tab">Tuple frequencies</a></li>
+  </ul>
 
-<div class="row">
-    {% for l, c in counters.items %}
-    <div class="col-md-4">
-        <h4>{{ l.title }}</h4>
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="charts-tab">
+        <h3>
+            Charts per language
+        </h3>
+        <div id="charts"></div>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="tables">
+        <h3>
+            Tables per language
+        </h3>
+        <div class="row">
+            {% for l, c in counters.items %}
+            <div class="col-md-4">
+                <h4>{{ l.title }}</h4>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Tense</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t, count in c %}
+                        <tr>
+                            <td>{{ t }} </td>
+                            <td>{{ count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if forloop.counter == 3 %}</div><div class="row">{% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="categories">
+        <h3>
+            Totals per (tense) category
+        </h3>
+
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Tense</th>
+                    <th></th>
+                    {% for language in languages %}
+                    <th>{{ language.title }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+            {% for tensecat, counts in tensecat_table.items %}
+                <tr>
+                    {% if not tensecat %}
+                    <td><em>other</em></td>
+                    {% else %}
+                    <th>{{ tensecat }}</th>
+                    {% endif %}
+                    {% for count in counts %}
+                    <td>{{ count }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="tuples">
+        <h3>
+            Tuple frequencies
+        </h3>
+
+        <input id="toggle-dot" type="checkbox" data-toggle="toggle"> Show colors
+        <input id="toggle-cat" type="checkbox" data-toggle="toggle"> Show categories
+        <input id="toggle-txt" type="checkbox" checked data-toggle="toggle"> Show labels
+        <table id="tuples-table" class="table table-striped">
+            <thead>
+                <tr>
+                    {% for language in languages %}
+                    <th>{{ language.title }}</th>
+                    {% endfor %}
                     <th>Count</th>
                 </tr>
             </thead>
             <tbody>
-                {% for t, count in c %}
+                {% for tuple, fs in tuples_with_fragments.items %}
                 <tr>
-                    <td>{{ t }} </td>
-                    <td>{{ count }}</td>
+                    {% for label in tuple %}
+                    <td>
+                        <span class="dot" title="{{ label }}"></span>
+                        <span class="cat" title="{{ label }}"></span>
+                        <span class="txt">{{ label }}</span>
+                    </td>
+                    {% endfor %}
+                    <td><a class="tuple-count" href="#" data-fragments="{{ fs|join:',' }}">{{ fs|length }}</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-    {% if forloop.counter == 3 %}</div><div class="row">{% endif %}
-    {% endfor %}
+
 </div>
-</div>
-
-<h3>
-    Totals per (tense) category
-</h3>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th></th>
-                {% for language in languages %}
-                <th>{{ language.title }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-        {% for tensecat, counts in tensecat_table.items %}
-            <tr>
-                {% if not tensecat %}
-                <td><em>other</em></td>
-                {% else %}
-                <th>{{ tensecat }}</th>
-                {% endif %}
-                {% for count in counts %}
-                <td>{{ count }}</td>
-                {% endfor %}
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-<h3>
-    Tuple frequency
-</h3>
-
-<input id="toggle-dot" type="checkbox" data-toggle="toggle"> Show colors
-<input id="toggle-cat" type="checkbox" data-toggle="toggle"> Show categories
-<input id="toggle-txt" type="checkbox" checked data-toggle="toggle"> Show labels
-<table id="tuples-table" class="table table-striped">
-    <thead>
-        <tr>
-            {% for language in languages %}
-            <th>{{ language.title }}</th>
-            {% endfor %}
-            <th>Count</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for tuple, fs in tuples_with_fragments.items %}
-        <tr>
-            {% for label in tuple %}
-            <td>
-                <span class="dot" title="{{ label }}"></span>
-                <span class="cat" title="{{ label }}"></span>
-                <span class="txt">{{ label }}</span>
-            </td>
-            {% endfor %}
-            <td><a class="tuple-count" href="#" data-fragments="{{ fs|join:',' }}">{{ fs|length }}</a></td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
 
 <!-- Form for posting fragment_ids to server -->
 <form name="fragmentform" action="." method="post">
@@ -189,7 +208,7 @@
       chart.yAxis.tickFormat(d3.format('.0%'));
 
       // add an horizontal rule after every 3 charts
-      if($('#charts > div').length % 3 == 0) {
+      if($('#charts > div').length > 0 && $('#charts > div').length % 3 == 0) {
         $('#charts').append('<hr/>');
       }
       // Add the data to the chart and start creating the chart
