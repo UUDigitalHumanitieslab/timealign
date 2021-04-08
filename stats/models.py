@@ -72,6 +72,7 @@ class Scenario(models.Model):
                 labels = []
                 for v in values:
                     try:
+                        # TODO: This generates a lot of queries! (only for old scenarios though)
                         keys = LabelKey.objects.filter(corpora=self.corpus)
                         label = Label.objects.get(key__in=keys, title=v)
                         labels.append(label)
