@@ -26,13 +26,13 @@ django-object-actions==3.0.1
     # via -r requirements.in
 django-picklefield==3.0.1
     # via -r requirements.in
-django-reversion==3.0.8
+django-reversion==3.0.9
     # via -r requirements.in
 django-robots==4.0
     # via -r requirements.in
 django-widget-tweaks==1.4.8
     # via perfectextractor-ui
-django==2.2.17
+django==2.2.20
     # via
     #   -r requirements.in
     #   django-bootstrap3
@@ -42,15 +42,15 @@ django==2.2.17
     #   django-reversion
 idna==2.10
     # via requests
-joblib==1.0.0
+joblib==1.0.1
     # via scikit-learn
-lxml==4.6.2
+lxml==4.6.3
     # via
     #   -r requirements.in
     #   perfectextractor
 mysqlclient==2.0.3
     # via -r requirements.in
-numpy==1.19.5
+numpy==1.20.2
     # via
     #   pandas
     #   pyarrow
@@ -62,21 +62,21 @@ perfectextractor-ui==0.1.7
     # via -r requirements.in
 perfectextractor==0.4
     # via perfectextractor-ui
-pillow==8.1.0
+pillow==8.2.0
     # via -r requirements.in
-pyarrow==2.0.0
+pyarrow==3.0.0
     # via -r requirements.in
 python-dateutil==2.8.1
     # via pandas
 python-monkey-business==1.0.0
     # via django-nested-admin
-pytz==2020.5
+pytz==2021.1
     # via
     #   django
     #   pandas
 requests==2.25.1
     # via perfectextractor
-scikit-learn==0.23.2
+scikit-learn==0.24.1
     # via -r requirements.in
 scipy==1.5.4
     # via
@@ -92,7 +92,7 @@ sqlparse==0.4.1
     # via django
 threadpoolctl==2.1.0
     # via scikit-learn
-urllib3==1.26.2
+urllib3==1.26.4
     # via requests
-xlsxwriter==1.3.7
+xlsxwriter==1.3.8
     # via -r requirements.in
