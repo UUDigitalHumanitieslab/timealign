@@ -1,11 +1,11 @@
-from django.conf.urls import url
+from django.urls import path, re_path
 
 from .views import PostList, PostDetail
 
 urlpatterns = [
     # List views
-    url(r'^$', PostList.as_view(), name='posts'),
+    path('', PostList.as_view(), name='posts'),
 
     # Detail views
-    url(r'^(?P<slug>[\w-]+)$', PostDetail.as_view(), name='show'),
+    re_path(r'^(?P<slug>[\w-]+)$', PostDetail.as_view(), name='show'),
 ]
