@@ -197,7 +197,7 @@ class Fragment(models.Model, HasLabelsMixin):
     language = models.ForeignKey(Language, on_delete=models.CASCADE)
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
 
-    tense = models.ForeignKey(Tense, null=True, on_delete=models.SET_NULL)
+    tense = models.ForeignKey(Tense, blank=True, null=True, on_delete=models.SET_NULL)
     other_label = models.CharField(max_length=200, blank=True)
     labels = models.ManyToManyField(Label)
 
