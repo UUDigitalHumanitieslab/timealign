@@ -290,7 +290,11 @@ class DescriptiveStatsView(ScenarioDetail):
 
         fragment_pks = self.object.mds_fragments
         scenario_labels = self.object.get_labels()
-        languages = Language.objects.filter(iso__in=list(scenario_labels.keys())).order_by('iso')
+
+        # Fetch the Languages, first sort as_from, then as_to
+        languages_from = self.object.languages(as_from=True).order_by('language__iso')
+        languages_to = self.object.languages(as_to=True).order_by('language__iso')
+        languages = [sl.language for sl in languages_from] + [sl.language for sl in languages_to]
 
         counters_labels = OrderedDict()
         counters_tensecats = dict()
