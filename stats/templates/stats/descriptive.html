@@ -205,7 +205,9 @@
           .showXAxis(false)
           .forceY([0, 1]);
 
-      chart.yAxis.tickFormat(d3.format('.0%'));
+      chart.yAxis
+        .tickFormat(d3.format('.0%'))
+        .tickValues([0, 0.2, 0.4, 0.6, 0.8, 1.0]);
 
       // add an horizontal rule after every 3 charts
       if($('#charts > div').length > 0 && $('#charts > div').length % 3 == 0) {
