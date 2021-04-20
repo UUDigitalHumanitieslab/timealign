@@ -19,6 +19,13 @@ class ImportMixin(SuccessMessageMixin, generic.FormView):
             return self.form_invalid(form)
 
 
+class SuperuserRequiredMixin(UserPassesTestMixin):
+    """Limits access only to superusers"""
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+
 class CheckOwnerOrStaff(UserPassesTestMixin):
     """Limits access only to creator of annotation or staff users"""
 

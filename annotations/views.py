@@ -16,13 +16,12 @@ from django.urls import reverse
 from django.utils.http import urlquote
 from django.views import generic
 
-from braces.views import SuperuserRequiredMixin
 from django_filters.views import FilterView
 from reversion.models import Version
 from reversion.revisions import add_to_revision, set_comment
 from reversion.views import RevisionMixin
 
-from core.mixins import ImportMixin, CheckOwnerOrStaff, FluidMixin
+from core.mixins import ImportMixin, CheckOwnerOrStaff, FluidMixin, SuperuserRequiredMixin
 from core.utils import find_in_enum, XLSX
 
 from .exports import export_annotations

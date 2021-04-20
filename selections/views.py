@@ -9,13 +9,12 @@ from django.shortcuts import get_object_or_404
 from django.views import generic
 from django.utils.http import urlquote
 
-from braces.views import SuperuserRequiredMixin
 from django_filters.views import FilterView
 
 from annotations.mixins import PrepareDownloadMixin, SelectSegmentMixin, ImportFragmentsMixin
 from annotations.models import Language, Corpus, Document
 from annotations.utils import get_available_corpora
-from core.mixins import FluidMixin, ImportMixin
+from core.mixins import FluidMixin, ImportMixin, SuperuserRequiredMixin
 from core.utils import XLSX
 
 from .exports import export_selections
