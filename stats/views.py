@@ -290,7 +290,11 @@ class DescriptiveStatsView(ScenarioDetail):
 
         fragment_pks = self.object.mds_fragments
         scenario_labels = self.object.get_labels()
-        languages = Language.objects.filter(iso__in=list(scenario_labels.keys())).order_by('iso')
+
+        # Fetch the Languages, first sort as_from, then as_to
+        languages_from = self.object.languages(as_from=True).order_by('language__iso')
+        languages_to = self.object.languages(as_to=True).order_by('language__iso')
+        languages = [sl.language for sl in languages_from] + [sl.language for sl in languages_to]
 
         counters_labels = OrderedDict()
         counters_tensecats = dict()
@@ -365,6 +369,13 @@ class FragmentTableView(LoginRequiredMixin, FilterView):
         return self.queryset_for_fragments(fragment_pks)
 
     def queryset_for_fragments(self, fragment_pks):
+        # Order the Fragments by Document and Sentence.xml_id
+        qs = Fragment.objects.filter(pk__in=fragment_pks) \
+            .select_related('document') \
+            .prefetch_related('sentence_set')
+        fragment_pks = [f.pk for f in sorted(qs, key=lambda f: (f.document.title, f.sort_key()))]
+        # Solution to preserve order taken from https://stackoverflow.com/a/37648265
+        preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(fragment_pks)])
         target_words = Sentence.objects. \
             prefetch_related(Prefetch('word_set', queryset=Word.objects.filter(is_target=True)))
 
@@ -374,7 +385,7 @@ class FragmentTableView(LoginRequiredMixin, FilterView):
             .prefetch_related('sentence_set',
                               'sentence_set__word_set',
                               Prefetch('sentence_set', queryset=target_words, to_attr='targets_prefetched')) \
-            .order_by('pk')
+            .order_by(preserved)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

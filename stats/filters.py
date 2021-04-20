@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import Case, When
 
 from django_filters import FilterSet, BooleanFilter, CharFilter, OrderingFilter
 
@@ -32,8 +33,6 @@ class ScenarioFilter(FilterSet):
 
 
 class FragmentFilter(FilterSet):
-    o = OrderingFilter(fields=('document', ))
-
     class Meta:
         model = Fragment
         fields = ['document', 'formal_structure', 'sentence_function']
