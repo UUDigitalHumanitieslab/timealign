@@ -296,8 +296,8 @@ class DescriptiveStatsView(ScenarioDetail):
         languages_to = self.object.languages(as_to=True).order_by('language__iso')
         languages = [sl.language for sl in languages_from] + [sl.language for sl in languages_to]
 
-        counters_labels = OrderedDict()
         counters_tensecats = dict()
+        fragments_per_label = dict()
         tuples = defaultdict(tuple)
         colors = dict()
         categories = dict()
@@ -306,7 +306,7 @@ class DescriptiveStatsView(ScenarioDetail):
         label_cache = prepare_label_cache(self.object.corpus)
 
         for language in languages:
-            c_labels = Counter()
+            f_per_label = defaultdict(list)
             c_tensecats = Counter()
             labels = set()
             for n, identifier in enumerate(scenario_labels[language.iso]):
@@ -318,7 +318,7 @@ class DescriptiveStatsView(ScenarioDetail):
 
                 for tense_label in label:
                     labels.add(tense_label)
-                    c_labels.update([tense_label])
+                    f_per_label[tense_label].append(fragment_pks[n])
                     tuples[n] += (tense_label,)
                     colors[tense_label] = color
                     categories[tense_label] = category
@@ -326,8 +326,8 @@ class DescriptiveStatsView(ScenarioDetail):
                 distinct_tensecats.add(category)
                 c_tensecats.update([category])
 
-            counters_labels[language] = c_labels.most_common()
             counters_tensecats[language] = c_tensecats
+            fragments_per_label[language] = dict(f_per_label)
 
         categories_table = defaultdict(list)
         for language in languages:
@@ -345,8 +345,14 @@ class DescriptiveStatsView(ScenarioDetail):
         for n, label_tuple in enumerate(tuples.values()):
             tuples_with_fragments[label_tuple].append(fragment_pks[n])
 
-        context['counters'] = counters_labels
-        context['counters_json'] = json.dumps({language.iso: vs for language, vs in list(counters_labels.items())})
+        fragments_per_label_count = {
+            language.iso: sorted([[label, len(fs)] for label, fs in f_per_label.items()],
+                                 key=lambda item: item[1], reverse=True)
+            for language, f_per_label in fragments_per_label.items()
+        }
+
+        context['counters'] = fragments_per_label
+        context['counters_json'] = json.dumps(fragments_per_label_count)
         context['tensecat_table'] = categories_table_ordered
         context['tuples_with_fragments'] = dict(tuples_with_fragments)
         context['colors_json'] = json.dumps(colors)

@@ -69,21 +69,25 @@
             Tables per language
         </h3>
         <div class="row">
-            {% for l, c in counters.items %}
+            {% for language, c in counters.items %}
             <div class="col-md-4">
-                <h4>{{ l.title }}</h4>
-                <table class="table table-striped">
+                <h4>{{ language.title }}</h4>
+                <table class="table table-striped freq-table">
                     <thead>
                         <tr>
-                            <th>Tense</th>
+                            <th>Label</th>
                             <th>Count</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for t, count in c %}
+                        {% for label, fs in c.items %}
                         <tr>
-                            <td>{{ t }} </td>
-                            <td>{{ count }}</td>
+                            <td>
+                                {{ label }}
+                            </td>
+                            <td>
+                                <a class="drill-through" href="#" data-fragments="{{ fs|join:',' }}">{{ fs|length }}</a>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -150,7 +154,9 @@
                         <span class="txt">{{ label }}</span>
                     </td>
                     {% endfor %}
-                    <td><a class="tuple-count" href="#" data-fragments="{{ fs|join:',' }}">{{ fs|length }}</a></td>
+                    <td>
+                        <a class="drill-through" href="#" data-fragments="{{ fs|join:',' }}">{{ fs|length }}</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -231,6 +237,13 @@
 
   Object.keys(counters).forEach(graphLanguage);
 
+  $('.freq-table').DataTable({
+    order: [[ 1, 'desc' ]],
+    searching: false,
+    paging: false,
+    info: false,
+  });
+
   // Showing the dots, categories and labels in the tuples table
   $('.dot').each(function() {
     $(this).css('background-color', colors[$(this).attr('title')]);
@@ -266,7 +279,7 @@
   });
 
   // Drill-through to fragments (allow to open in new tab if CTRL is pressed)
-  $(".tuple-count").click(function(e) {
+  $(".drill-through").click(function(e) {
     e.preventDefault();
     if (e.ctrlKey) {
         $('form[name="fragmentform"]').attr("target", "_blank");
