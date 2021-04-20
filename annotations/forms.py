@@ -145,7 +145,10 @@ class AnnotationForm(LabelFormMixin, SegmentSelectMixin, forms.ModelForm):
         if not self.user.has_perm('annotations.edit_labels_in_interface') or not self.corpus.tense_based:
             del self.fields['tense']
 
-        self.fields.move_to_end('comments')
+        # Move comments to the end of the fields by deleting and then re-adding
+        comments = self.fields['comments']
+        del self.fields['comments']
+        self.fields['comments'] = comments
 
     def clean(self):
         """

@@ -45,8 +45,10 @@ class SelectionForm(LabelFormMixin, SegmentSelectMixin, forms.ModelForm):
         if not selected_words:
             del self.fields['already_complete']
 
-        # Comments should be the last form field
-        self.fields.move_to_end('comments')
+        # Move comments to the end of the fields by deleting and then re-adding
+        comments = self.fields['comments']
+        del self.fields['comments']
+        self.fields['comments'] = comments
 
     @property
     def corpus(self):
