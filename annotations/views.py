@@ -150,10 +150,9 @@ class RevisionWithCommentMixin(RevisionMixin):
 
     def form_valid(self, form):
         result = super().form_valid(form)
-        change = construct_change_message(form, None, False)
-        if change:
+        if form.changed_data:
             add_to_revision(self.object)
-            set_comment(self.format_change_comment(change, form.cleaned_data))
+            set_comment(self.format_change_comment(form.changed_data, form.cleaned_data))
 
         return result
 
@@ -162,14 +161,11 @@ class RevisionWithCommentMixin(RevisionMixin):
             value = ', '.join(map(str, value))
         return '{} to "{}"'.format(field, value)
 
-    def format_change_comment(self, change, values):
-        change = change[0]
-        if 'changed' in change and 'fields' in change['changed']:
-            fields = change['changed']['fields']
-            parts = [self.format_change_for_field(field, values[field])
-                     for field in fields]
-            return 'Changed {}'.format(', '.join(parts))
-        return ''
+    def format_change_comment(self, changes, values):
+        parts = []
+        for change in changes:
+            parts.append(self.format_change_for_field(change, values[change]))
+        return 'Changed {}'.format(', '.join(parts))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
