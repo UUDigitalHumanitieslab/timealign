@@ -21,7 +21,7 @@ def export_selections(filename, format_, corpus, language,
                    fragment__document__corpus=corpus)
 
         if document is not None:
-            selections = selections.filter(fragment__document__title=document)
+            selections = selections.filter(fragment__document=document)
 
         selections = selections \
             .select_related('fragment__document', 'tense') \
@@ -52,7 +52,7 @@ def get_header(max_words, add_lemmata, label_keys_titles):
     if add_lemmata:
         header.extend(['lemma' + str(i + 1) for i in range(max_words)])
 
-    header.extend(['comments', 'order', 'sentence id', 'sentence full'])
+    header.extend(['comments', 'document', 'sentence id', 'order', 'sentence full'])
 
     return header
 
@@ -69,6 +69,7 @@ def get_row(selection, add_lemmata, max_words, label_keys):
     w_details = pad_list(w, max_words) + pad_list(pos, max_words) + (pad_list(lemma, max_words) if add_lemmata else [])
 
     fragment = selection.fragment
-    f_details = [selection.comments, selection.order, fragment.first_sentence().xml_id, fragment.full(CSV, selection)]
+    f_details = [selection.comments, fragment.document.title, fragment.first_sentence().xml_id,
+                 selection.order, fragment.full(CSV, selection)]
 
     return s_details + w_details + f_details
