@@ -67,6 +67,9 @@
     {% for corpus in current_corpora %}
         <li>
             <a href="{% url 'selections:status' corpus.pk %}">{{ corpus.title }}</a>
+            {% if corpus.current_subcorpus %}
+            (current subcorpus: <em>{{ corpus.current_subcorpus.title }}</em>)
+            {% endif %}
         </li>
     {% endfor %}
     </ul>

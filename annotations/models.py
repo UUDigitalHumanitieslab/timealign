@@ -491,10 +491,11 @@ class SubCorpus(models.Model):
 
         for document in Document.objects.filter(corpus=self.corpus):
             xml_ids = SubSentence.objects.filter(document=document, subcorpus=self).values_list('xml_id', flat=True)
-            fragments |= Fragment.objects.filter(
-                language=self.language,
-                document=document,
-                sentence__xml_id__in=xml_ids)
+            if '' in xml_ids:
+                fragments |= Fragment.objects.filter(language=self.language, document=document)
+            else:
+                fragments |= Fragment.objects.filter(language=self.language, document=document,
+                                                     sentence__xml_id__in=xml_ids)
 
         return fragments
 
@@ -503,7 +504,8 @@ class SubCorpus(models.Model):
 
 
 class SubSentence(models.Model):
-    xml_id = models.CharField(max_length=20)
+    xml_id = models.CharField(blank=True, max_length=20,
+                              help_text='Leave blank to select all XML ids in the given Document')
 
     document = models.ForeignKey(Document, on_delete=models.CASCADE)
     subcorpus = models.ForeignKey(SubCorpus, on_delete=models.CASCADE)
