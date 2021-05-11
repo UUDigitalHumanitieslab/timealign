@@ -261,7 +261,7 @@ def copy_scenario(request, scenario):
     corpus = scenario.corpus
     documents = scenario.documents.all()
     subcorpora = scenario.subcorpora.all()
-    scenario_languages = scenario.scenariolanguage_set.all()
+    scenario_languages = scenario.languages()
 
     # Create a copy
     copy_scenario = scenario
@@ -297,6 +297,8 @@ def copy_scenario_language(scenario, scenario_language):
     # Save relationships
     language = scenario_language.language
     tenses = scenario_language.tenses.all()
+    include_keys = scenario_language.include_keys.all()
+    include_labels = scenario_language.include_labels.all()
 
     # Create a copy
     copy_sl = scenario_language
@@ -307,6 +309,8 @@ def copy_scenario_language(scenario, scenario_language):
     # Add references
     copy_sl.language = language
     copy_sl.tenses.set(tenses)
+    copy_sl.include_keys.set(include_keys)
+    copy_sl.include_labels.set(include_labels)
     copy_sl.save()
 
 
