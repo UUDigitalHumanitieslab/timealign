@@ -20,18 +20,30 @@
             <th>As from?</th>
             <th>As to?</th>
             <th>Tenses</th>
+            <th>Label keys</th>
+            <th>Labels</th>
         </tr>
     </thead>
     <tbody>
-        {% for sl in scenario.languages.all %}
+        {% for sl in scenario.languages %}
         <tr>
             <td>{{ sl.language }}</td>
             <td>{% if sl.as_from %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
             <td>{% if sl.as_to %}{% bootstrap_icon "ok" %}{% else %}{% bootstrap_icon "remove" %}{% endif %}</td>
             <td>{{ sl.tenses.all|join:", "|default:"all" }}</td>
+            <td>{{ sl.include_keys.all|join:", "|default:"all" }}</td>
+            <td>{{ sl.include_labels.all|join:", "|default:"all" }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
-
+<h2>Links</h2>
+<ul>
+    <li><a href="{% url 'stats:descriptive' scenario.pk %}">Descriptive statistics</a></li>
+    <li><a href="{% url 'stats:mds' scenario.pk %}">Multidimensional Scaling</a></li>
+    <li><a href="{% url 'stats:sankey' scenario.pk %}">Sankey diagram</a></li>
+    <li><a href="{% url 'stats:upset' scenario.pk %}">UpSet</a></li>
+    <li><a href="{% url 'stats:download' scenario.pk %}">Download</a></li>
+    <li><a href="{% url 'admin:stats_scenario_change' scenario.pk %}">Edit</a> (through administration interface)</li>
+</ul>
 {% endblock %}

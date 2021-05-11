@@ -64,7 +64,9 @@ class ScenarioAdmin(BaseDjangoObjectActions, admin.ModelAdmin):
             run_mds(obj)
             obj.last_run = timezone.now()
             obj.save()
-            self.message_user(request, mark_safe('Multidimensional Scaling has been run.'))
+            success_link = reverse('stats:show', args=(obj.pk,))
+            message = 'Scenario has been run. <a href="{}">Find it here</a>.'.format(success_link)
+            self.message_user(request, mark_safe(message))
         except EmptyScenario:
             self.message_user(request, 'Scenario configuration produced an empty data set.', level=messages.ERROR)
         except ImproperScenario:
