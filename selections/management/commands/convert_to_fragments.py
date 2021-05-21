@@ -121,12 +121,16 @@ def selection_to_fragment(corpus, selection, fragment_cache):
     selected_words = []
     for selected_word in selection.words.all():
         selected_words.append(selected_word.xml_id)
+
     with transaction.atomic():
         f = selection.fragment
-        sentences = f.sentence_set.all()
+
+        # Fetch the Sentences before copying the Fragment, do not use all() here, as query exec. will then be delayed!
+        sentences = f.sentence_set.prefetch_related('word_set')
 
         f.__class__ = Fragment
         f.pk = None
+        f._state.adding = True
 
         if selection.tense:
             f.tense = selection.tense
@@ -148,6 +152,7 @@ def selection_to_fragment(corpus, selection, fragment_cache):
             words = s.word_set.all()
 
             s.pk = None
+            s._state.adding = True
             s.fragment = f
             s.save()
 
@@ -156,6 +161,7 @@ def selection_to_fragment(corpus, selection, fragment_cache):
             for word in words:
                 w = word
                 w.pk = None
+                w._state.adding = True
                 w.sentence = s
                 w.is_target = w.xml_id in selected_words
                 w.save()
