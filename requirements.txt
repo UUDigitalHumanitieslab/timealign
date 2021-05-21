@@ -10,7 +10,7 @@ certifi==2020.12.5
     # via requests
 chardet==4.0.0
     # via requests
-click==7.1.2
+click==8.0.1
     # via perfectextractor
 django-bootstrap3==15.0.0
     # via -r requirements.in
@@ -32,7 +32,7 @@ django-robots==4.0
     # via -r requirements.in
 django-widget-tweaks==1.4.8
     # via perfectextractor-ui
-django==3.2.2
+django==3.2.3
     # via
     #   -r requirements.in
     #   django-bootstrap3
@@ -93,5 +93,5 @@ threadpoolctl==2.1.0
     # via scikit-learn
 urllib3==1.26.4
     # via requests
-xlsxwriter==1.4.2
+xlsxwriter==1.4.3
     # via -r requirements.in
