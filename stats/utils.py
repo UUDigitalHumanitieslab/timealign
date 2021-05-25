@@ -261,11 +261,13 @@ def copy_scenario(request, scenario):
     corpus = scenario.corpus
     documents = scenario.documents.all()
     subcorpora = scenario.subcorpora.all()
+    # Fetch the ScenarioLanguages before copying the Scenario, do not use all() here, as query will then be delayed!
     scenario_languages = scenario.languages()
 
     # Create a copy
     copy_scenario = scenario
     copy_scenario.pk = None
+    copy_scenario._state.adding = True
 
     # Amend title and owner
     copy_scenario.title = scenario.title + '-copy'
@@ -303,6 +305,7 @@ def copy_scenario_language(scenario, scenario_language):
     # Create a copy
     copy_sl = scenario_language
     copy_sl.pk = None
+    copy_sl._state.adding = True
     copy_sl.scenario = scenario
     copy_sl.save()
 
