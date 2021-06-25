@@ -4,7 +4,7 @@ import pyarrow.feather as feather
 
 from django.core.management.base import BaseCommand, CommandError
 
-from annotations.models import TenseCategory
+from annotations.models import TenseCategory, Fragment
 from stats.models import Scenario
 from stats.utils import prepare_label_cache, get_label_properties_from_cache
 
@@ -53,8 +53,13 @@ def export_tensecats(filename):
 
 def export_fragments(filename, scenario):
     fragment_pks = scenario.mds_fragments
+    documents = []
+    for fragment in Fragment.objects.filter(pk__in=fragment_pks):
+        documents.append(fragment.document.title)
+
+    df = pd.DataFrame({'fragment_pk': fragment_pks, 'document': documents})
+
     scenario_labels = scenario.get_labels()
-    df = pd.DataFrame({'fragment_pks': fragment_pks})
     cache = prepare_label_cache(scenario.corpus)
     for sl in scenario.languages().all():
         labels = []
