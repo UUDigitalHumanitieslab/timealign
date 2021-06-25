@@ -6,7 +6,7 @@
 #
 asgiref==3.3.4
     # via django
-certifi==2020.12.5
+certifi==2021.5.30
     # via requests
 chardet==4.0.0
     # via requests
@@ -14,7 +14,7 @@ click==8.0.1
     # via perfectextractor
 django-bootstrap3==15.0.0
     # via -r requirements.in
-django-ckeditor==6.0.0
+django-ckeditor==6.1.0
     # via -r requirements.in
 django-filter==2.4.0
     # via -r requirements.in
@@ -32,7 +32,7 @@ django-robots==4.0
     # via -r requirements.in
 django-widget-tweaks==1.4.8
     # via perfectextractor-ui
-django==3.2.3
+django==3.2.4
     # via
     #   -r requirements.in
     #   django-bootstrap3
@@ -64,7 +64,7 @@ perfectextractor==0.4
     # via perfectextractor-ui
 pillow==8.2.0
     # via -r requirements.in
-pyarrow==4.0.0
+pyarrow==4.0.1
     # via -r requirements.in
 python-dateutil==2.8.1
     # via pandas
@@ -91,7 +91,7 @@ sqlparse==0.4.1
     # via django
 threadpoolctl==2.1.0
     # via scikit-learn
-urllib3==1.26.4
+urllib3==1.26.5
     # via requests
 xlsxwriter==1.4.3
     # via -r requirements.in
