@@ -29,7 +29,7 @@ If you want to use MySQL as your database backend (recommended) use the followin
     pip install --upgrade pip wheel
     pip install -r requirements.txt
 
-    # Create a database and change the databases section in timealign/settings.py accordingly
+    # Create a database and change the databases section in `timealign/settings.py` accordingly
     # Migrate the database using:
     python manage.py migrate
 
@@ -43,6 +43,12 @@ If the test runs OK, you should be ready to roll! Run the webserver using:
 
     # Start the (local) web server
     python manage.py runserver
+
+During debugging, we additionally use the [Django Debug Toolbar](https://django-debug-toolbar.readthedocs.io/). Install it with:
+
+    pip install django-debug-toolbar
+
+And then uncomment the lines referring to the toolbar in `timealign/settings.py`.
 
 ## Documentation
 
