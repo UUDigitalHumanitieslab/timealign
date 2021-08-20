@@ -71,7 +71,7 @@ def export_fragments(filename, scenario):
             colors.append(color)
             cats.append(category)
 
-        df[sl.language.iso + '-label'] = labels
-        df[sl.language.iso + '-color'] = colors
-        df[sl.language.iso + '-cat'] = cats
+        df[sl.language.iso + '.label'] = labels
+        df[sl.language.iso + '.color'] = colors
+        df[sl.language.iso + '.cat'] = cats
     feather.write_feather(df, filename, compression='uncompressed')
