@@ -31,6 +31,7 @@ if DEBUG:
     from subprocess import Popen, PIPE
     hostname = Popen(('hostname'), stdout=PIPE).communicate()[0].decode().strip()
     ALLOWED_HOSTS.append(hostname)
+    ALLOWED_HOSTS.append('localhost')
     ALLOWED_HOSTS.append('127.0.0.1')
 
 
@@ -50,8 +51,6 @@ INSTALLED_APPS = [
     'django_object_actions',
     'nested_admin',
     'robots',
-    'widget_tweaks',
-    'perfectextractor_ui',
 
     'core.apps.CoreConfig',
     'news.apps.NewsConfig',
@@ -63,7 +62,11 @@ INSTALLED_APPS = [
 
     'django.contrib.sites',
     'django.contrib.flatpages',
-    'reversion'
+    'reversion',
+
+    # The place where this is inserted in this list matters. If the core.apps.CoreConfig comes after the perfectextractor_ui, the base.html will be in conflict and core/base.html will not be loaded, but instead loading the template of perfectextractor-ui/base.html.
+    'widget_tweaks',
+    'perfectextractor_ui'
 ]
 
 MIDDLEWARE = [
