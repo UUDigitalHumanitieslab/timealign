@@ -21,6 +21,7 @@ htmlcov/
 
 ### Virtual Environments
 .env/
+venv/
 
 ### MacOS folder definitions
 .DS_Store

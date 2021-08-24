@@ -21,7 +21,8 @@ If you want to use MySQL as your database backend (recommended) use the followin
     # Clone the repository
     git clone [repository URL]
     cd timealign/
-
+    
+    # NOTE! When using Pycharm, .env cannot be recognized as a virtual environment folder. Use 'venv' instead.
     # Create a virtual environment
     sudo apt-get install virtualenv
     virtualenv .env
@@ -29,8 +30,14 @@ If you want to use MySQL as your database backend (recommended) use the followin
     pip install --upgrade pip wheel
     pip install -r requirements.txt
 
-    # Create a database and change the databases section in `timealign/settings.py` accordingly
-    # Migrate the database using:
+    # Create a database and change the databases section in timealign/settings.py accordingly
+    ## Setup database: https://dev.mysql.com/doc/mysql-getting-started/en/#mysql-getting-started-installing
+    ## Create user: https://dev.mysql.com/doc/refman/8.0/en/creating-accounts.html
+
+    # Migrate the database
+    ## Create project db setting
+    cp ./timealign/settings_secret_default.py ./timealign/settings_secret.py
+    ## Update information in the 'settings_secret.py', then execute migrate script
     python manage.py migrate
 
     # Initialize revisions

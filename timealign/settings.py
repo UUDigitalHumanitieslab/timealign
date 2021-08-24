@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 import os
+from .settings_secret import *
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -26,9 +27,9 @@ DEBUG = True
 ALLOWED_HOSTS = []
 if DEBUG:
     from subprocess import Popen, PIPE
-
     hostname = Popen(('hostname'), stdout=PIPE).communicate()[0].decode().strip()
     ALLOWED_HOSTS.append(hostname)
+    ALLOWED_HOSTS.append('localhost')
     ALLOWED_HOSTS.append('127.0.0.1')
     INTERNAL_IPS = [hostname, '127.0.0.1']
 
@@ -57,6 +58,7 @@ INSTALLED_APPS = [
     'stats.apps.StatsConfig',
 
     'widget_tweaks',
+    # The place where this is inserted in this list matters. If the core.apps.CoreConfig comes after the perfectextractor_ui, the base.html will be in conflict and core/base.html will not be loaded, but instead loading the template of perfectextractor-ui/base.html.
     'perfectextractor_ui',
 
     'django.contrib.admin',
@@ -98,19 +100,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'timealign.wsgi.application'
 
+
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }
+    'default': user_db
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -129,6 +126,7 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
