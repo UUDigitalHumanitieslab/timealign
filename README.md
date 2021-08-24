@@ -51,6 +51,12 @@ If the test runs OK, you should be ready to roll! Run the webserver using:
     # Start the (local) web server
     python manage.py runserver
 
+During debugging, we additionally use the [Django Debug Toolbar](https://django-debug-toolbar.readthedocs.io/). Install it with:
+
+    pip install django-debug-toolbar
+
+And then uncomment the lines referring to the toolbar in `timealign/settings.py`.
+
 ## Documentation
 
 You can find ERD diagrams of the applications in [`doc/models`](doc/models/README.md).

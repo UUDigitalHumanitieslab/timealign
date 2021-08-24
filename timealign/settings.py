@@ -15,7 +15,6 @@ from .settings_secret import *
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
@@ -25,7 +24,6 @@ SECRET_KEY = 'bseaauw*m9wd2_h-&!+73yig@qd$r+th25k%*!79ckbvat)e3j'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-
 ALLOWED_HOSTS = []
 if DEBUG:
     from subprocess import Popen, PIPE
@@ -33,7 +31,7 @@ if DEBUG:
     ALLOWED_HOSTS.append(hostname)
     ALLOWED_HOSTS.append('localhost')
     ALLOWED_HOSTS.append('127.0.0.1')
-
+    INTERNAL_IPS = [hostname, '127.0.0.1']
 
 # Application definition
 
@@ -51,6 +49,7 @@ INSTALLED_APPS = [
     'django_object_actions',
     'nested_admin',
     'robots',
+    # 'debug_toolbar',
 
     'core.apps.CoreConfig',
     'news.apps.NewsConfig',
@@ -58,15 +57,15 @@ INSTALLED_APPS = [
     'annotations.apps.AnnotationsConfig',
     'stats.apps.StatsConfig',
 
+    'widget_tweaks',
+    # The place where this is inserted in this list matters. If the core.apps.CoreConfig comes after the perfectextractor_ui, the base.html will be in conflict and core/base.html will not be loaded, but instead loading the template of perfectextractor-ui/base.html.
+    'perfectextractor_ui',
+
     'django.contrib.admin',
 
     'django.contrib.sites',
     'django.contrib.flatpages',
-    'reversion',
-
-    # The place where this is inserted in this list matters. If the core.apps.CoreConfig comes after the perfectextractor_ui, the base.html will be in conflict and core/base.html will not be loaded, but instead loading the template of perfectextractor-ui/base.html.
-    'widget_tweaks',
-    'perfectextractor_ui'
+    'reversion'
 ]
 
 MIDDLEWARE = [
@@ -77,6 +76,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
 ]
 
@@ -105,7 +105,7 @@ WSGI_APPLICATION = 'timealign.wsgi.application'
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
-    'default': user_db,
+    'default': user_db
 }
 
 
@@ -132,23 +132,15 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+TIME_ZONE = 'Europe/Amsterdam'
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
-
-LOGIN_REDIRECT_URL = '/timealign/status'
-
 
 # Flatpages
 # https://docs.djangoproject.com/en/1.11/ref/contrib/flatpages/
@@ -162,5 +154,11 @@ MEDIA_URL = '/media/'
 CKEDITOR_UPLOAD_PATH = 'news'
 CKEDITOR_IMAGE_BACKEND = 'pillow'
 
+# Login redirect
+LOGIN_REDIRECT_URL = '/timealign/status'
+
 # Path to where the PerfectExtractor corpora reside
-PE_DATA_PATH = '/opt/corpora/'
+PE_DATA_PATH = '/opt/Corpora/'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
