@@ -60,8 +60,12 @@ def get_available_corpora(user):
     """
     if user.is_superuser:
         return Corpus.objects.all()
-    else:
+    elif user.is_authenticated:
         return user.corpus_set.all()
+    else:
+        # TODO bram: return free corpora
+        # return Corpus.objects.filter(title__startswith='C') NOTE: This filter causes incorrect pagination result.
+        return Corpus.objects.filter(title__startswith='Europarl')
 
 
 def get_most_frequent_tenses(language):
