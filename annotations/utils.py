@@ -63,8 +63,7 @@ def get_available_corpora(user):
     elif user.is_authenticated:
         return user.corpus_set.all()
     else:
-        # TODO bram: return free corpora
-        return Corpus.objects.filter(title__startswith='Europarl')
+        return Corpus.objects.filter(is_public=True)
 
 
 def get_most_frequent_tenses(language):

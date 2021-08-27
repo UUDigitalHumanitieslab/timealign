@@ -90,6 +90,10 @@ class Corpus(models.Model):
         'Randomly select the next item for annotation',
         default=True)
 
+    is_public = models.BooleanField(
+        'Check this to serve this corpus to public (unauthenticated users)',
+        default=False)
+
     class Meta:
         verbose_name_plural = 'Corpora'
 
