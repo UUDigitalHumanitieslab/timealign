@@ -75,8 +75,8 @@
                         </li>
                         {% if user.is_authenticated %}
                         <li><a href="{% url 'annotations:corpora' %}">Corpora</a></li>
-                        <li><a href="{% url 'stats:scenarios' %}">Results</a></li>
                         {% endif %}
+                        <li><a href="{% url 'stats:scenarios' %}">Results</a></li>
                     </ul>
                 </li>
                 <li><a href="{% url 'contact' %}">Contact</a></li>

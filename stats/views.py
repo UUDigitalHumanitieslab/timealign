@@ -363,7 +363,7 @@ class DescriptiveStatsView(ScenarioDetail):
         return context
 
 
-class FragmentTableView(LoginRequiredMixin, FilterView):
+class FragmentTableView(FilterView):
     """Shows the drill-through to Fragments"""
     model = Fragment
     context_object_name = 'fragments'
@@ -635,7 +635,7 @@ class SankeyManual(generic.TemplateView):
         return context
 
 
-class ScenarioDownload(ScenarioDetail):
+class ScenarioDownload(LoginRequiredMixin, ScenarioDetail):
     def get(self, request, *args, **kwargs):
         scenario = self.get_object()
 
