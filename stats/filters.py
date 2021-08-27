@@ -9,7 +9,7 @@ from .models import Scenario, Fragment, Document
 class ScenarioFilter(FilterSet):
     title = CharFilter(lookup_expr='icontains')
     is_test = BooleanFilter(field_name='is_test',
-                            label='Show test scenarios',
+                            label='Hide test scenarios',
                             widget=forms.CheckboxInput,
                             method='filter_test')
     current_user_is_owner = BooleanFilter(field_name='owner',
@@ -18,7 +18,7 @@ class ScenarioFilter(FilterSet):
                                           method='filter_owned')
 
     def filter_test(self, queryset, name, value):
-        return queryset if value else queryset.filter(**{name: False})
+        return queryset.filter(**{name: False}) if value else queryset
 
     def filter_owned(self, queryset, name, value):
         return queryset.filter(**{name: self.request.user}) if value else queryset

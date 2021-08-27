@@ -64,7 +64,6 @@ def get_available_corpora(user):
         return user.corpus_set.all()
     else:
         # TODO bram: return free corpora
-        # return Corpus.objects.filter(title__startswith='C') NOTE: This filter causes incorrect pagination result.
         return Corpus.objects.filter(title__startswith='Europarl')
 
 
