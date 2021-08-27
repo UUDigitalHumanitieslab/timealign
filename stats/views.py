@@ -635,7 +635,7 @@ class SankeyManual(generic.TemplateView):
         return context
 
 
-class ScenarioDownload(ScenarioDetail):
+class ScenarioDownload(LoginRequiredMixin, ScenarioDetail):
     def get(self, request, *args, **kwargs):
         scenario = self.get_object()
 
