@@ -135,7 +135,7 @@ class LabelKeyInline(admin.TabularInline):
 @admin.register(Corpus)
 class CorpusAdmin(admin.ModelAdmin):
     list_display = ('title', 'get_languages', 'get_annotators',
-                    'tense_based', 'check_structure', )
+                    'tense_based', 'check_structure', 'is_public', )
 
 
 class LabelInline(admin.TabularInline):

@@ -91,7 +91,7 @@ class Corpus(models.Model):
         default=True)
 
     is_public = models.BooleanField(
-        'Check this to serve this corpus to public (unauthenticated users)',
+        'Publicly accessible (unauthenticated users)',
         default=False)
 
     class Meta:
