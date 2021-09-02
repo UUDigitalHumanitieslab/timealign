@@ -28,7 +28,7 @@ from .models import Scenario, ScenarioLanguage
 from .utils import get_label_properties_from_cache, prepare_label_cache
 
 
-class ScenarioList(LoginRequiredMixin, FilterView):
+class ScenarioList(FilterView):
     """Shows a list of Scenarios"""
     model = Scenario
     context_object_name = 'scenarios'
@@ -53,7 +53,7 @@ class ScenarioList(LoginRequiredMixin, FilterView):
             .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels')  # Don't fetch the PickledObjectFields
 
 
-class ScenarioDetail(LoginRequiredMixin, generic.DetailView):
+class ScenarioDetail(generic.DetailView):
     """Shows details of a selected Scenario"""
     model = Scenario
 
@@ -363,7 +363,7 @@ class DescriptiveStatsView(ScenarioDetail):
         return context
 
 
-class FragmentTableView(LoginRequiredMixin, FilterView):
+class FragmentTableView(FilterView):
     """Shows the drill-through to Fragments"""
     model = Fragment
     context_object_name = 'fragments'
@@ -635,7 +635,7 @@ class SankeyManual(generic.TemplateView):
         return context
 
 
-class ScenarioDownload(ScenarioDetail):
+class ScenarioDownload(LoginRequiredMixin, ScenarioDetail):
     def get(self, request, *args, **kwargs):
         scenario = self.get_object()
 

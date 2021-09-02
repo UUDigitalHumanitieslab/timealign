@@ -68,6 +68,9 @@ INSTALLED_APPS = [
     'reversion'
 ]
 
+# TODO bram: add local memory caching to manage session without any additional resource
+# https://docs.djangoproject.com/en/3.2/topics/cache/#s-local-memory-caching
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

@@ -60,8 +60,10 @@ def get_available_corpora(user):
     """
     if user.is_superuser:
         return Corpus.objects.all()
-    else:
+    elif user.is_authenticated:
         return user.corpus_set.all()
+    else:
+        return Corpus.objects.filter(is_public=True)
 
 
 def get_most_frequent_tenses(language):

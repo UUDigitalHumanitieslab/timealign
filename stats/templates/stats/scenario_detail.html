@@ -43,7 +43,9 @@
     <li><a href="{% url 'stats:mds' scenario.pk %}">Multidimensional Scaling</a></li>
     <li><a href="{% url 'stats:sankey' scenario.pk %}">Sankey diagram</a></li>
     <li><a href="{% url 'stats:upset' scenario.pk %}">UpSet</a></li>
+    {% if user.is_authenticated %}
     <li><a href="{% url 'stats:download' scenario.pk %}">Download</a></li>
     <li><a href="{% url 'admin:stats_scenario_change' scenario.pk %}">Edit</a> (through administration interface)</li>
+    {% endif %}
 </ul>
 {% endblock %}
