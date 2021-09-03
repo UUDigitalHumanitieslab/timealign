@@ -49,6 +49,9 @@ INSTALLED_APPS = [
     'django_object_actions',
     'nested_admin',
     'robots',
+    # This Captcha is based on https://django-simple-captcha.readthedocs.io/en/latest/usage.html
+    'captcha',
+    # Alternative Captcha: https://simpleisbetterthancomplex.com/tutorial/2017/02/21/how-to-add-recaptcha-to-django-site.html
     # 'debug_toolbar',
 
     'core.apps.CoreConfig',

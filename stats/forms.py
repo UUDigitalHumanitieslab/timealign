@@ -1,4 +1,9 @@
 from django import forms
+from captcha.fields import CaptchaField
+
+
+class CaptchaTryoutForm(forms.Form):
+    captcha = CaptchaField()
 
 
 class ScenarioForm(forms.ModelForm):

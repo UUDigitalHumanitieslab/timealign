@@ -8,7 +8,7 @@ from itertools import chain, repeat, count
 from zipfile import ZipFile
 
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Case, When, Prefetch
 from django.http import Http404, HttpResponseRedirect, HttpResponse
@@ -27,8 +27,41 @@ from .management.commands.scenario_to_feather import export_matrix, export_fragm
 from .models import Scenario, ScenarioLanguage
 from .utils import get_label_properties_from_cache, prepare_label_cache
 
+from django.shortcuts import render
+from .forms import CaptchaTryoutForm
 
-class ScenarioList(FilterView):
+
+class LimitedFreeAccessMixin(AccessMixin):
+    """Verify that the current user is either authenticated or has successfully completed captcha test."""
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated or self.temporary_access_valid(request):
+            return super().dispatch(request, *args, **kwargs)
+        else:
+            # Redirect user to the captcha form page
+            return HttpResponseRedirect("/stats/captcha/")
+
+    def temporary_access_valid(self, request):
+            """
+            Check the invalidity of temporary access. Return true if the user needs to be granted temporary access
+            """
+            lack_captcha = request.session.get('succeed-captcha') is None or not request.session.get('succeed-captcha')
+            if lack_captcha:
+                return False
+            else:
+                access_count = request.session.get('dummy-count')
+                if access_count is None:
+                    request.session['dummy-count'] = 0
+                request.session['dummy-count'] = access_count + 1
+
+                if access_count >= 15:
+                    request.session['dummy-count'] = 1
+                    request.session['succeed-captcha'] = False
+                    return False
+                else:
+                    return True
+
+
+class ScenarioList(LimitedFreeAccessMixin, FilterView):
     """Shows a list of Scenarios"""
     model = Scenario
     context_object_name = 'scenarios'
@@ -53,7 +86,7 @@ class ScenarioList(FilterView):
             .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels')  # Don't fetch the PickledObjectFields
 
 
-class ScenarioDetail(generic.DetailView):
+class ScenarioDetail(LimitedFreeAccessMixin, generic.DetailView):
     """Shows details of a selected Scenario"""
     model = Scenario
 
@@ -363,7 +396,7 @@ class DescriptiveStatsView(ScenarioDetail):
         return context
 
 
-class FragmentTableView(FilterView):
+class FragmentTableView(LimitedFreeAccessMixin, FilterView):
     """Shows the drill-through to Fragments"""
     model = Fragment
     context_object_name = 'fragments'
@@ -670,3 +703,22 @@ class ScenarioDownload(LoginRequiredMixin, ScenarioDetail):
         response = HttpResponse(contents, content_type='application/zip')
         response['Content-Disposition'] = 'attachment; filename={}'.format(zip_filename)
         return response
+
+
+# TODO bram: discuss with Martijn how to deal with forms. This view is temporary just to try out some process of validating access
+def process_captcha(request):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        form = CaptchaTryoutForm(request.POST)
+
+        # Validate the form: the captcha field will automatically
+        # check the input
+        if form.is_valid():
+            request.session['succeed-captcha'] = True
+            return HttpResponseRedirect("/stats/scenarios/")
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = CaptchaTryoutForm()
+
+    return render(request, 'stats/captcha.html', {'form': form})
