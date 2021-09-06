@@ -29,6 +29,11 @@ from .utils import get_label_properties_from_cache, prepare_label_cache
 
 from django.shortcuts import render
 from .forms import CaptchaTryoutForm
+import time
+
+
+# TODO bram: discuss with Martijn how to deal with the limited access
+MAX_LIMITED_ACCESS_TS = 15 * 60 * 1000 # 15 minutes
 
 
 class LimitedFreeAccessMixin(AccessMixin):
@@ -42,23 +47,23 @@ class LimitedFreeAccessMixin(AccessMixin):
 
     def temporary_access_valid(self, request):
             """
-            Check the invalidity of temporary access. Return true if the user needs to be granted temporary access
+            Check the validity of temporary access. Return true if the user has been granted temporary access. In this function, the access will be invalidated once it has passed the maximum time limit.
             """
+            # Check if captcha has been completed properly
             lack_captcha = request.session.get('succeed-captcha') is None or not request.session.get('succeed-captcha')
             if lack_captcha:
                 return False
-            else:
-                access_count = request.session.get('dummy-count')
-                if access_count is None:
-                    request.session['dummy-count'] = 0
-                request.session['dummy-count'] = access_count + 1
 
-                if access_count >= 15:
-                    request.session['dummy-count'] = 1
-                    request.session['succeed-captcha'] = False
-                    return False
-                else:
-                    return True
+            # Check the duration validity
+            start_access_ts = request.session.get('captcha-ts')
+            current_ts = time.time()
+            access_duration_ts = current_ts - start_access_ts
+            if access_duration_ts > MAX_LIMITED_ACCESS_TS:
+                del request.session['captcha-ts']
+                del request.session['succeed-captcha']
+                return False
+
+            return True
 
 
 class ScenarioList(LimitedFreeAccessMixin, FilterView):
@@ -714,7 +719,10 @@ def process_captcha(request):
         # Validate the form: the captcha field will automatically
         # check the input
         if form.is_valid():
+            start_access_ts = time.time()
+            request.session['captcha-ts'] = start_access_ts
             request.session['succeed-captcha'] = True
+
             return HttpResponseRedirect("/stats/scenarios/")
 
     # if a GET (or any other method) we'll create a blank form
