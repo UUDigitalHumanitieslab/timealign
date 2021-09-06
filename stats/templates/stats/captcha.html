@@ -16,6 +16,8 @@
 
 {% block content %}
 
+    Hi human, please fill in this test.
+
     <form action="/stats/captcha/" method="post">
         {% csrf_token %}
         {{ form.captcha }}
