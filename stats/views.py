@@ -26,6 +26,7 @@ from .filters import ScenarioFilter, FragmentFilter
 from .management.commands.scenario_to_feather import export_matrix, export_fragments, export_tensecats
 from .models import Scenario, ScenarioLanguage
 from .utils import get_label_properties_from_cache, prepare_label_cache
+import constants
 
 
 class ScenarioList(FilterView):
@@ -41,8 +42,9 @@ class ScenarioList(FilterView):
         and if show_test is False, don't show test Scenarios either.
         Order the Scenarios by Corpus title.
         """
-        languages_from = ScenarioLanguage.objects.filter(as_from=True).select_related('language')
-        languages_to = ScenarioLanguage.objects.filter(as_to=True).select_related('language')
+        # TODO bram: adding the PUBLIC_LANGUAGES constraint to the 2 lists will only limit the values for each list. This will not prevent from showing the scenarios with non-PUBLIC_LANGUAGES. It seems to be necessary to add the constraint to the Scenario.objects.filter. Before continuing this experiment, it is best to discuss it first with Martijn.
+        languages_from = ScenarioLanguage.objects.filter(as_from=True, language__in=constants.PUBLIC_LANGUAGES).select_related('language')
+        languages_to = ScenarioLanguage.objects.filter(as_to=True, language__in=constants.PUBLIC_LANGUAGES).select_related('language')
         return Scenario.objects \
             .filter(corpus__in=get_available_corpora(self.request.user)) \
             .exclude(last_run__isnull=True) \

@@ -12,6 +12,7 @@ from selections.models import PreProcessFragment
 from stats.utils import get_label_properties_from_cache, prepare_label_cache
 
 from .models import Corpus, Tense, Alignment, Source, Annotation, Fragment, Sentence, Word
+import constants
 
 
 def get_next_alignment(user, language_from, language_to, corpus=None):
@@ -63,7 +64,7 @@ def get_available_corpora(user):
     elif user.is_authenticated:
         return user.corpus_set.all()
     else:
-        return Corpus.objects.filter(is_public=True)
+        return Corpus.objects.filter(is_public=True, languages__in=constants.PUBLIC_LANGUAGES)
 
 
 def get_most_frequent_tenses(language):
