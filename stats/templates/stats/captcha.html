@@ -18,7 +18,7 @@
 
     Hi human, please fill in this test.
 
-    <form action="/stats/captcha/" method="post">
+    <form action="." method="post">
         {% csrf_token %}
         {{ form.captcha }}
         <input type="submit" value="Submit">

@@ -2,7 +2,7 @@ from django import forms
 from captcha.fields import CaptchaField
 
 
-class CaptchaTryoutForm(forms.Form):
+class CaptchaForm(forms.Form):
     captcha = CaptchaField()
 
 
