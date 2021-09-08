@@ -56,11 +56,7 @@ class Scenario(models.Model):
         return ', '.join([sl.language.title for sl in languages])
 
     def languages(self, **kwargs):
-        # TODO bram: It is insufficient to solve the language limiting by only applying the following filter. When the languages is empty, the view might throw exception because it always expects at least one language. E.g. AttributeError at /stats/sankey/280/ 'NoneType' object has no attribute 'language'
-
-        extended_kwargs = dict(**kwargs, language__in=settings.PUBLIC_LANGUAGES)
-        return self.scenariolanguage_set.filter(**extended_kwargs).select_related('language')
-        # return self.scenariolanguage_set.filter(**kwargs).select_related('language')
+        return self.scenariolanguage_set.filter(**kwargs).select_related('language')
 
     def __str__(self):
         return self.title

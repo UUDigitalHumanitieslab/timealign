@@ -20,7 +20,7 @@ from django.views import generic
 from django_filters.views import FilterView
 
 from annotations.models import Corpus, Fragment, Language, Tense, TenseCategory, Sentence, Word, Annotation
-from annotations.utils import get_available_corpora
+from annotations.utils import get_available_corpora, get_user_language_limitation
 from core.utils import HTML
 
 from .filters import ScenarioFilter, FragmentFilter
@@ -43,8 +43,15 @@ class ScenarioList(FilterView):
         Order the Scenarios by Corpus title.
         """
         # TODO bram: adding the PUBLIC_LANGUAGES constraint to the 2 lists will only limit the values for each list. This will not prevent from showing the scenarios with non-PUBLIC_LANGUAGES. It seems to be necessary to add the constraint to the Scenario.objects.filter. Before continuing this experiment, it is best to discuss it first with Martijn.
-        languages_from = ScenarioLanguage.objects.filter(as_from=True, language__in=settings.PUBLIC_LANGUAGES).select_related('language')
-        languages_to = ScenarioLanguage.objects.filter(as_to=True, language__in=settings.PUBLIC_LANGUAGES).select_related('language')
+
+        languages_from_filter = {"as_from": True}
+        languages_to_filter = {"as_to": True}
+        language_limitations = get_user_language_limitation(self.request.user)
+        if len(language_limitations) > 0:
+            languages_from_filter["language__in"] = settings.PUBLIC_LANGUAGES
+            languages_to_filter["language__in"] = settings.PUBLIC_LANGUAGES
+        languages_from = ScenarioLanguage.objects.filter(**languages_from_filter).select_related('language')
+        languages_to = ScenarioLanguage.objects.filter(**languages_to_filter).select_related('language')
         return Scenario.objects \
             .filter(corpus__in=get_available_corpora(self.request.user)) \
             .exclude(last_run__isnull=True) \
@@ -180,8 +187,13 @@ class MDSView(ScenarioDetail):
                                              'Please rerun your Scenario.')
                 break
 
+        languages_filter = {"iso__in": list(tenses.keys())}
+        language_limitations = get_user_language_limitation(self.request.user)
+        if len(language_limitations) > 0:
+            languages_filter["id__in"] = settings.PUBLIC_LANGUAGES
+
         context['language'] = display_language
-        context['languages'] = Language.objects.filter(iso__in=list(tenses.keys())).order_by('iso')
+        context['languages'] = Language.objects.filter(**languages_filter).order_by('iso')
         context['d1'] = d1
         context['d2'] = d2
         context['clustering'] = 'on' if clustering else 'off'

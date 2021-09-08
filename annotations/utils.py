@@ -67,6 +67,18 @@ def get_available_corpora(user):
         return Corpus.objects.filter(is_public=True, languages__in=settings.PUBLIC_LANGUAGES)
 
 
+def get_user_language_limitation(user):
+    """
+    Returns the limitation of languages for current user
+    :param user: The current User
+    :return: A list of limitations if exist, otherwise return empty list
+    """
+    if user.is_superuser or user.is_authenticated:
+        return []
+    else:
+        return settings.PUBLIC_LANGUAGES
+
+
 def get_most_frequent_tenses(language):
     """
     Returns the most frequently annotated tenses for a language.
