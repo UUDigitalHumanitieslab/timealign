@@ -165,3 +165,5 @@ PE_DATA_PATH = '/opt/Corpora/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
+# The list of language_ids that are available for unauthorized users
+PUBLIC_LANGUAGES = [1, 5]

@@ -7,6 +7,7 @@ from collections import Counter, OrderedDict, defaultdict
 from itertools import chain, repeat, count
 from zipfile import ZipFile
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
@@ -26,7 +27,6 @@ from .filters import ScenarioFilter, FragmentFilter
 from .management.commands.scenario_to_feather import export_matrix, export_fragments, export_tensecats
 from .models import Scenario, ScenarioLanguage
 from .utils import get_label_properties_from_cache, prepare_label_cache
-import constants
 
 
 class ScenarioList(FilterView):
@@ -43,8 +43,8 @@ class ScenarioList(FilterView):
         Order the Scenarios by Corpus title.
         """
         # TODO bram: adding the PUBLIC_LANGUAGES constraint to the 2 lists will only limit the values for each list. This will not prevent from showing the scenarios with non-PUBLIC_LANGUAGES. It seems to be necessary to add the constraint to the Scenario.objects.filter. Before continuing this experiment, it is best to discuss it first with Martijn.
-        languages_from = ScenarioLanguage.objects.filter(as_from=True, language__in=constants.PUBLIC_LANGUAGES).select_related('language')
-        languages_to = ScenarioLanguage.objects.filter(as_to=True, language__in=constants.PUBLIC_LANGUAGES).select_related('language')
+        languages_from = ScenarioLanguage.objects.filter(as_from=True, language__in=settings.PUBLIC_LANGUAGES).select_related('language')
+        languages_to = ScenarioLanguage.objects.filter(as_to=True, language__in=settings.PUBLIC_LANGUAGES).select_related('language')
         return Scenario.objects \
             .filter(corpus__in=get_available_corpora(self.request.user)) \
             .exclude(last_run__isnull=True) \
