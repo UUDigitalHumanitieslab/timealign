@@ -87,7 +87,7 @@ six==1.16.0
     #   django-nested-admin
     #   python-dateutil
     #   python-monkey-business
-sqlparse==0.4.1
+sqlparse==0.4.2
     # via django
 threadpoolctl==2.2.0
     # via scikit-learn
