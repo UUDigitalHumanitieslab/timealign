@@ -1,0 +1,27 @@
+{% extends "base/base.html" %}
+{% load bootstrap3 %}
+{% load static %}
+{% block head %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+
+    <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+    <script src="{% static 'stats/mds.js' %}"></script>
+    <link href="{%static 'stats/style.css' %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block content %}
+
+    Hi human, please fill in this test.
+
+    <form action="." method="post">
+        {% csrf_token %}
+        {{ form.captcha }}
+        <input type="submit" value="Submit">
+    </form>
+
+{% endblock %}

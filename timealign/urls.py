@@ -26,6 +26,8 @@ urlpatterns = [
     path('accounts/password/change/', PasswordChangeView.as_view(), name='password_change'),
     path('accounts/password/change/done/', PasswordChangeDoneView.as_view(), name='password_change_done'),
 
+    path('captcha/', include('captcha.urls')),
+
     re_path(r'^timealign/', include(('annotations.urls', 'annotations'), namespace='annotations')),
     re_path(r'^preselect/', include(('selections.urls', 'selections'), namespace='selections')),
     re_path(r'^stats/', include(('stats.urls', 'stats'), namespace='stats')),
