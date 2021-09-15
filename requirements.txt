@@ -8,17 +8,19 @@ asgiref==3.4.1
     # via django
 certifi==2021.5.30
     # via requests
-charset-normalizer==2.0.4
+charset-normalizer==2.0.5
     # via requests
 click==8.0.1
     # via perfectextractor
-django==3.2.6
+django==3.2.7
     # via
     #   -r requirements.in
     #   django-bootstrap3
     #   django-filter
     #   django-picklefield
+    #   django-ranged-response
     #   django-reversion
+    #   django-simple-captcha
 django-bootstrap3==15.0.0
     # via -r requirements.in
 django-ckeditor==6.1.0
@@ -33,9 +35,13 @@ django-object-actions==3.0.2
     # via -r requirements.in
 django-picklefield==3.0.1
     # via -r requirements.in
+django-ranged-response==0.2.0
+    # via django-simple-captcha
 django-reversion==4.0.0
     # via -r requirements.in
 django-robots==4.0
+    # via -r requirements.in
+django-simple-captcha==0.5.14
     # via -r requirements.in
 django-widget-tweaks==1.4.8
     # via perfectextractor-ui
@@ -62,8 +68,10 @@ perfectextractor==0.4
     # via perfectextractor-ui
 perfectextractor-ui==0.1.7
     # via -r requirements.in
-pillow==8.3.1
-    # via -r requirements.in
+pillow==8.3.2
+    # via
+    #   -r requirements.in
+    #   django-simple-captcha
 pyarrow==5.0.0
     # via -r requirements.in
 python-dateutil==2.8.2
@@ -85,9 +93,10 @@ scipy==1.5.4
 six==1.16.0
     # via
     #   django-nested-admin
+    #   django-simple-captcha
     #   python-dateutil
     #   python-monkey-business
-sqlparse==0.4.1
+sqlparse==0.4.2
     # via django
 threadpoolctl==2.2.0
     # via scikit-learn
