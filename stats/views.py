@@ -72,6 +72,7 @@ class ScenarioList(LimitedFreeAccessMixin, FilterView):
             languages_to_filter["language__in"] = settings.PUBLIC_LANGUAGES
         languages_from = ScenarioLanguage.objects.filter(**languages_from_filter).select_related('language')
         languages_to = ScenarioLanguage.objects.filter(**languages_to_filter).select_related('language')
+
         return Scenario.objects \
             .filter(corpus__in=get_available_corpora(self.request.user)) \
             .exclude(last_run__isnull=True) \
@@ -131,9 +132,14 @@ class MDSView(ScenarioDetail):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        language_query_filter = dict()
+        language_limitations = get_user_language_limitation(self.request.user)
+        if len(language_limitations) > 0:
+            language_query_filter["language__in"] = settings.PUBLIC_LANGUAGES
+
         # Retrieve kwargs
         scenario = self.object
-        default_language = scenario.languages().order_by('language__iso').first()
+        default_language = scenario.languages(**language_query_filter).order_by('language__iso').first()
         display_language = self.kwargs.get('language', default_language.language.iso)
         # We choose dimensions to be 1-based
         d1 = int(self.kwargs.get('d1', 1))
