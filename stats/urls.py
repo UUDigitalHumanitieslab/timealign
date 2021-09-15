@@ -3,7 +3,7 @@ from django.urls import path, re_path
 from .views import ScenarioList, ScenarioDetail, ScenarioDownload, ScenarioManual, \
     MDSView, MDSViewOld, \
     DescriptiveStatsView, FragmentTableView, \
-    FragmentTableViewMDS, UpsetView, SankeyView, SankeyManual
+    FragmentTableViewMDS, UpsetView, SankeyView, SankeyManual, CaptchaTestView
 
 urlpatterns = [
 
@@ -40,4 +40,7 @@ urlpatterns = [
 
     # Descriptive statistics
     re_path(r'^descriptive/(?P<pk>\d+)/$', DescriptiveStatsView.as_view(), name='descriptive'),
+
+    # Captcha
+    path('captcha/', CaptchaTestView.as_view(), name='captcha_test'),
 ]

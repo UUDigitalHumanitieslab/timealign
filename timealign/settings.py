@@ -49,6 +49,9 @@ INSTALLED_APPS = [
     'django_object_actions',
     'nested_admin',
     'robots',
+    # This Captcha is based on https://django-simple-captcha.readthedocs.io/en/latest/usage.html
+    'captcha',
+    # Alternative Captcha: https://simpleisbetterthancomplex.com/tutorial/2017/02/21/how-to-add-recaptcha-to-django-site.html
     # 'debug_toolbar',
 
     'core.apps.CoreConfig',
@@ -67,9 +70,6 @@ INSTALLED_APPS = [
     'django.contrib.flatpages',
     'reversion'
 ]
-
-# TODO bram: add local memory caching to manage session without any additional resource
-# https://docs.djangoproject.com/en/3.2/topics/cache/#s-local-memory-caching
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
