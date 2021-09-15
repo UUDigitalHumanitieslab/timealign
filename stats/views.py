@@ -1,8 +1,8 @@
 import json
+import math
 import numbers
 import os
 import random
-import math
 from collections import Counter, OrderedDict, defaultdict
 from itertools import chain, repeat, count
 from zipfile import ZipFile
@@ -15,21 +15,16 @@ from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views import generic
-
 from django_filters.views import FilterView
 
 from annotations.models import Corpus, Fragment, Language, Tense, TenseCategory, Sentence, Word, Annotation
 from annotations.utils import get_available_corpora
 from core.utils import HTML
-
 from .filters import ScenarioFilter, FragmentFilter
+from .forms import CaptchaForm
 from .management.commands.scenario_to_feather import export_matrix, export_fragments, export_tensecats
 from .models import Scenario, ScenarioLanguage
 from .utils import get_label_properties_from_cache, prepare_label_cache
-
-from django.shortcuts import render
-from .forms import CaptchaForm
-import time
 
 
 class LimitedFreeAccessMixin(AccessMixin):
@@ -46,7 +41,7 @@ class LimitedFreeAccessMixin(AccessMixin):
             Check the validity of temporary access. Return true if the user has been granted temporary access. In this function, the access will be invalidated once it has passed the maximum time limit.
             """
             # Check if captcha has been completed properly
-            lack_captcha = request.session.get('succeed-captcha') is None or not request.session.get('succeed-captcha')
+            lack_captcha = not request.session.get('succeed-captcha', False)
             if lack_captcha:
                 return False
 
@@ -705,8 +700,6 @@ class CaptchaTestView(generic.FormView):
         return reverse('stats:scenarios')
 
     def form_valid(self, form):
-        start_access_ts = time.time()
-        self.request.session['captcha-ts'] = start_access_ts
         self.request.session['succeed-captcha'] = True
 
         return super().form_valid(form)
