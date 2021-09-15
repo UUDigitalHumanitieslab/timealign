@@ -1,7 +1,7 @@
 {% for word in words %}
     {% if latex %}
         {% if word.is_target or word in annotated_words %}
-            \textbf&#123;{{ word.word }}&#125;
+            \textit&#123;{{ word.word }}&#125;
         {% else %}
             {{ word.word }}
         {% endif %}
