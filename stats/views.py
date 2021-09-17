@@ -61,10 +61,15 @@ class ScenarioList(LimitedFreeAccessMixin, FilterView):
         and if show_test is False, don't show test Scenarios either.
         Order the Scenarios by Corpus title.
         """
+
+        scenario_list_kwargs = {'corpus__in': get_available_corpora(self.request.user)}
+        if not self.request.user.is_authenticated:
+            scenario_list_kwargs['is_public'] = True
+
         languages_from = ScenarioLanguage.objects.filter(as_from=True).select_related('language')
         languages_to = ScenarioLanguage.objects.filter(as_to=True).select_related('language')
         return Scenario.objects \
-            .filter(corpus__in=get_available_corpora(self.request.user)) \
+            .filter(**scenario_list_kwargs) \
             .exclude(last_run__isnull=True) \
             .select_related('corpus') \
             .prefetch_related(Prefetch('scenariolanguage_set', queryset=languages_from, to_attr='languages_from'),
@@ -85,8 +90,14 @@ class ScenarioDetail(LimitedFreeAccessMixin, generic.DetailView):
             .select_related('corpus') \
             .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels')  # Don't fetch the PickledObjectFields
         scenario = super().get_object(qs)
-        if scenario.corpus not in get_available_corpora(self.request.user):
+        lack_access_to_corpus = scenario.corpus not in get_available_corpora(self.request.user)
+        if lack_access_to_corpus:
             raise PermissionDenied
+
+        unauthorized_user_access_to_non_public_scenario = not self.request.user.is_authenticated and not scenario.is_public
+        if unauthorized_user_access_to_non_public_scenario:
+            raise PermissionDenied
+
         if not scenario.last_run:
             raise Http404('Scenario has not been run')
         return scenario
