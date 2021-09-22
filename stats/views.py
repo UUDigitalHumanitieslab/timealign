@@ -8,7 +8,7 @@ from itertools import chain, repeat, count
 from zipfile import ZipFile
 
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Case, When, Prefetch
 from django.http import Http404, HttpResponseRedirect, HttpResponse
@@ -19,6 +19,7 @@ from django_filters.views import FilterView
 
 from annotations.models import Corpus, Fragment, Language, Tense, TenseCategory, Sentence, Word, Annotation
 from annotations.utils import get_available_corpora
+from core.mixins import LimitedPublicAccessMixin
 from core.utils import HTML
 from .filters import ScenarioFilter, FragmentFilter
 from .forms import CaptchaForm
@@ -27,28 +28,7 @@ from .models import Scenario, ScenarioLanguage
 from .utils import get_label_properties_from_cache, prepare_label_cache
 
 
-class LimitedFreeAccessMixin(AccessMixin):
-    """Verify that the current user is either authenticated or has successfully completed captcha test."""
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated or self.temporary_access_valid(request):
-            return super().dispatch(request, *args, **kwargs)
-        else:
-            # Redirect user to the captcha form page
-            return HttpResponseRedirect("/stats/captcha/")
-
-    def temporary_access_valid(self, request):
-            """
-            Check the validity of temporary access. Return true if the user has been granted temporary access. In this function, the access will be invalidated once it has passed the maximum time limit.
-            """
-            # Check if captcha has been completed properly
-            lack_captcha = not request.session.get('succeed-captcha', False)
-            if lack_captcha:
-                return False
-
-            return True
-
-
-class ScenarioList(LimitedFreeAccessMixin, FilterView):
+class ScenarioList(LimitedPublicAccessMixin, FilterView):
     """Shows a list of Scenarios"""
     model = Scenario
     context_object_name = 'scenarios'
@@ -73,7 +53,7 @@ class ScenarioList(LimitedFreeAccessMixin, FilterView):
             .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels')  # Don't fetch the PickledObjectFields
 
 
-class ScenarioDetail(LimitedFreeAccessMixin, generic.DetailView):
+class ScenarioDetail(LimitedPublicAccessMixin, generic.DetailView):
     """Shows details of a selected Scenario"""
     model = Scenario
 
@@ -383,7 +363,7 @@ class DescriptiveStatsView(ScenarioDetail):
         return context
 
 
-class FragmentTableView(LimitedFreeAccessMixin, FilterView):
+class FragmentTableView(LimitedPublicAccessMixin, FilterView):
     """Shows the drill-through to Fragments"""
     model = Fragment
     context_object_name = 'fragments'
@@ -452,6 +432,7 @@ class FragmentTableView(LimitedFreeAccessMixin, FilterView):
 
 class FragmentTableViewMDS(FragmentTableView):
     """Shows the drill-through for Fragments coming from the MDS solution"""
+
     def get_queryset(self):
         fragment_pks = self.request.session.get('fragment_pks', [])
         scenario_pk = self.request.session.get('scenario_pk')
