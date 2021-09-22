@@ -1,4 +1,5 @@
 import os
+import re
 from collections import defaultdict
 from tempfile import NamedTemporaryFile
 
@@ -29,6 +30,8 @@ from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, 
     TenseCategory, Tense, Source, Sentence, Word, LabelKey
 from .utils import get_next_alignment, get_available_corpora, get_xml_sentences, bind_annotations_to_xml, \
     natural_sort_key
+
+FRAGMENT_REFERER_PATTERN = re.compile('(/timealign/show/\d+/(plain/)?|/stats/fragment_table/)$')
 
 
 ##############
@@ -266,6 +269,8 @@ class FragmentDetailMixin(LimitedPublicAccessMixin):
             .prefetch_related('original', 'sentence_set__word_set')
         fragment = super().get_object(qs)
         if fragment.document.corpus not in get_available_corpora(self.request.user):
+            raise PermissionDenied
+        if 'referer' not in self.request.headers or FRAGMENT_REFERER_PATTERN.search(self.request.headers['referer']) is None:
             raise PermissionDenied
 
         return fragment
