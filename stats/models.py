@@ -47,6 +47,10 @@ class Scenario(models.Model):
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='scenarios', null=True, on_delete=models.SET_NULL)
 
+    is_public = models.BooleanField(
+        'Publicly accessible (unauthenticated users)',
+        default=False)
+
     def from_languages(self):
         languages = self.languages_from if hasattr(self, 'languages_from') else self.languages(as_from=True)
         return ', '.join([sl.language.title for sl in languages])
