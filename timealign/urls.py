@@ -28,6 +28,7 @@ urlpatterns = [
 
     path('captcha/', include('captcha.urls')),
 
+    re_path(r'^core/', include(('core.urls', 'core'), namespace='core')),
     re_path(r'^timealign/', include(('annotations.urls', 'annotations'), namespace='annotations')),
     re_path(r'^preselect/', include(('selections.urls', 'selections'), namespace='selections')),
     re_path(r'^stats/', include(('stats.urls', 'stats'), namespace='stats')),

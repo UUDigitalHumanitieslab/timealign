@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+    {% load static %}
+
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <link rel="icon" href="{% static 'core/images/favicon.ico' %}">
+
+        <title>Time in Translation</title>
+
+        {# Load the tag library #}
+        {% load bootstrap3 %}
+
+        {# Load CSS and JavaScript #}
+        {% bootstrap_css %}
+        {% bootstrap_javascript jquery=1 %}
+
+        {# Load the SmartMenus library #}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.smartmenus/1.0.0/jquery.smartmenus.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.smartmenus/1.0.0/addons/bootstrap/jquery.smartmenus.bootstrap.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.smartmenus/1.0.0/addons/bootstrap/jquery.smartmenus.bootstrap.min.css">
+
+        {# Load the qTip library #}
+        <script src="https://cdn.jsdelivr.net/qtip2/3.0.3/basic/jquery.qtip.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/qtip2/3.0.3/basic/jquery.qtip.min.css">
+
+        {# Load the Select2 library #}
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/css/select2.min.css" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.0.12/dist/js/select2.min.js"></script>
+
+        {# Custom CSS #}
+        <link rel="stylesheet" type="text/css" href="{% static 'core/style.css' %}" />
+        <link rel="stylesheet" type="text/css" href="{% static 'core/nav.css' %}" />
+
+        {# Allow for extra scripts and stylesheets #}
+        {% block head %}{% endblock %}
+    </head>
+
+    <body>
+        {% include "base/_menu.html" %}  <!-- Menu specifically for students -->
+
+        <div class="jumbotron">
+            <div class="container">
+                <h1>Translation Mining</h1>
+                <p>Translation Mining is an innovative methodology for investigating variation across languages.</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>Introduction</h2>
+            <p>Some text here, eventually linking to a guide through the website,
+                and finally linking to the repository of scenarios</p>
+        </div>
+
+        <div class="container">
+            <h2>Thesis ideas</h2>
+            <div class="col-md-4">
+                <a href="#">Thesis idea 1</a> abstract
+            </div>
+            <div class="col-md-4">
+                <a href="#">Thesis idea 2</a> abstract
+            </div>
+            <div class="col-md-4">
+                <a href="#">Thesis idea 3</a> abstract
+            </div>
+        </div>
+
+        <div class="container">
+            <h2>Latest student research</h2>
+            <div class="col-md-4">
+                <a href="#">Thesis 1</a> abstract
+            </div>
+            <div class="col-md-4">
+                <a href="#">Thesis 2</a> abstract
+            </div>
+            <div class="col-md-4">
+                <a href="#">Thesis 3</a> abstract
+            </div>
+        </div>
+
+        <footer>
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-3">
+                        <img class="img-responsive" alt="Logo Utrecht University" src="{% static 'core/images/uu-logo.svg' %}">
+                    </div>
+                    <div class="col-sm-6">
+                        <p>
+                            &copy; 2021 <a href="https://www.uu.nl/en/research/utrecht-institute-of-linguistics-ots" target="_blank">UiL OTS</a>, Utrecht University.
+                            <br/>
+                            Research funded by <a href="https://www.nwo.nl/en" target="_blank">NWO</a> under grant 360-80-070.
+                            <br/>
+                            Powered by the <a href="http://dig.hum.uu.nl/" target="_blank">Digital Humanities Lab</a>, Utrecht University.
+                        </p>
+                    </div>
+                    <div class="col-sm-3">
+                        <img class="img-responsive" alt="Logo NWO" src="{% static 'core/images/nwo-logo.jpg' %}" style="height: 80px; margin-bottom: 20px;">
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </body>
+</html>
