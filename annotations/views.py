@@ -2,10 +2,8 @@ import os
 from collections import defaultdict
 from tempfile import NamedTemporaryFile
 
-from lxml import etree
-
+from django.conf import settings
 from django.contrib import messages
-from django.contrib.admin.utils import construct_change_message
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count, Prefetch, QuerySet
@@ -15,15 +13,14 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.http import urlquote
 from django.views import generic
-
 from django_filters.views import FilterView
+from lxml import etree
 from reversion.models import Version
 from reversion.revisions import add_to_revision, set_comment
 from reversion.views import RevisionMixin
 
 from core.mixins import ImportMixin, CheckOwnerOrStaff, FluidMixin, SuperuserRequiredMixin
 from core.utils import find_in_enum, XLSX
-
 from .exports import export_annotations
 from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm, AddFragmentsForm, FragmentForm
@@ -281,6 +278,7 @@ class FragmentDetail(FragmentDetailMixin, generic.DetailView):
 
         context['sentences'] = doc_sentences or fragment.sentence_set.all()
         context['limit'] = limit
+        context['public_languages'] = settings.PUBLIC_FRAG_LANG_IDS
 
         return context
 

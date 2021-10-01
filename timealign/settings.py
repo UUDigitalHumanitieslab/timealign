@@ -27,6 +27,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 if DEBUG:
     from subprocess import Popen, PIPE
+
     hostname = Popen(('hostname'), stdout=PIPE).communicate()[0].decode().strip()
     ALLOWED_HOSTS.append(hostname)
     ALLOWED_HOSTS.append('localhost')
@@ -103,14 +104,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'timealign.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
     'default': user_db
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -129,7 +128,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
@@ -165,3 +163,5 @@ PE_DATA_PATH = '/opt/Corpora/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
+# Public fragment languages
+PUBLIC_FRAG_LANG_IDS = [0, 1, 2, 3, 4, 5, 6]
