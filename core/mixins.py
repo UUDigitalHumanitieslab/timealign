@@ -1,6 +1,7 @@
 from django.contrib import messages
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import UserPassesTestMixin, AccessMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.http import HttpResponseRedirect
 from django.views import generic
 
 
@@ -39,3 +40,26 @@ class FluidMixin(generic.base.ContextMixin):
         context = super().get_context_data(**kwargs)
         context['container_fluid'] = True
         return context
+
+
+class LimitedPublicAccessMixin(AccessMixin):
+    """Verify that the current user is either authenticated or has successfully completed captcha test."""
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated or self.temporary_access_valid(request):
+            return super().dispatch(request, *args, **kwargs)
+        else:
+            # Redirect user to the captcha form page
+            return HttpResponseRedirect("/stats/captcha/")
+
+    def temporary_access_valid(self, request):
+        """
+        Check the validity of temporary access. Return true if the user has been granted temporary access. In this function, the access will be
+        invalidated once it has passed the maximum time limit.
+        """
+        # Check if captcha has been completed properly
+        lack_captcha = not request.session.get('succeed-captcha', False)
+        if lack_captcha:
+            return False
+
+        return True

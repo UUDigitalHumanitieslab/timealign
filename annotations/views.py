@@ -1,4 +1,5 @@
 import os
+import re
 from collections import defaultdict
 from tempfile import NamedTemporaryFile
 
@@ -6,6 +7,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Prefetch, QuerySet
 from django.http import HttpResponse, JsonResponse, QueryDict
 from django.shortcuts import get_object_or_404
@@ -29,6 +31,8 @@ from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, 
     TenseCategory, Tense, Source, Sentence, Word, LabelKey
 from .utils import get_next_alignment, get_available_corpora, get_xml_sentences, bind_annotations_to_xml, \
     natural_sort_key
+
+FRAGMENT_REFERER_PATTERN = re.compile('(/timealign/show/\d+/(plain/)?|/stats/fragment_table/)$')
 
 
 ##############
@@ -257,7 +261,7 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
 ############
 # CRUD Fragment
 ############
-class FragmentDetailMixin(LoginRequiredMixin):
+class FragmentDetail(generic.DetailView):
     model = Fragment
 
     def get_object(self, queryset=None):
@@ -265,26 +269,28 @@ class FragmentDetailMixin(LoginRequiredMixin):
             .select_related('document__corpus', 'language', 'tense') \
             .prefetch_related('original', 'sentence_set__word_set')
         fragment = super().get_object(qs)
+        if fragment.document.corpus not in get_available_corpora(self.request.user):
+            raise PermissionDenied
+        if 'referer' not in self.request.headers or FRAGMENT_REFERER_PATTERN.search(self.request.headers['referer']) is None:
+            raise PermissionDenied
+
         return fragment
 
-
-class FragmentDetail(FragmentDetailMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(FragmentDetail, self).get_context_data(**kwargs)
+        type = self.kwargs['type'] if 'type' in self.kwargs else None
+        if type == 'plain/':
+            self.template_name = 'annotations/fragment_detail_plain.html'
+        else:
+            fragment = self.object
+            limit = 5  # TODO: magic number
+            doc_sentences = get_xml_sentences(fragment, limit)
 
-        fragment = self.object
-        limit = 5  # TODO: magic number
-        doc_sentences = get_xml_sentences(fragment, limit)
-
-        context['sentences'] = doc_sentences or fragment.sentence_set.all()
-        context['limit'] = limit
-        context['public_languages'] = settings.PUBLIC_FRAG_LANG_IDS
+            context['sentences'] = doc_sentences or fragment.sentence_set.all()
+            context['limit'] = limit
+            context['public_languages'] = settings.PUBLIC_FRAG_LANG_IDS
 
         return context
-
-
-class FragmentDetailPlain(FragmentDetailMixin, generic.DetailView):
-    template_name = 'annotations/fragment_detail_plain.html'
 
 
 class FragmentRevisionWithCommentMixin(RevisionWithCommentMixin):
