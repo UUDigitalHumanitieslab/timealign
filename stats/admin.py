@@ -30,13 +30,13 @@ class ScenarioLanguageInline(admin.StackedInline):
 @admin.register(Scenario)
 class ScenarioAdmin(BaseDjangoObjectActions, admin.ModelAdmin):
     form = ScenarioForm
-    list_display = ('title', 'corpus', 'is_test', 'from_languages', 'to_languages', 'last_run', )
+    list_display = ('title', 'corpus', 'is_test', 'is_public', 'from_languages', 'to_languages', 'last_run', )
     list_filter = ('corpus', 'scenariolanguage__language', 'owner')
     list_per_page = 25
 
     fieldsets = (
         (None, {
-            'fields': ('title', 'description', 'is_test', )
+            'fields': ('title', 'description', 'is_test', 'is_public', )
         }),
         ('Filters', {
             'fields': ('corpus', 'documents', 'subcorpora',
