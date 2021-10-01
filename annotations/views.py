@@ -260,7 +260,7 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
 ############
 # CRUD Fragment
 ############
-class FragmentDetailMixin(LimitedPublicAccessMixin):
+class FragmentDetail(generic.DetailView):
     model = Fragment
 
     def get_object(self, queryset=None):
@@ -275,23 +275,20 @@ class FragmentDetailMixin(LimitedPublicAccessMixin):
 
         return fragment
 
-
-class FragmentDetail(FragmentDetailMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(FragmentDetail, self).get_context_data(**kwargs)
+        type = self.kwargs['type'] if 'type' in self.kwargs else None
+        if type == 'plain/':
+            self.template_name = 'annotations/fragment_detail_plain.html'
+        else:
+            fragment = self.object
+            limit = 5  # TODO: magic number
+            doc_sentences = get_xml_sentences(fragment, limit)
 
-        fragment = self.object
-        limit = 5  # TODO: magic number
-        doc_sentences = get_xml_sentences(fragment, limit)
-
-        context['sentences'] = doc_sentences or fragment.sentence_set.all()
-        context['limit'] = limit
+            context['sentences'] = doc_sentences or fragment.sentence_set.all()
+            context['limit'] = limit
 
         return context
-
-
-class FragmentDetailPlain(FragmentDetailMixin, generic.DetailView):
-    template_name = 'annotations/fragment_detail_plain.html'
 
 
 class FragmentRevisionWithCommentMixin(RevisionWithCommentMixin):

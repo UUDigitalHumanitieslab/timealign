@@ -46,7 +46,7 @@ li.paragraph {
 <div class="container">
     <h1>
         Fragment overview
-        <a href="{% url 'annotations:show_plain' fragment.pk %}" class="label label-default pull-right" title="Show plain version">
+        <a href="{% url 'annotations:show' fragment.pk 'plain/' %}" class="label label-default pull-right" title="Show plain version">
             <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
         </a>
     </h1>
