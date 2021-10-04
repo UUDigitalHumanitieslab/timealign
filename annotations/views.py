@@ -268,8 +268,10 @@ class FragmentDetailMixin(generic.DetailView):
         fragment = super().get_object(qs)
         if fragment.document.corpus not in get_available_corpora(self.request.user):
             raise PermissionDenied
+
         referer_url = self.request.headers['referer']
-        if 'referer' not in self.request.headers or not referer_url.endswith(reverse("stats:fragment_table")):
+        if not self.request.user.is_authenticated and \
+                ('referer' not in self.request.headers or not referer_url.endswith(reverse("stats:fragment_table"))):
             raise PermissionDenied
 
         return fragment
