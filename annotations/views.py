@@ -3,11 +3,9 @@ import re
 from collections import defaultdict
 from tempfile import NamedTemporaryFile
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Prefetch, QuerySet
 from django.http import HttpResponse, JsonResponse, QueryDict
 from django.shortcuts import get_object_or_404
@@ -16,12 +14,13 @@ from django.urls import reverse
 from django.utils.http import urlquote
 from django.views import generic
 from django_filters.views import FilterView
+from django.core.exceptions import PermissionDenied
 from lxml import etree
 from reversion.models import Version
 from reversion.revisions import add_to_revision, set_comment
 from reversion.views import RevisionMixin
 
-from core.mixins import ImportMixin, CheckOwnerOrStaff, FluidMixin, SuperuserRequiredMixin
+from core.mixins import ImportMixin, CheckOwnerOrStaff, FluidMixin, SuperuserRequiredMixin, LimitedPublicAccessMixin
 from core.utils import find_in_enum, XLSX
 from .exports import export_annotations
 from .filters import AnnotationFilter
@@ -261,7 +260,7 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
 ############
 # CRUD Fragment
 ############
-class FragmentDetail(generic.DetailView):
+class FragmentDetail(LimitedPublicAccessMixin, generic.DetailView):
     model = Fragment
 
     def get_object(self, queryset=None):
@@ -288,7 +287,6 @@ class FragmentDetail(generic.DetailView):
 
             context['sentences'] = doc_sentences or fragment.sentence_set.all()
             context['limit'] = limit
-            context['public_languages'] = settings.PUBLIC_FRAG_LANG_IDS
 
         return context
 
