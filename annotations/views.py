@@ -1,11 +1,9 @@
 import os
+import re
 from collections import defaultdict
 from tempfile import NamedTemporaryFile
 
-from lxml import etree
-
 from django.contrib import messages
-from django.contrib.admin.utils import construct_change_message
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count, Prefetch, QuerySet
@@ -15,15 +13,15 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.http import urlquote
 from django.views import generic
-
 from django_filters.views import FilterView
+from django.core.exceptions import PermissionDenied
+from lxml import etree
 from reversion.models import Version
 from reversion.revisions import add_to_revision, set_comment
 from reversion.views import RevisionMixin
 
-from core.mixins import ImportMixin, CheckOwnerOrStaff, FluidMixin, SuperuserRequiredMixin
+from core.mixins import ImportMixin, CheckOwnerOrStaff, FluidMixin, SuperuserRequiredMixin, LimitedPublicAccessMixin
 from core.utils import find_in_enum, XLSX
-
 from .exports import export_annotations
 from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm, AddFragmentsForm, FragmentForm
@@ -32,6 +30,8 @@ from .models import Corpus, SubCorpus, Document, Language, Fragment, Alignment, 
     TenseCategory, Tense, Source, Sentence, Word, LabelKey
 from .utils import get_next_alignment, get_available_corpora, get_xml_sentences, bind_annotations_to_xml, \
     natural_sort_key
+
+FRAGMENT_REFERER_PATTERN = re.compile('(/timealign/show/\d+/(plain/)?|/stats/fragment_table/)$')
 
 
 ##############
@@ -260,7 +260,7 @@ class AnnotationChoose(PermissionRequiredMixin, generic.RedirectView):
 ############
 # CRUD Fragment
 ############
-class FragmentDetailMixin(LoginRequiredMixin):
+class FragmentDetail(generic.DetailView):
     model = Fragment
 
     def get_object(self, queryset=None):
@@ -268,25 +268,27 @@ class FragmentDetailMixin(LoginRequiredMixin):
             .select_related('document__corpus', 'language', 'tense') \
             .prefetch_related('original', 'sentence_set__word_set')
         fragment = super().get_object(qs)
+        if fragment.document.corpus not in get_available_corpora(self.request.user):
+            raise PermissionDenied
+        if 'referer' not in self.request.headers or FRAGMENT_REFERER_PATTERN.search(self.request.headers['referer']) is None:
+            raise PermissionDenied
+
         return fragment
 
-
-class FragmentDetail(FragmentDetailMixin, generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(FragmentDetail, self).get_context_data(**kwargs)
+        type = self.kwargs['type'] if 'type' in self.kwargs else None
+        if type == 'plain/':
+            self.template_name = 'annotations/fragment_detail_plain.html'
+        else:
+            fragment = self.object
+            limit = 5  # TODO: magic number
+            doc_sentences = get_xml_sentences(fragment, limit)
 
-        fragment = self.object
-        limit = 5  # TODO: magic number
-        doc_sentences = get_xml_sentences(fragment, limit)
-
-        context['sentences'] = doc_sentences or fragment.sentence_set.all()
-        context['limit'] = limit
+            context['sentences'] = doc_sentences or fragment.sentence_set.all()
+            context['limit'] = limit
 
         return context
-
-
-class FragmentDetailPlain(FragmentDetailMixin, generic.DetailView):
-    template_name = 'annotations/fragment_detail_plain.html'
 
 
 class FragmentRevisionWithCommentMixin(RevisionWithCommentMixin):
