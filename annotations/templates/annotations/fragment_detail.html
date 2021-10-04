@@ -46,9 +46,11 @@ li.paragraph {
 <div class="container">
     <h1>
         Fragment detail
-        <a href="{% url 'annotations:show' fragment.pk 'plain/' %}" class="label label-default pull-right" title="Show plain version">
+        {% if user.is_authenticated %}
+        <a href="{% url 'annotations:show_plain' fragment.pk %}" class="label label-default pull-right" title="Show plain version">
             <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
         </a>
+        {% endif %}
     </h1>
     <h2>Source</h2>
     <h3 data-pk="{{ fragment.pk }}">
@@ -63,7 +65,9 @@ li.paragraph {
         {% for label, cat_col in fragment.label_colors.items %}
         <span class="label pull-right" title="{{ cat_col.0 }}" style="background-color: {{ cat_col.1 }};">{{ label.title }}</span>
         {% endfor %}
+        {% if user.is_authenticated %}
         <a href="{% url 'annotations:document' fragment.document.pk %}" class="label label-default pull-right" title="Show document">{{ fragment.document.title }}</a>
+        {% endif %}
         {% if fragment.document.corpus.check_structure %}
         <span class="label label-warning pull-right">{{ fragment.get_formal_structure_display }}</span>
         <span class="label label-primary pull-right">{{ fragment.get_sentence_function_display }}</span>
