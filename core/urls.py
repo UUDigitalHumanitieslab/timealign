@@ -2,8 +2,8 @@ from django.urls import path
 from django.views.generic import TemplateView
 
 urlpatterns = [
-    path('', TemplateView.as_view(template_name='base/landing.html'), name='landing'),
-    path('researcher', TemplateView.as_view(template_name='base/landing-researcher.html'), name='landing-researcher'),
-    path('teacher', TemplateView.as_view(template_name='base/landing-teacher.html'), name='landing-teacher'),
-    path('student', TemplateView.as_view(template_name='base/landing-student.html'), name='landing-student'),
+    path('', TemplateView.as_view(template_name='base/home.html'), name='home'),
+    path('researcher', TemplateView.as_view(template_name='base/researcher.html'), name='researcher'),
+    path('teacher', TemplateView.as_view(template_name='base/teacher.html'), name='teacher'),
+    path('student', TemplateView.as_view(template_name='base/student.html'), name='student'),
 ]
