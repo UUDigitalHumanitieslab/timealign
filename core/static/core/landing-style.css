@@ -25,11 +25,11 @@ header.masthead {
     background-color: #feb300;
 }
 
-header.masthead .masthead-heading{
+header.masthead .masthead-heading {
     font-size: 6rem;
 }
 
-header.masthead .masthead-subheading{
+header.masthead .masthead-subheading {
     font-size: 2rem;
 }
 
@@ -53,12 +53,11 @@ a.main:focus {
 }
 
 section {
-    margin: 6rem auto;
+    padding: 4rem 0 6rem;
 }
 
 section.secondary-section {
     background-color: #ffaaab;
-    border-radius: 5px;
 }
 
 .mt-2 {
@@ -69,6 +68,14 @@ section.secondary-section {
     margin-top: 4rem;
 }
 
+.mb-2 {
+    margin-bottom: 2rem;
+}
+
+.mb-4 {
+    margin-bottom: 4rem;
+}
+
 .m-2 {
     margin: 2rem;
 }
@@ -77,6 +84,13 @@ section.secondary-section {
     margin: 4rem;
 }
 
-hr.secondary {
+hr.primary {
     border-color: #feb300;
+}
+
+div.card {
+    background-color: #feb300;
+    padding: 0.5rem 1rem 3rem;
+    border-radius: 2rem;
+    border: 2px solid #eeeeee;
 }

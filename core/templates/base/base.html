@@ -41,51 +41,16 @@
     </head>
 
     <body>
-        {% include "landing/_menu.html" %} <!-- Maybe have a simplified menu here -->
+        {% include "base/_menu.html" %}
 
-        <div class="jumbotron">
+        {% if container_fluid %}
+            <div class="container-fluid">
+        {% else %}
             <div class="container">
-                <h1>Translation Mining</h1>
-                <p>Translation Mining is an innovative methodology for investigating variation across languages.</p>
-            </div>
-        </div>
+        {% endif %}
+            <div>{% bootstrap_messages %}</div>
 
-        <div class="container">
-            <h2>For whom?</h2>
-            <div class="col-md-4">
-                <a href="{% url 'core:landing-researcher' %}">Researchers</a>
-            </div>
-            <div class="col-md-4">
-                <a href="{% url 'core:landing-teacher' %}">Teachers</a>
-            </div>
-            <div class="col-md-4">
-                <a href="{% url 'core:landing-student' %}">Students</a>
-            </div>
-        </div>
-
-        <div class="container">
-            <h2>News</h2>
-            <div class="row">
-                {% load news_filters %}
-                {% get_posts 3 as posts %}
-                {% for post in posts %}
-                <div class="col-md-4">
-                    <div class="panel panel-primary">
-                        <div class="panel-heading">
-                            <h3 class="panel-title" data-slug="{{ post.slug }}">{{ post.date }}: {{ post.title }}</h3>
-                        </div>
-                        <div class="panel-body">
-                            <p>
-                                {{ post.content | safe }}
-                            </p>
-                        </div>
-                    </div>
-                    {% if forloop.last %}
-                    <a href="{% url 'news:posts' %}" role="button" class="btn btn-info pull-right">Show all news</a>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
+            <div>{% block content %}{% endblock %}</div>
         </div>
 
         <footer>

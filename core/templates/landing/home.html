@@ -1,4 +1,4 @@
-{% extends "base/landing-base.html" %}
+{% extends "landing/base.html" %}
 {% load bootstrap3 %}
 {% load static %}
 {% block head %}
@@ -20,9 +20,9 @@
     <section>
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-lg-offset-3 col-lg-6 mx-auto text-center">
+                <div class="col-lg-offset-2 col-lg-8 mx-auto text-center">
                     <h2 class="section-heading">Why this project?</h2>
-                    <hr class="secondary">
+                    <hr class="primary">
                     <p>
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
                         enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
@@ -31,11 +31,16 @@
                     </p>
                 </div>
             </div>
+            <div class="row align-items-center mt-2">
+                <div class="col-lg-offset-2 col-lg-8 mx-auto text-center">
+                    <img src="/static/core/images/MDS-crop.png" title="MDS" width="100%"/>
+                </div>
+            </div>
         </div>
     </section>
 
     <section class="secondary-section">
-        <div class="container secondary-section mt-4">
+        <div class="container secondary-section">
             <div class="row align-items-center">
                 <div class="col-lg-12 mx-auto text-center">
                     <h2 class="section-heading">Who is it for?</h2>
@@ -49,6 +54,7 @@
                             <h3 class="card-title">
                                 Researchers
                             </h3>
+                            <hr/>
                             <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent rutrum.</p>
                             <a href="{% url 'core:researcher' %}" class="btn main">Read more</a>
                         </div>
@@ -60,6 +66,7 @@
                             <h3 class="card-title">
                                 Teachers
                             </h3>
+                            <hr/>
                             <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent rutrum.</p>
                             <a href="{% url 'core:teacher' %}" class="btn main">Read more</a>
                         </div>
@@ -71,6 +78,7 @@
                             <h3 class="card-title">
                                 Students
                             </h3>
+                            <hr/>
                             <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent rutrum.</p>
                             <a href="{% url 'core:student' %}" class="btn main">Read more</a>
                         </div>
@@ -81,11 +89,45 @@
     </section>
 
     <section>
-        <div class="container mt-4">
+        <div class="container">
             <div class="row align-items-center">
-                <div class="col-lg-offset-3 col-lg-6 mx-auto text-center">
+                <div class="col-lg-12 mx-auto text-center">
+                    <h2 class="section-heading">Follow Our Updates</h2>
+                    <hr class="primary">
+                </div>
+            </div>
+            <div class="row">
+                {% load news_filters %}
+                {% get_posts 3 as posts %}
+                {% for post in posts %}
+                    <div class="col-md-4">
+                        <div class="panel panel-primary">
+                            <div class="panel-heading">
+                                <h3 class="panel-title" data-slug="{{ post.slug }}">{{ post.date }}: {{ post.title }}</h3>
+                            </div>
+                            <div class="panel-body">
+                                <p>
+                                    {{ post.content | safe }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="row align-items-center">
+                <div class="col mx-auto text-center">
+                    <a href="{% url 'news:posts' %}" class="btn main">Show all news</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="secondary-section">
+        <div class="container secondary-section">
+            <div class="row align-items-center">
+                <div class="col-lg-offset-2 col-lg-8 mx-auto text-center">
                     <h2 class="section-heading">Contact Us</h2>
-                    <hr class="secondary">
+                    <hr>
                     <p class="mb-4">
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
                         enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
