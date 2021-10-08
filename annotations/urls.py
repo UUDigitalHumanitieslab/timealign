@@ -2,8 +2,8 @@ from django.urls import path, re_path
 
 from .views import InstructionsView, IntroductionView, StatusView, \
     AnnotationCreate, AnnotationUpdate, AnnotationDelete, AnnotationChoose, \
-    FragmentEdit, FragmentDetail, AnnotationList, FragmentList, ExportPOSDownload, ExportPOSPrepare, PrepareDownload, TenseCategoryList, \
-    LabelList, ImportLabelsView, CorpusList, CorpusDetail, DocumentDetail, SourceDetail, AddFragmentsView
+    FragmentEdit, FragmentDetail, FragmentDetailPlain, AnnotationList, FragmentList, ExportPOSDownload, ExportPOSPrepare, PrepareDownload, \
+    TenseCategoryList, LabelList, ImportLabelsView, CorpusList, CorpusDetail, DocumentDetail, SourceDetail, AddFragmentsView
 
 urlpatterns = [
     # Static views
@@ -20,7 +20,8 @@ urlpatterns = [
     re_path(r'^choose/(?P<l1>\w+)/(?P<l2>\w+)/$', AnnotationChoose.as_view(), name='choose'),
 
     # Showing Fragments
-    re_path(r'^show/(?P<pk>\d+)/(?P<type>\w+/)?$', FragmentDetail.as_view(), name='show'),
+    re_path(r'^show/(?P<pk>\d+)/$', FragmentDetail.as_view(), name='show'),
+    re_path(r'^show/(?P<pk>\d+)/plain/$', FragmentDetailPlain.as_view(), name='show_plain'),
     re_path(r'^edit_fragment/(?P<pk>\d+)/$', FragmentEdit.as_view(), name='edit_fragment'),
 
     # Showing Corpora
