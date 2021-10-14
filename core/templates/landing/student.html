@@ -4,6 +4,32 @@
 {% block head %}
 {% endblock %}
 
+{% block menu %}
+    {% load bootstrap3 %}
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'core:home' %}">Translation Mining</a>
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">For Students</a></li>
+                    <li><a href="#">Thesis Examples</a></li>
+                    <li><a href="#">How To Start</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+{% endblock %}
+
 {% block content %}
 
     <header class="masthead text-center text-white">

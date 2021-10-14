@@ -1,21 +1,8 @@
 {% load bootstrap3 %}
 
-{#<nav _ngcontent-c5="" class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">#}
-{#    <div _ngcontent-c5="" class="container">#}
-{#        <a _ngcontent-c5="" class="navbar-brand" routerlink="/home" href="/home">initG</a>#}
-{#        <ul _ngcontent-c5="" class="navbar-nav mr-auto">#}
-{#            <li _ngcontent-c5="" class="nav-item">#}
-{#                <a _ngcontent-c5="" class="nav-link" routerlink="/home-public" href="/home-public">initG Search Engine</a>#}
-{#            </li>#}
-{#            <li _ngcontent-c5="" class="nav-item">#}
-{#                <a _ngcontent-c5="" class="nav-link" routerlink="/home-gate" href="/home-gate">initG Gate</a>#}
-{#            </li>#}
-{#        </ul>#}
-{#    </div>#}
-{#</nav>#}
-
 <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
+        <a class="navbar-brand" href="{% url 'core:home' %}">Translation Mining</a>
         <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
                 <span class="sr-only">Toggle navigation</span>
@@ -26,7 +13,6 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-                <li><a href="{% url 'core:home' %}">Home</a></li>
                 <li><a href="{% url 'core:researcher' %}">For researchers</a></li>
                 <li><a href="{% url 'core:teacher' %}">For teachers</a></li>
                 <li><a href="{% url 'core:student' %}">For students</a></li>
