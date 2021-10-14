@@ -1,3 +1,11 @@
+:root {
+    --color-main: #feb300;
+    --color-primary: #ff5e6c;
+    --color-accent: #ffaaab;
+    --color-text-dark: #2f172a;
+    --color-text-light: #fff5d7;
+}
+
 body {
     background-color: #fff5d7;
     font-size: 1.8rem;
@@ -5,7 +13,7 @@ body {
 }
 
 footer {
-    border-top: 2px solid #ff5e6c;
+    border-top: 2px solid var(--color-primary);
     margin-top: 20px;
     padding-top: 20px;
 }
@@ -22,7 +30,7 @@ footer p {
 header.masthead {
     padding-top: 5rem;
     padding-bottom: 5rem;
-    background-color: #feb300;
+    background-color:  var(--color-main);
 }
 
 header.masthead .masthead-heading {
@@ -41,14 +49,14 @@ header.masthead .masthead-subheading {
 }
 
 a.main {
-    background-color: #ff5e6c;
-    color: #2F172A;
+    background-color:  var(--color-primary);
+    color:  var(--color-text-dark);
 }
 
 a.main:hover,
 a.main:focus {
-    background-color: #ffaaab;
-    color: #2F172A;
+    background-color:  var(--color-accent);
+    color:  var(--color-text-dark);
     border: 1px solid #fff5d7;
 }
 
@@ -57,7 +65,7 @@ section {
 }
 
 section.secondary-section {
-    background-color: #ffaaab;
+    background-color:  var(--color-accent);
 }
 
 .mt-2 {
@@ -85,11 +93,11 @@ section.secondary-section {
 }
 
 hr.primary {
-    border-color: #feb300;
+    border-color:  var(--color-main);
 }
 
 div.card {
-    background-color: #feb300;
+    background-color:  var(--color-main);
     padding: 0.5rem 1rem 3rem;
     border-radius: 4px;
     border: 2px solid #eeeeee;
