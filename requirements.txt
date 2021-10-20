@@ -6,13 +6,13 @@
 #
 asgiref==3.4.1
     # via django
-certifi==2021.5.30
+certifi==2021.10.8
     # via requests
-charset-normalizer==2.0.5
+charset-normalizer==2.0.7
     # via requests
-click==8.0.1
+click==8.0.3
     # via perfectextractor
-django==3.2.7
+django==3.2.8
     # via
     #   -r requirements.in
     #   django-bootstrap3
@@ -25,7 +25,7 @@ django-bootstrap3==15.0.0
     # via -r requirements.in
 django-ckeditor==6.1.0
     # via -r requirements.in
-django-filter==2.4.0
+django-filter==21.1
     # via -r requirements.in
 django-js-asset==1.2.2
     # via django-ckeditor
@@ -45,9 +45,9 @@ django-simple-captcha==0.5.14
     # via -r requirements.in
 django-widget-tweaks==1.4.8
     # via perfectextractor-ui
-idna==3.2
+idna==3.3
     # via requests
-joblib==1.0.1
+joblib==1.1.0
     # via scikit-learn
 lxml==4.6.3
     # via
@@ -68,7 +68,7 @@ perfectextractor==0.4
     # via perfectextractor-ui
 perfectextractor-ui==0.1.7
     # via -r requirements.in
-pillow==8.3.2
+pillow==8.4.0
     # via
     #   -r requirements.in
     #   django-simple-captcha
@@ -78,7 +78,7 @@ python-dateutil==2.8.2
     # via pandas
 python-monkey-business==1.0.0
     # via django-nested-admin
-pytz==2021.1
+pytz==2021.3
     # via
     #   django
     #   pandas
@@ -98,9 +98,9 @@ six==1.16.0
     #   python-monkey-business
 sqlparse==0.4.2
     # via django
-threadpoolctl==2.2.0
+threadpoolctl==3.0.0
     # via scikit-learn
-urllib3==1.26.6
+urllib3==1.26.7
     # via requests
 xlsxwriter==3.0.1
     # via -r requirements.in
