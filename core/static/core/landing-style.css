@@ -7,7 +7,7 @@
 }
 
 body {
-    background-color: #fff5d7;
+    background-color: var(--color-text-light);
     font-size: 1.8rem;
     line-height: 1.8;
 }
@@ -57,7 +57,7 @@ a.main:hover,
 a.main:focus {
     background-color:  var(--color-accent);
     color:  var(--color-text-dark);
-    border: 1px solid #fff5d7;
+    border: 1px solid var(--color-text-light);
 }
 
 section {
@@ -101,4 +101,25 @@ div.card {
     padding: 0.5rem 1rem 3rem;
     border-radius: 4px;
     border: 2px solid #eeeeee;
+}
+
+div.news {
+    margin: 0.5rem 1rem 3rem;
+    border-radius: 4px;
+    border: 2px solid var(--color-main);
+}
+
+div.news-heading {
+    background-color: var(--color-main);
+    padding: 1rem;
+    min-height: 55px;
+}
+
+div.news-body {
+    padding: 1rem;
+    background-color: transparent;
+}
+
+div.news-body A {
+    font-weight: bold;
 }
