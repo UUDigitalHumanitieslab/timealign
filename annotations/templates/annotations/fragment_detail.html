@@ -46,6 +46,9 @@ li.paragraph {
 <div class="container">
     <h1>
         Fragment detail
+        <a href="{{ request.META.HTTP_REFERER }}" class="label label-default pull-right" title="Return to overview">
+            <span class="glyphicon glyphicon-step-backward" aria-hidden="true"></span>
+        </a>
         {% if user.is_authenticated %}
         <a href="{% url 'annotations:show_plain' fragment.pk %}" class="label label-default pull-right" title="Show plain version">
             <span class="glyphicon glyphicon-copy" aria-hidden="true"></span>
