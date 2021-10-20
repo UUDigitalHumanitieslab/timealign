@@ -269,9 +269,9 @@ class FragmentDetailMixin(generic.DetailView):
         if fragment.document.corpus not in get_available_corpora(self.request.user):
             raise PermissionDenied
 
-        referer_url = self.request.headers['referer']
-        if not self.request.user.is_authenticated and \
-                ('referer' not in self.request.headers or not referer_url.endswith(reverse("stats:fragment_table"))):
+        referer_url = self.request.headers.get('referer', '')
+        allowed_referers = referer_url.endswith((reverse('stats:fragment_table'), reverse('stats:fragment_table_mds')))
+        if not (self.request.user.is_authenticated or allowed_referers):
             raise PermissionDenied
 
         return fragment
