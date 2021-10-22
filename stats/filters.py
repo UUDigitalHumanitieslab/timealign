@@ -32,6 +32,17 @@ class ScenarioFilter(FilterSet):
         self.filters['scenariolanguage__language'].label = 'Language'
 
 
+class PublicScenarioFilter(FilterSet):
+    title = CharFilter(lookup_expr='icontains')
+
+    class Meta:
+        model = Scenario
+        fields = ['title']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
 class FragmentFilter(FilterSet):
     class Meta:
         model = Fragment
