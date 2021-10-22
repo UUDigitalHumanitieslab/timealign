@@ -21,7 +21,7 @@ from annotations.models import Corpus, Fragment, Language, Tense, TenseCategory,
 from annotations.utils import get_available_corpora
 from core.mixins import LimitedPublicAccessMixin
 from core.utils import HTML
-from .filters import ScenarioFilter, FragmentFilter
+from .filters import ScenarioFilter, FragmentFilter, PublicScenarioFilter
 from .forms import CaptchaForm
 from .management.commands.scenario_to_feather import export_matrix, export_fragments, export_tensecats
 from .models import Scenario, ScenarioLanguage
@@ -32,7 +32,6 @@ class ScenarioList(LimitedPublicAccessMixin, FilterView):
     """Shows a list of Scenarios"""
     model = Scenario
     context_object_name = 'scenarios'
-    filterset_class = ScenarioFilter
     paginate_by = 10
 
     def get_queryset(self):
@@ -56,6 +55,9 @@ class ScenarioList(LimitedPublicAccessMixin, FilterView):
                               Prefetch('scenariolanguage_set', queryset=languages_to, to_attr='languages_to')) \
             .order_by('corpus__title') \
             .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels')  # Don't fetch the PickledObjectFields
+
+    def get_filterset_class(self):
+        return ScenarioFilter if self.request.user.is_authenticated else PublicScenarioFilter
 
 
 class ScenarioDetail(LimitedPublicAccessMixin, generic.DetailView):
