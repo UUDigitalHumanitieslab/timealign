@@ -1,6 +1,7 @@
 {% extends "landing/base.html" %}
 {% load bootstrap3 %}
 {% load static %}
+{% load i18n %}
 {% block head %}
 {% endblock %}
 
@@ -20,9 +21,9 @@
             </div>
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li><a href="{% url 'core:researcher' %}">For Researchers</a></li>
-                    <li><a href="{% url 'core:teacher' %}">For Teachers</a></li>
-                    <li><a href="{% url 'core:student' %}">For Students</a></li>
+                    <li><a href="{% url 'core:researcher' %}">{% translate 'menu.researcher' %}</a></li>
+                    <li><a href="{% url 'core:teacher' %}">{% translate 'menu.teacher' %}</a></li>
+                    <li><a href="{% url 'core:student' %}">{% translate 'menu.student' %}</a></li>
                 </ul>
             </div>
         </div>

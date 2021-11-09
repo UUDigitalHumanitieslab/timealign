@@ -57,6 +57,14 @@ During debugging, we additionally use the [Django Debug Toolbar](https://django-
 
 And then uncomment the lines referring to the toolbar in `timealign/settings.py`.
 
+## Localization
+To add site localizations use the following command:
+
+    # To add a .po file that collects all the different message variables in templates
+    django-admin makemessages -l <language iso> -i <virtual environment folder name to ignore>
+    # To compile the translated texts
+    django-admin compilemessages
+
 ## Documentation
 
 You can find ERD diagrams of the applications in [`doc/models`](doc/models/README.md).
