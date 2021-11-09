@@ -48,7 +48,7 @@
             <div class="row align-items-center">
                 <div class="col-lg-offset-2 col-lg-8 mx-auto text-center">
                     <h2 class="section-heading">Why Translation Mining?</h2>
-                    <hr class="primary">
+                    <hr class="primary"/>
                     <p>
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
                         enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
@@ -70,7 +70,7 @@
             <div class="row align-items-center">
                 <div class="col-lg-12 mx-auto text-center">
                     <h2 class="section-heading">Who is it for?</h2>
-                    <hr>
+                    <hr/>
                 </div>
             </div>
             <div class="row">
@@ -117,43 +117,9 @@
     <section>
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-lg-12 mx-auto text-center">
-                    <h2 class="section-heading">Follow Our Updates</h2>
-                    <hr class="primary">
-                </div>
-            </div>
-            <div class="row">
-                {% load news_filters %}
-                {% get_posts 3 as posts %}
-                {% for post in posts %}
-                    <div class="col-md-4">
-                        <div class="news">
-                            <div class="news-heading">
-                                <h3 class="panel-title" data-slug="{{ post.slug }}">{{ post.date }}: {{ post.title }}</h3>
-                            </div>
-                            <div class="news-body">
-                                <p>
-                                    {{ post.content | safe }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-            <div class="row align-items-center">
-                <div class="col mx-auto text-center">
-                    <a href="{% url 'news:posts' %}" class="btn main">Show all news</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="secondary-section">
-        <div class="container secondary-section">
-            <div class="row align-items-center">
                 <div class="col-lg-offset-2 col-lg-8 mx-auto text-center">
                     <h2 class="section-heading">Contact Us</h2>
-                    <hr>
+                    <hr class="primary"/>
                     <p class="mb-4">
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
                         enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor

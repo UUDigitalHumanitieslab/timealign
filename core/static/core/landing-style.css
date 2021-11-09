@@ -1,9 +1,9 @@
 :root {
-    --color-main: #feb300;
-    --color-primary: #ff5e6c;
-    --color-accent: #ffaaab;
-    --color-text-dark: #2f172a;
-    --color-text-light: #fff5d7;
+    --color-main: #ffcd00;
+    --color-primary: #24a793;
+    --color-accent: #ffe6ab;
+    --color-text-dark: #000000;
+    --color-text-light: #ffffff;
 }
 
 body {
@@ -13,7 +13,7 @@ body {
 }
 
 footer {
-    border-top: 2px solid var(--color-primary);
+    border-top: 2px solid var(--color-main);
     margin-top: 20px;
     padding-top: 20px;
 }
@@ -25,6 +25,10 @@ footer img {
 
 footer p {
     text-align: center;
+}
+
+hr {
+    border-top: 2px solid var(--color-text-light);
 }
 
 header.masthead {
@@ -50,7 +54,7 @@ header.masthead .masthead-subheading {
 
 a.main {
     background-color:  var(--color-primary);
-    color:  var(--color-text-dark);
+    color:  var(--color-text-light);
 }
 
 a.main:hover,
