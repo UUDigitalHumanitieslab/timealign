@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 {% load static %}
+{% load i18n %}
 
 <head>
     <meta charset="utf-8">
@@ -41,7 +42,35 @@
 </head>
 
 <body>
-{% block menu %}{% endblock %}
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="#">Translation Mining</a>
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+                    aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            {% block menulist %}{% endblock %}
+            <ul class="nav navbar-nav navbar-right">
+                {% get_current_language as LANGUAGE_CODE %}
+                {% get_available_languages as languages %}
+                {% for lang_code, lang_name in languages %}
+                    {% if LANGUAGE_CODE == lang_code %}
+                        <li><a href="#" class="active">{{ lang_code }}</a></li>
+                    {% else %}
+                        <li><a href="{% url 'core:activate_language' lang_code %}">{{ lang_code }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</nav>
 
 <div>{% bootstrap_messages %}</div>
 

@@ -25,6 +25,15 @@
   padding-right: 2rem;
 }
 
+.navbar-inverse .navbar-nav > li > a.active {
+  color:  var(--color-primary);
+}
+.navbar-inverse .navbar-nav > li > a.active:hover,
+.navbar-inverse .navbar-nav > li > a.active:focus {
+  background-color:  transparent;
+  cursor: auto;
+}
+
 .navbar-inverse .navbar-nav > li > a:hover,
 .navbar-inverse .navbar-nav > li > a:focus {
   background-color:  var(--color-primary);

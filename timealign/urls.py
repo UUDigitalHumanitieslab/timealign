@@ -21,6 +21,7 @@ from django.contrib.flatpages import views
 from django.urls import include, path, re_path
 
 urlpatterns = [
+    path('i18n/', include('django.conf.urls.i18n')),
     path('accounts/login/', LoginView.as_view(), name='login'),
     path('accounts/logout/', LogoutView.as_view(), name='logout'),
     path('accounts/password/change/', PasswordChangeView.as_view(), name='password_change'),
