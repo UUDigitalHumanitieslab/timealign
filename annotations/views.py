@@ -283,7 +283,7 @@ class FragmentDetail(LimitedPublicAccessMixin, FragmentDetailMixin):
         context = super(FragmentDetail, self).get_context_data(**kwargs)
 
         fragment = self.object
-        limit = 5  # TODO: magic number
+        limit = 5 if self.request.user.is_authenticated else 1  # TODO: magic number
         doc_sentences = get_xml_sentences(fragment, limit)
 
         context['sentences'] = doc_sentences or fragment.sentence_set.all()
