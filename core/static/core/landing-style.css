@@ -10,6 +10,7 @@ body {
     background-color: var(--color-text-light);
     font-size: 1.8rem;
     line-height: 1.8;
+    font-family: Open Sans,sans-serif;
 }
 
 footer {
@@ -45,7 +46,7 @@ header.masthead .masthead-subheading {
     font-size: 2rem;
 }
 
-@media (min-width: 992px) {
+@media (min-width: 767px) {
     header.masthead {
         padding-top: calc(10rem + 55px);
         padding-bottom: 10rem;
