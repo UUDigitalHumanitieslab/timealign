@@ -3,12 +3,13 @@ from django.urls import path, re_path
 from .views import ScenarioList, ScenarioDetail, ScenarioDownload, ScenarioManual, \
     MDSView, MDSViewOld, \
     DescriptiveStatsView, FragmentTableView, \
-    FragmentTableViewMDS, UpsetView, SankeyView, SankeyManual, CaptchaTestView
+    FragmentTableViewMDS, UpsetView, SankeyView, SankeyManual, CaptchaTestView, PublicScenarioList
 
 urlpatterns = [
 
     # List views
     path('scenarios/', ScenarioList.as_view(), name='scenarios'),
+    path('scenarios/public/', PublicScenarioList.as_view(), name='public_scenarios'),
 
     # Manual
     path('scenarios/manual/', ScenarioManual.as_view(), name='scenarios_manual'),

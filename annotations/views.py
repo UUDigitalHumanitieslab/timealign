@@ -286,9 +286,12 @@ class FragmentDetail(LimitedPublicAccessMixin, FragmentDetailMixin):
         limit = 5 if self.request.user.is_authenticated else 1  # TODO: magic number
         doc_sentences = get_xml_sentences(fragment, limit)
 
+        # TODO: Select scenario.languages
+        scenario_language_iso_list = []
+
         context['sentences'] = doc_sentences or fragment.sentence_set.all()
         context['limit'] = limit
-        context['public_languages'] = settings.PUBLIC_FRAG_LANG_IDS
+        context['public_languages'] = scenario_language_iso_list
 
         return context
 
