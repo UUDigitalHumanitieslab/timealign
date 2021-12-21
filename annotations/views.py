@@ -22,6 +22,7 @@ from reversion.views import RevisionMixin
 
 from core.mixins import ImportMixin, CheckOwnerOrStaff, FluidMixin, SuperuserRequiredMixin, LimitedPublicAccessMixin
 from core.utils import find_in_enum, XLSX
+from stats.models import Scenario
 from .exports import export_annotations
 from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm, AddFragmentsForm, FragmentForm
@@ -286,12 +287,18 @@ class FragmentDetail(LimitedPublicAccessMixin, FragmentDetailMixin):
         limit = 5 if self.request.user.is_authenticated else 1  # TODO: magic number
         doc_sentences = get_xml_sentences(fragment, limit)
 
-        # TODO: Select scenario.languages
-        scenario_language_iso_list = []
-
         context['sentences'] = doc_sentences or fragment.sentence_set.all()
         context['limit'] = limit
-        context['public_languages'] = scenario_language_iso_list
+
+        if not self.request.user.is_authenticated:
+            scenario_pk = self.request.session.get('scenario_pk', None)
+            if scenario_pk is None:
+                raise ValueError('Scenario must be known')
+            # Don't fetch the PickledObjectFields
+            scenario = Scenario.objects \
+                .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels') \
+                .get(pk=scenario_pk)
+            context['public_languages'] = [lang.iso for lang in scenario.languages()]
 
         return context
 

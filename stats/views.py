@@ -37,7 +37,7 @@ class PublicScenarioList(LimitedPublicAccessMixin, generic.TemplateView):
         context = super().get_context_data(**kwargs)
 
         scenario_list_kwargs = {'corpus__in': get_available_corpora(self.request.user), 'is_public': True}
-        # TODO: Is it necessary to add extra filter for teachers vs students?
+        # TODO Bram: Is it necessary to add extra filter for teachers vs students?
         languages_from = ScenarioLanguage.objects.filter(as_from=True).select_related('language')
         languages_to = ScenarioLanguage.objects.filter(as_to=True).select_related('language')
         scenarios = Scenario.objects \
