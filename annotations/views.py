@@ -2,7 +2,6 @@ import os
 from collections import defaultdict
 from tempfile import NamedTemporaryFile
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
@@ -298,7 +297,7 @@ class FragmentDetail(LimitedPublicAccessMixin, FragmentDetailMixin):
             scenario = Scenario.objects \
                 .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels') \
                 .get(pk=scenario_pk)
-            context['public_languages'] = [lang.iso for lang in scenario.languages()]
+            context['public_languages'] = [scenario_lang.language_id for scenario_lang in scenario.languages()]
 
         return context
 
