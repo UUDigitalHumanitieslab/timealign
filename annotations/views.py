@@ -2,7 +2,6 @@ import os
 from collections import defaultdict
 from tempfile import NamedTemporaryFile
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
@@ -22,6 +21,7 @@ from reversion.views import RevisionMixin
 
 from core.mixins import ImportMixin, CheckOwnerOrStaff, FluidMixin, SuperuserRequiredMixin, LimitedPublicAccessMixin
 from core.utils import find_in_enum, XLSX
+from stats.models import Scenario
 from .exports import export_annotations
 from .filters import AnnotationFilter
 from .forms import AnnotationForm, LabelImportForm, AddFragmentsForm, FragmentForm
@@ -288,7 +288,16 @@ class FragmentDetail(LimitedPublicAccessMixin, FragmentDetailMixin):
 
         context['sentences'] = doc_sentences or fragment.sentence_set.all()
         context['limit'] = limit
-        context['public_languages'] = settings.PUBLIC_FRAG_LANG_IDS
+
+        if not self.request.user.is_authenticated:
+            scenario_pk = self.request.session.get('scenario_pk', None)
+            if scenario_pk is None:
+                raise PermissionDenied('Missing scenario access')  # Scenario must be known
+            # Don't fetch the PickledObjectFields
+            scenario = Scenario.objects \
+                .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels') \
+                .get(pk=scenario_pk)
+            context['public_languages'] = [scenario_lang.language_id for scenario_lang in scenario.languages()]
 
         return context
 

@@ -162,6 +162,3 @@ LOGIN_REDIRECT_URL = '/timealign/status'
 PE_DATA_PATH = '/opt/Corpora/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
-
-# Public fragment languages
-PUBLIC_FRAG_LANG_IDS = ['de', 'es', 'en', 'fr', 'nl', 'it']
