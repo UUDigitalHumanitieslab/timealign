@@ -49,7 +49,8 @@ class PublicViewsTestCase(BaseTestCase):
 
             stats:fragment_table
             stats:fragment_table_mds
-        """
+        """  # TODO bram: the last 2 need special check on scenario_pk
+
         url_patterns = public_url_patterns.split('\n')
         for url_pattern in url_patterns:
             reversed_url = construct_url_from_pattern(url_pattern)
