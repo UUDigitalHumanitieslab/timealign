@@ -87,7 +87,7 @@ li.paragraph {
 
     <h2>Translations</h2>
     {% for language, annotation in fragment.get_annotations %}
-        {% if user.is_authenticated or language.iso in public_languages %}
+        {% if user.is_authenticated or language.id in public_languages %}
             {% if forloop.counter0|divisibleby:2 %}<div class="row">{% endif %}
         <div class="col-md-6 {% if not annotation %} text-muted {% endif %}">
             <h3 data-pk="{{ annotation.pk }}">

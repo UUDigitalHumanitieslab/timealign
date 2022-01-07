@@ -254,8 +254,8 @@ class Fragment(models.Model, HasLabelsMixin):
         annotations = Annotation.objects. \
             filter(alignment__original_fragment=self,
                    alignment__translated_fragment__language__in=other_languages). \
-            select_related('tense', 'alignment__translated_fragment__language') . \
-            prefetch_related('words', 'alignment__translated_fragment__sentence_set__word_set')
+            select_related('tense', 'tense__category', 'alignment__translated_fragment__language') . \
+            prefetch_related('labels', 'words', 'alignment__translated_fragment__sentence_set__word_set')
         # TODO: We currently consider only one Annotation per Alignment, YMMV.
         annotations_by_language = {a.alignment.translated_fragment.language: a for a in annotations}
 
