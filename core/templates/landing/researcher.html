@@ -1,140 +1,59 @@
-{% extends "landing/base.html" %}
-{% load bootstrap3 %}
-{% load static %}
-{% block head %}
-{% endblock %}
+{% extends "base/base.html" %}
 
-{% block menulist %}
-    <ul class="nav navbar-nav">
-        <li class="active"><a href="#">For researchers</a></li>
-        <li><a href="#">Publications</a></li>
-        <li><a href="#">Methodology Background</a></li>
-    </ul>
-{% endblock %}
+{% load bootstrap3 %}
 
 {% block content %}
 
-    <header class="masthead text-center text-white">
-        <div class="masthead-content">
-            <div class="container">
-                <h1 class="masthead-heading">Translation Mining for researchers</h1>
-                <hr/>
-                <h2 class="masthead-subheading">
-                    Translation Mining has been used for investigation cross-linguistic variation in different parts of grammar.
-                </h2>
-            </div>
-        </div>
-    </header>
-
-    <section>
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-offset-3 col-lg-6 mx-auto text-center">
-                    <h2 class="section-heading">Introduction</h2>
-                    <hr class="primary"/>
-                    <p>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                        enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
-                        in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                        proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="secondary-section">
-        <!-- The focus here is on research projects -->
-        <!-- Ideally, we create a new model:
-        Project
-            Name
-            Description
-            University
-        Linking table: ProjectMember
-            Project
-            User
-            Role (e.g. PI)
-            University -->
-
-        <div class="container secondary-section">
-            <div class="row align-items-center">
-                <div class="col-lg-12 mx-auto text-center">
-                    <h2 class="section-heading">Current projects</h2>
-                    <hr/>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-4">
-                    <a href="#">Project 1</a> PIs (pictures), funding instrument (picture)
-                </div>
-                <div class="col-md-4">
-                    <a href="#">Project 2</a> PIs (pictures), funding instrument (picture)
-                </div>
-                <div class="col-md-4">
-                    <a href="#">Project 3</a> PIs (pictures), funding instrument (picture)
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section>
-        <!-- Publications -->
-        <!-- Some work to create a model for publications has already been created -->
-
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-12 mx-auto text-center">
-                    <h2 class="section-heading">Recent publications</h2>
-                    <hr class="primary"/>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-4">
-                    <a href="#">Publication 1</a> abstract
-                </div>
-                <div class="col-md-4">
-                    <a href="#">Publication 2</a> abstract
-                </div>
-                <div class="col-md-4">
-                    <a href="#">Publication 3</a> abstract
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="secondary-section">
-        <div class="container secondary-section">
-            <div class="row align-items-center">
-                <div class="col-lg-12 mx-auto text-center">
-                    <h2 class="section-heading">Follow Our Updates</h2>
-                    <hr/>
-                </div>
-            </div>
-            <div class="row">
-                {% load news_filters %}
-                {% get_posts 3 as posts %}
-                {% for post in posts %}
-                    <div class="col-md-4">
-                        <div class="news">
-                            <div class="news-heading">
-                                <h3 class="panel-title" data-slug="{{ post.slug }}">{{ post.date }}: {{ post.title }}</h3>
-                            </div>
-                            <div class="news-body">
-                                <p>
-                                    {{ post.content | safe }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-            <div class="row align-items-center">
-                <div class="col mx-auto text-center">
-                    <a href="{% url 'news:posts' %}" class="btn main">Show all news</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th width="10%">Corpus</th>
+            <th width="30%">Scenario</th>
+            <th width="35%">Languages</th>
+            <th width="25%">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for scenario in scenarios %}
+            <tr>
+                <td>
+                    {{ scenario.corpus.title }}
+                </td>
+                <td>
+                    {{ scenario.title }}
+                    {% if scenario.is_test %}<span class="label label-warning">Test</span>{% endif %}
+                </td>
+                <td>
+                    {{ scenario.from_languages }} <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> {{ scenario.to_languages }}
+                </td>
+                <td>
+                    <a href="{% url 'stats:mds' scenario.pk %}" role="button" class="btn btn-primary btn-xs" title="MDS">
+                        MDS
+                    </a>
+                    <a href="{% url 'stats:upset' scenario.pk %}" role="button" class="btn btn-primary btn-xs" title="Upset">
+                        Upset
+                    </a>
+                    <a href="{% url 'stats:sankey' scenario.pk %}" role="button" class="btn btn-primary btn-xs" title="Sankey">
+                        Sankey
+                    </a>
+                    <a href="{% url 'stats:descriptive' scenario.pk %}" role="button" class="btn btn-primary btn-xs" title="Descriptive statistics">
+                        <span class="glyphicon glyphicon-stats" aria-hidden="true"></span>
+                    </a>
+                    <a href="{% url 'stats:show' scenario.pk %}" role="button" class="btn btn-primary btn-xs" title="Details">
+                        <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                    </a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'admin:stats_scenario_change' scenario.pk %}" role="button" class="btn btn-primary btn-xs" title="Edit">
+                            <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                        </a>
+                        <a href="{% url 'stats:download' scenario.pk %}" role="button" class="btn btn-primary btn-xs" title="Download">
+                            <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+                        </a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 
 {% endblock %}
