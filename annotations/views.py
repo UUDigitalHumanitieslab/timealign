@@ -292,7 +292,7 @@ class FragmentDetail(LimitedPublicAccessMixin, FragmentDetailMixin):
         if not self.request.user.is_authenticated:
             scenario_pk = self.request.session.get('scenario_pk', None)
             if scenario_pk is None:
-                raise PermissionDenied('Scenario must be known')
+                raise PermissionDenied('Missing scenario access')  # Scenario must be known
             # Don't fetch the PickledObjectFields
             scenario = Scenario.objects \
                 .defer('mds_model', 'mds_matrix', 'mds_fragments', 'mds_labels') \
