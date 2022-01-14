@@ -20,6 +20,11 @@ def construct_url_from_pattern(url_pattern):
     return reversed_url
 
 
+def assert_multiple_codes(test_object, url_pattern, actual_code, expected_codes):
+    test_object.assertTrue(actual_code in expected_codes,
+                           msg="Found {}, while expected {}. URL: {}".format(actual_code, str(expected_codes), url_pattern))
+
+
 class PublicViewsTestCase(BaseTestCase):
 
     def setUp(self):
@@ -60,13 +65,15 @@ class PublicViewsTestCase(BaseTestCase):
 
         session = self.client.session
         session['succeed-captcha'] = True
+        session['scenario_pk'] = self.scenario.pk
+        session['fragment_pks'] = [self.f_en.pk, self.f_nl.pk]
         session.save()
         for url_pattern in url_patterns:
             reversed_url = construct_url_from_pattern(url_pattern)
             if reversed_url is not None:
                 print("testing success on url:", reversed_url)
                 http_code = self.client.get(reversed_url).status_code
-                self.assertTrue(http_code == 200 or http_code == 404)
+                assert_multiple_codes(self, url_pattern, http_code, [200, 404])
 
     def test_non_public_urls_even_with_captcha(self):
         non_public_url_patterns = """
@@ -91,7 +98,6 @@ class PublicViewsTestCase(BaseTestCase):
             annotations:import-labels
             annotations:add-fragments
 
-            selections:instructions___1
             selections:status
             selections:status___1
             selections:create___1
@@ -106,17 +112,14 @@ class PublicViewsTestCase(BaseTestCase):
             stats:download___1
 
             admin:index
-            admin:view_on_site
-            admin:app_list___1
 
             perfectextractor_ui:home
             perfectextractor_ui:run
-            perfectextractor_ui:status
-            perfectextractor_ui:peek
-            perfectextractor_ui:cancel
-            perfectextractor_ui:download
+            perfectextractor_ui:status___1
+            perfectextractor_ui:peek___1
+            perfectextractor_ui:cancel___1
+            perfectextractor_ui:download___1
             perfectextractor_ui:import_query
-            perfectextractor_ui:help
         """
         session = self.client.session
         session['succeed-captcha'] = True
@@ -128,7 +131,7 @@ class PublicViewsTestCase(BaseTestCase):
             if reversed_url is not None:
                 print("testing unauthenticated on url:", reversed_url)
                 http_code = self.client.get(reversed_url).status_code
-                self.assertTrue(http_code == 302 or http_code == 403)
+                assert_multiple_codes(self, url_pattern, http_code, [302, 403])
 
     # NOTE: These are helpers code
 
@@ -231,10 +234,10 @@ class PublicViewsTestCase(BaseTestCase):
 
     #     perfectextractor_ui:home
     #     perfectextractor_ui:run
-    #     perfectextractor_ui:status
-    #     perfectextractor_ui:peek
-    #     perfectextractor_ui:cancel
-    #     perfectextractor_ui:download
+    #     perfectextractor_ui:status___1
+    #     perfectextractor_ui:peek___1
+    #     perfectextractor_ui:cancel___1
+    #     perfectextractor_ui:download___1
     #     perfectextractor_ui:import_query
     #     perfectextractor_ui:help
     # """
