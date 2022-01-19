@@ -1,4 +1,5 @@
 import os
+import re
 from collections import defaultdict
 from tempfile import NamedTemporaryFile
 
@@ -270,6 +271,7 @@ class FragmentDetailMixin(generic.DetailView):
             raise PermissionDenied
 
         referer_url = self.request.headers.get('referer', '')
+        referer_url = re.sub(r'\?page=\d+', '', referer_url)
         allowed_referers = referer_url.endswith((reverse('stats:fragment_table'), reverse('stats:fragment_table_mds')))
         if not (self.request.user.is_authenticated or allowed_referers):
             raise PermissionDenied
