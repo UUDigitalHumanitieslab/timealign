@@ -22,7 +22,7 @@ def construct_url_from_pattern(url_pattern):
 
 def assert_multiple_codes(test_object, url_pattern, actual_code, expected_codes):
     test_object.assertTrue(actual_code in expected_codes,
-                           msg="Found {}, while expected {}. URL: {}".format(actual_code, str(expected_codes), url_pattern))
+                           msg="Actual code {}, while expected {}. URL: {}".format(actual_code, str(expected_codes), url_pattern))
 
 
 class PublicViewsTestCase(BaseTestCase):
@@ -54,7 +54,7 @@ class PublicViewsTestCase(BaseTestCase):
 
             stats:fragment_table
             stats:fragment_table_mds
-        """  # TODO bram: the last 2 need special check on scenario_pk
+        """
 
         url_patterns = public_url_patterns.split('\n')
         for url_pattern in url_patterns:
@@ -123,6 +123,8 @@ class PublicViewsTestCase(BaseTestCase):
         """
         session = self.client.session
         session['succeed-captcha'] = True
+        session['scenario_pk'] = self.scenario.pk
+        session['fragment_pks'] = [self.f_en.pk, self.f_nl.pk]
         session.save()
 
         url_patterns = non_public_url_patterns.split('\n')

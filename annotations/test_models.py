@@ -8,7 +8,7 @@ from .models import Language, Corpus, Document, Fragment, Sentence, Word, \
 
 class BaseTestCase(TestCase):
     def setUp(self):
-        self.c1 = Corpus.objects.create(title='corpus1')
+        self.c1 = Corpus.objects.create(title='corpus1', is_public=True)
         self.c2 = Corpus.objects.create(title='corpus2')
         self.d = Document.objects.create(title='test', corpus=self.c1)
         self.en = Language.objects.get(iso='en')
