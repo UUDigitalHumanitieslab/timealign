@@ -25,10 +25,19 @@ def assert_multiple_codes(test_object, url_pattern, actual_code, expected_codes)
                            msg="Actual code {}, while expected {}. URL: {}".format(actual_code, str(expected_codes), url_pattern))
 
 
+def test_url_access(url_patterns_to_test, test_object, assertion_function):
+    url_patterns = url_patterns_to_test.split('\n')
+    for url_pattern in url_patterns:
+        url_pattern = url_pattern.replace("<f_en.pk>", str(test_object.f_en.pk))
+        reversed_url = construct_url_from_pattern(url_pattern)
+        if reversed_url is not None:
+            assertion_function(reversed_url, url_pattern)
+
+
 class PublicViewsTestCase(BaseTestCase):
 
     def setUp(self):
-        super(PublicViewsTestCase, self).setUp()
+        super().setUp()
 
         self.client = Client()
         # http://code.djangoproject.com/ticket/10899
@@ -56,24 +65,24 @@ class PublicViewsTestCase(BaseTestCase):
             stats:fragment_table_mds
         """
 
-        url_patterns = public_url_patterns.split('\n')
-        for url_pattern in url_patterns:
-            reversed_url = construct_url_from_pattern(url_pattern)
-            if reversed_url is not None:
-                print("testing redirect on url:", reversed_url)
-                self.assertRedirects(self.client.get(reversed_url), reverse('stats:captcha_test'), 302, 200)
+        def test_assert_function(url, url_pattern):
+            print("testing redirect on url:", url)
+            self.assertRedirects(self.client.get(url), reverse('stats:captcha_test'), 302, 200)
+
+        test_url_access(public_url_patterns, self, test_assert_function)
 
         session = self.client.session
         session['succeed-captcha'] = True
         session['scenario_pk'] = self.scenario.pk
         session['fragment_pks'] = [self.f_en.pk, self.f_nl.pk]
         session.save()
-        for url_pattern in url_patterns:
-            reversed_url = construct_url_from_pattern(url_pattern)
-            if reversed_url is not None:
-                print("testing success on url:", reversed_url)
-                http_code = self.client.get(reversed_url).status_code
-                assert_multiple_codes(self, url_pattern, http_code, [200, 404])
+
+        def test_assert_function(url, url_pattern):
+            print("testing success on url:", url)
+            http_code = self.client.get(url).status_code
+            assert_multiple_codes(self, url_pattern, http_code, [200, 404])
+
+        test_url_access(public_url_patterns, self, test_assert_function)
 
     def test_non_public_urls_even_with_captcha(self):
         non_public_url_patterns = """
@@ -82,8 +91,8 @@ class PublicViewsTestCase(BaseTestCase):
             annotations:create___1,1
             annotations:edit___1
             annotations:delete___1
-            annotations:show___1
-            annotations:show_plain___1
+            annotations:show___<f_en.pk>
+            annotations:show_plain___<f_en.pk>
             annotations:edit_fragment___1
             annotations:corpora
             annotations:corpus___1
@@ -127,13 +136,12 @@ class PublicViewsTestCase(BaseTestCase):
         session['fragment_pks'] = [self.f_en.pk, self.f_nl.pk]
         session.save()
 
-        url_patterns = non_public_url_patterns.split('\n')
-        for url_pattern in url_patterns:
-            reversed_url = construct_url_from_pattern(url_pattern)
-            if reversed_url is not None:
-                print("testing unauthenticated on url:", reversed_url)
-                http_code = self.client.get(reversed_url).status_code
-                assert_multiple_codes(self, url_pattern, http_code, [302, 403])
+        def test_assert_function(url, url_pattern):
+            print("testing unauthenticated on url:", url)
+            http_code = self.client.get(url).status_code
+            assert_multiple_codes(self, url_pattern, http_code, [302, 403])
+
+        test_url_access(non_public_url_patterns, self, test_assert_function)
 
     # NOTE: These are helpers code
 
