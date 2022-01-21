@@ -38,6 +38,10 @@
     border-radius: 50%;
     display: inline-block;
   }
+  .drill-through {
+      margin:0;
+      padding:0;
+  }
 </style>
 {% endblock %}
 
@@ -86,7 +90,7 @@
                                 {{ label }}
                             </td>
                             <td>
-                                <a class="drill-through" href="#" data-fragments="{{ fs|join:',' }}">{{ fs|length }}</a>
+                                <button class="drill-through btn btn-link" data-fragments="{{ fs|join:',' }}" title="Press ctrl. and click to open in new tab">{{ fs|length }}</button>
                             </td>
                         </tr>
                         {% endfor %}
@@ -155,7 +159,7 @@
                     </td>
                     {% endfor %}
                     <td>
-                        <a class="drill-through" href="#" data-fragments="{{ fs|join:',' }}">{{ fs|length }}</a>
+                        <button class="drill-through btn btn-link" data-fragments="{{ fs|join:',' }}" title="Press ctrl. and click to open in new tab">{{ fs|length }}</button>
                     </td>
                 </tr>
                 {% endfor %}
