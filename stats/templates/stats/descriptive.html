@@ -90,7 +90,7 @@
                                 {{ label }}
                             </td>
                             <td>
-                                <button class="drill-through btn btn-link" data-fragments="{{ fs|join:',' }}">{{ fs|length }}</button>
+                                <button class="drill-through btn btn-link" data-fragments="{{ fs|join:',' }}" title="Press ctrl. and click to open in new tab">{{ fs|length }}</button>
                             </td>
                         </tr>
                         {% endfor %}
@@ -159,7 +159,7 @@
                     </td>
                     {% endfor %}
                     <td>
-                        <button class="drill-through btn btn-link" data-fragments="{{ fs|join:',' }}">{{ fs|length }}</button>
+                        <button class="drill-through btn btn-link" data-fragments="{{ fs|join:',' }}" title="Press ctrl. and click to open in new tab">{{ fs|length }}</button>
                     </td>
                 </tr>
                 {% endfor %}
