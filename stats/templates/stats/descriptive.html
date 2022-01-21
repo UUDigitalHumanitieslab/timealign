@@ -38,6 +38,10 @@
     border-radius: 50%;
     display: inline-block;
   }
+  .drill-through {
+      margin:0;
+      padding:0;
+  }
 </style>
 {% endblock %}
 
@@ -86,9 +90,7 @@
                                 {{ label }}
                             </td>
                             <td>
-                                {# TODO bram: replace jquery #}
-                                <a href="{% url 'stats:fragment_table'%}">{{ fs|length }}</a>
-{#                                <a class="drill-through" href="#" data-fragments="{{ fs|join:',' }}">{{ fs|length }}</a>#}
+                                <button class="drill-through btn btn-link" data-fragments="{{ fs|join:',' }}">{{ fs|length }}</button>
                             </td>
                         </tr>
                         {% endfor %}
@@ -157,9 +159,7 @@
                     </td>
                     {% endfor %}
                     <td>
-                        {# TODO bram: replace jquery #}
-                        <a href="{% url 'stats:fragment_table'%}">{{ fs|length }}</a>
-{#                        <a class="drill-through" href="#" data-fragments="{{ fs|join:',' }}">{{ fs|length }}</a>#}
+                        <button class="drill-through btn btn-link" data-fragments="{{ fs|join:',' }}">{{ fs|length }}</button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -281,7 +281,7 @@
     colReorder: true,
     autoWidth: false,
   });
-  {# TODO bram: ask martijn why this is here #}
+
   // Drill-through to fragments (allow to open in new tab if CTRL is pressed)
   $(".drill-through").click(function(e) {
     e.preventDefault();
