@@ -8,11 +8,11 @@ asgiref==3.4.1
     # via django
 certifi==2021.10.8
     # via requests
-charset-normalizer==2.0.7
+charset-normalizer==2.0.10
     # via requests
 click==8.0.3
     # via perfectextractor
-django==3.2.8
+django==3.2.11
     # via
     #   -r requirements.in
     #   django-bootstrap3
@@ -21,39 +21,39 @@ django==3.2.8
     #   django-ranged-response
     #   django-reversion
     #   django-simple-captcha
-django-bootstrap3==15.0.0
+django-bootstrap3==21.2
     # via -r requirements.in
-django-ckeditor==6.1.0
+django-ckeditor==6.2.0
     # via -r requirements.in
 django-filter==21.1
     # via -r requirements.in
 django-js-asset==1.2.2
     # via django-ckeditor
-django-nested-admin==3.3.3
+django-nested-admin==3.4.0
     # via -r requirements.in
-django-object-actions==3.0.2
+django-object-actions==3.1.0
     # via -r requirements.in
 django-picklefield==3.0.1
     # via -r requirements.in
 django-ranged-response==0.2.0
     # via django-simple-captcha
-django-reversion==4.0.0
+django-reversion==4.0.1
     # via -r requirements.in
-django-robots==4.0
+django-robots==5.0
     # via -r requirements.in
 django-simple-captcha==0.5.14
     # via -r requirements.in
-django-widget-tweaks==1.4.8
+django-widget-tweaks==1.4.12
     # via perfectextractor-ui
 idna==3.3
     # via requests
 joblib==1.1.0
     # via scikit-learn
-lxml==4.6.3
+lxml==4.7.1
     # via
     #   -r requirements.in
     #   perfectextractor
-mysqlclient==2.0.3
+mysqlclient==2.1.0
     # via -r requirements.in
 numpy==1.19.5
     # via
@@ -68,11 +68,11 @@ perfectextractor==0.4
     # via perfectextractor-ui
 perfectextractor-ui==0.1.7
     # via -r requirements.in
-pillow==8.4.0
+pillow==9.0.0
     # via
     #   -r requirements.in
     #   django-simple-captcha
-pyarrow==5.0.0
+pyarrow==6.0.1
     # via -r requirements.in
 python-dateutil==2.8.2
     # via pandas
@@ -82,7 +82,7 @@ pytz==2021.3
     # via
     #   django
     #   pandas
-requests==2.26.0
+requests==2.27.1
     # via perfectextractor
 scikit-learn==0.24.2
     # via -r requirements.in
@@ -100,7 +100,7 @@ sqlparse==0.4.2
     # via django
 threadpoolctl==3.0.0
     # via scikit-learn
-urllib3==1.26.7
+urllib3==1.26.8
     # via requests
-xlsxwriter==3.0.1
+xlsxwriter==3.0.2
     # via -r requirements.in
