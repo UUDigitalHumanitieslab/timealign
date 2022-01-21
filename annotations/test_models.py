@@ -1,13 +1,14 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
 
+from stats.models import Scenario
 from .models import Language, Corpus, Document, Fragment, Sentence, Word, \
     Alignment, Annotation, Tense, Label, LabelKey
 
 
 class BaseTestCase(TestCase):
     def setUp(self):
-        self.c1 = Corpus.objects.create(title='corpus1')
+        self.c1 = Corpus.objects.create(title='corpus1', is_public=True)
         self.c2 = Corpus.objects.create(title='corpus2')
         self.d = Document.objects.create(title='test', corpus=self.c1)
         self.en = Language.objects.get(iso='en')
@@ -36,6 +37,16 @@ class BaseTestCase(TestCase):
             Word.objects.create(word=w, xml_id=xml_id, is_target=is_target, sentence=s)
 
         self.alignment = Alignment.objects.create(original_fragment=self.f_en, translated_fragment=self.f_nl)
+
+        dummy_mds_labels = {
+            'en': [('Tense:19',), ('Tense:19',)],
+            'nl': [('Tense:176',), ('Tense:355',)]
+        }
+        dummy_mds_fragments = [self.f_en.pk, self.f_nl.pk]
+        dummy_scenario = Scenario.objects.create(corpus_id=self.c1.pk, owner_id=self.u1.pk, mds_labels=dummy_mds_labels,
+                                                 mds_fragments=dummy_mds_fragments)
+
+        self.scenario = dummy_scenario
 
 
 class ModelsTestCase(BaseTestCase):
