@@ -40,6 +40,9 @@ class HasLabelsMixin:
 
 
 class Language(models.Model):
+    """
+    Stores a Language.
+    """
     iso = models.CharField(max_length=50, unique=True)
     title = models.CharField(max_length=200)
 
@@ -72,6 +75,11 @@ class Tense(models.Model):
 
 
 class Corpus(models.Model):
+    """
+    Stores a Corpus.
+    A Corpus consists of one or multiple :model:`annotations.Document` s.
+    A Corpus can also have a :model:`annotations.SubCorpus`, to define specific sections of the Corpus.
+    """
     title = models.CharField(max_length=200, unique=True)
     languages = models.ManyToManyField(Language)
     annotators = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
@@ -101,11 +109,17 @@ class Corpus(models.Model):
         return self.title
 
     def get_languages(self):
+        """
+        Retrieves the ISO codes for the Languages related to this corpus.
+        """
         return ', '.join([language.iso for language in self.languages.all()])
 
     get_languages.short_description = 'Languages'
 
     def get_annotators(self):
+        """
+        Retrieves the usernames for the annotators related to this corpus.
+        """
         result = 'none'
         if self.annotators.exists():
             result = ', '.join([user.username for user in self.annotators.all()])
@@ -115,6 +129,10 @@ class Corpus(models.Model):
 
 
 class Document(models.Model):
+    """
+    Stores a Documents.
+    A Document consists of one or multiple :model:`annotations.Fragment` s.
+    """
     title = models.CharField(max_length=200)
     description = models.CharField(max_length=200, blank=True)
 
@@ -128,8 +146,10 @@ class Document(models.Model):
 
 
 class LabelKey(models.Model):
-    """Used to define what kind of labels should be used per corpus,
-    and to group labels from different languages"""
+    """
+    Used to define what kind of labels should be used per corpus,
+    and to group labels from different languages
+    """
     title = models.CharField(max_length=200, unique=True)
 
     corpora = models.ManyToManyField(Corpus, related_name='label_keys')
@@ -149,7 +169,9 @@ class LabelKey(models.Model):
 
 
 class Label(models.Model):
-    """freeform annotation labels"""
+    """
+    Freeform annotation labels.
+    """
     title = models.CharField(max_length=200)
     key = models.ForeignKey(LabelKey, related_name='labels', on_delete=models.CASCADE)
     color = models.CharField(max_length=10, null=True)
@@ -176,6 +198,11 @@ class Source(models.Model):
 
 
 class Fragment(models.Model, HasLabelsMixin):
+    """
+    Stores a Fragment. Links a Fragment to a :model:`annotations.Language` and :model:`annotations.Document`.
+    A Fragment consists of one or multiple :model:`annotations.Sentence`s.
+    Fragments are related to each other via an :model:`annotations.Alignment`.
+    """
     FS_NONE = 0
     FS_NARRATION = 1
     FS_DIALOGUE = 2
