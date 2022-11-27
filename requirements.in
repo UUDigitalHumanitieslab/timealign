@@ -7,7 +7,7 @@ django-filter<=2.4.0
 django-nested-admin
 django-object-actions<3.2
 django-picklefield
-django-reversion
+django-reversion<5.0
 django-robots
 django-simple-captcha
 lxml
