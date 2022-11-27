@@ -27,7 +27,7 @@ django==3.2.16
     #   django-ranged-response
     #   django-reversion
     #   django-simple-captcha
-django-bootstrap3==22.2
+django-bootstrap3==15.0.0
     # via -r requirements.in
 django-ckeditor==6.5.1
     # via -r requirements.in
