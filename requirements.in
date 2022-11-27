@@ -5,7 +5,7 @@ django-bootstrap3<=15.0.0
 django-ckeditor<6.4
 django-filter<=2.4.0
 django-nested-admin
-django-object-actions
+django-object-actions<3.2
 django-picklefield
 django-reversion
 django-robots

@@ -36,7 +36,7 @@ django-js-asset==2.0.0
     # via django-ckeditor
 django-nested-admin==4.0.2
     # via -r requirements.in
-django-object-actions==4.1.0
+django-object-actions==3.1.0
     # via -r requirements.in
 django-picklefield==3.1
     # via -r requirements.in
