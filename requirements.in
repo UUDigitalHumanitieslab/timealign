@@ -2,7 +2,7 @@ asgiref<3.5
 click<8.1
 django>=3.2,<4.0
 django-bootstrap3<=15.0.0
-django-ckeditor
+django-ckeditor<6.4
 django-filter
 django-nested-admin
 django-object-actions

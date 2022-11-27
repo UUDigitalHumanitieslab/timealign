@@ -20,7 +20,6 @@ django==3.2.16
     # via
     #   -r requirements.in
     #   django-bootstrap3
-    #   django-ckeditor
     #   django-filter
     #   django-js-asset
     #   django-picklefield
@@ -29,7 +28,7 @@ django==3.2.16
     #   django-simple-captcha
 django-bootstrap3==15.0.0
     # via -r requirements.in
-django-ckeditor==6.5.1
+django-ckeditor==6.3.2
     # via -r requirements.in
 django-filter==22.1
     # via -r requirements.in
