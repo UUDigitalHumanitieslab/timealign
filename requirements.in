@@ -10,6 +10,7 @@ django-picklefield
 django-reversion<5.0
 django-robots<5.0
 django-simple-captcha
+django-widget-tweaks<1.4.12
 lxml
 mysqlclient
 numpy<1.20.0

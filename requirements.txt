@@ -48,8 +48,10 @@ django-robots==4.0
     # via -r requirements.in
 django-simple-captcha==0.5.17
     # via -r requirements.in
-django-widget-tweaks==1.4.12
-    # via perfectextractor-ui
+django-widget-tweaks==1.4.11
+    # via
+    #   -r requirements.in
+    #   perfectextractor-ui
 idna==3.4
     # via requests
 joblib==1.2.0
