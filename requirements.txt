@@ -44,7 +44,7 @@ django-ranged-response==0.2.0
     # via django-simple-captcha
 django-reversion==4.0.2
     # via -r requirements.in
-django-robots==5.0
+django-robots==4.0
     # via -r requirements.in
 django-simple-captcha==0.5.17
     # via -r requirements.in

@@ -8,7 +8,7 @@ django-nested-admin
 django-object-actions<3.2
 django-picklefield
 django-reversion<5.0
-django-robots
+django-robots<5.0
 django-simple-captcha
 lxml
 mysqlclient
