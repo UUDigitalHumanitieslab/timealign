@@ -1,0 +1,130 @@
+:root {
+    --color-main: #ffcd00;
+    --color-primary: #24a793;
+    --color-accent: #ffe6ab;
+    --color-text-dark: #000000;
+    --color-text-light: #ffffff;
+}
+
+body {
+    background-color: var(--color-text-light);
+    font-size: 1.8rem;
+    line-height: 1.8;
+    font-family: Open Sans,sans-serif;
+}
+
+footer {
+    border-top: 2px solid var(--color-main);
+    margin-top: 20px;
+    padding-top: 20px;
+}
+
+footer img {
+    margin: auto;
+    display: block;
+}
+
+footer p {
+    text-align: center;
+}
+
+hr {
+    border-top: 2px solid var(--color-text-light);
+}
+
+header.masthead {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+    background-color:  var(--color-main);
+}
+
+header.masthead .masthead-heading {
+    font-size: 6rem;
+}
+
+header.masthead .masthead-subheading {
+    font-size: 2rem;
+}
+
+@media (min-width: 767px) {
+    header.masthead {
+        padding-top: calc(10rem + 55px);
+        padding-bottom: 10rem;
+    }
+}
+
+a.main {
+    background-color:  var(--color-primary);
+    color:  var(--color-text-light);
+}
+
+a.main:hover,
+a.main:focus {
+    background-color:  var(--color-accent);
+    color:  var(--color-text-dark);
+    border: 1px solid var(--color-text-light);
+}
+
+section {
+    padding: 4rem 0 6rem;
+}
+
+section.secondary-section {
+    background-color:  var(--color-accent);
+}
+
+.mt-2 {
+    margin-top: 2rem;
+}
+
+.mt-4 {
+    margin-top: 4rem;
+}
+
+.mb-2 {
+    margin-bottom: 2rem;
+}
+
+.mb-4 {
+    margin-bottom: 4rem;
+}
+
+.m-2 {
+    margin: 2rem;
+}
+
+.m-4 {
+    margin: 4rem;
+}
+
+hr.primary {
+    border-color:  var(--color-main);
+}
+
+div.card {
+    background-color:  var(--color-main);
+    padding: 0.5rem 1rem 3rem;
+    border-radius: 4px;
+    border: 2px solid #eeeeee;
+}
+
+div.news {
+    margin: 0.5rem 1rem 3rem;
+    border-radius: 4px;
+    border: 2px solid var(--color-main);
+}
+
+div.news-heading {
+    background-color: var(--color-main);
+    padding: 1rem;
+    min-height: 55px;
+}
+
+div.news-body {
+    padding: 1rem;
+    background-color: transparent;
+}
+
+div.news-body a {
+    font-weight: bold;
+}

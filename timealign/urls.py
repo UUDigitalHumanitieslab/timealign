@@ -21,6 +21,7 @@ from django.contrib.flatpages import views
 from django.urls import include, path, re_path
 
 urlpatterns = [
+    path('i18n/', include('django.conf.urls.i18n')),
     path('accounts/login/', LoginView.as_view(), name='login'),
     path('accounts/logout/', LogoutView.as_view(), name='logout'),
     path('accounts/password/change/', PasswordChangeView.as_view(), name='password_change'),
@@ -28,6 +29,7 @@ urlpatterns = [
 
     path('captcha/', include('captcha.urls')),
 
+    re_path(r'^landing/', include(('core.urls', 'core'), namespace='core')),
     re_path(r'^timealign/', include(('annotations.urls', 'annotations'), namespace='annotations')),
     re_path(r'^preselect/', include(('selections.urls', 'selections'), namespace='selections')),
     re_path(r'^stats/', include(('stats.urls', 'stats'), namespace='stats')),

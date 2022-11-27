@@ -1,0 +1,106 @@
+/* https://work.smarchal.com/twbscolor/3.3.7/css/000000000000ffffffffcd000 */
+
+.navbar {
+    border: 0;
+}
+
+.navbar-inverse {
+    background-color: var(--color-main);
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: .1rem;
+}
+
+.navbar-inverse .navbar-brand {
+    color: var(--color-text-dark);
+}
+
+.navbar-inverse .navbar-text {
+    color: var(--color-text-dark);
+}
+
+.navbar-inverse .navbar-nav > li > a {
+    color: var(--color-text-dark);
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+.navbar-inverse .navbar-nav > li > a.active {
+    color: var(--color-primary);
+}
+
+.navbar-inverse .navbar-nav > li > a.active:hover,
+.navbar-inverse .navbar-nav > li > a.active:focus {
+    background-color: transparent;
+    cursor: auto;
+}
+
+.navbar-inverse .navbar-nav > li > a:hover,
+.navbar-inverse .navbar-nav > li > a:focus {
+    background-color: var(--color-primary);
+}
+
+.navbar-inverse .navbar-nav > li > a:active {
+    background-color: var(--color-accent);
+}
+
+.navbar-inverse .navbar-nav > .active > a:hover,
+.navbar-inverse .navbar-nav > .active > a:focus {
+    background-color: #080808;
+}
+
+.navbar-inverse .navbar-nav > .open > a:hover,
+.navbar-inverse .navbar-nav > .open > a:focus {
+    background-color: var(--color-primary);
+}
+
+.navbar-inverse .navbar-toggle {
+    background-color: var(--color-primary);
+}
+
+.navbar-inverse .navbar-toggle:hover,
+.navbar-inverse .navbar-toggle:focus {
+    background-color: var(--color-primary);
+}
+
+.navbar-inverse .navbar-toggle .icon-bar {
+    color: var(--color-text-light);
+}
+
+.navbar-inverse .navbar-link {
+    color: var(--color-text-dark);
+}
+
+.navbar-inverse .navbar-link:hover {
+    color: var(--color-text-light);
+}
+
+@media (max-width: 767px) {
+    .navbar-inverse .navbar-nav .open .dropdown-menu > li > a {
+        color: var(--color-text-dark);
+    }
+
+    .navbar-inverse .navbar-nav .open .dropdown-menu > li > a:hover,
+    .navbar-inverse .navbar-nav .open .dropdown-menu > li > a:focus {
+        background-color: var(--color-primary);
+    }
+}
+
+.navbar .dropdown-menu {
+    background-color: var(--color-main);
+}
+
+.navbar .dropdown-menu .dropdown-item {
+    display: block;
+    color: var(--color-text-dark);
+    text-decoration: none;
+    padding: 1rem;
+    line-height: 1;
+}
+
+.navbar .dropdown-menu .dropdown-item:hover,
+.navbar .dropdown-menu .dropdown-item:focus {
+    background-color: var(--color-primary);
+    color: var(--color-text-light);
+}
