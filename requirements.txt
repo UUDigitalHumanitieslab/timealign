@@ -54,8 +54,10 @@ django-widget-tweaks==1.4.11
     #   perfectextractor-ui
 idna==3.4
     # via requests
-joblib==1.2.0
-    # via scikit-learn
+joblib==1.1.1
+    # via
+    #   -r requirements.in
+    #   scikit-learn
 lxml==4.9.1
     # via
     #   -r requirements.in
