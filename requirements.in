@@ -3,7 +3,7 @@ click<8.1
 django>=3.2,<4.0
 django-bootstrap3<=15.0.0
 django-ckeditor<6.4
-django-filter
+django-filter<=2.4.0
 django-nested-admin
 django-object-actions
 django-picklefield
