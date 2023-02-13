@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordChangeDoneView
 from django.contrib.flatpages import views
 from django.urls import include, path, re_path
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('accounts/login/', LoginView.as_view(), name='login'),
@@ -27,6 +28,11 @@ urlpatterns = [
     path('accounts/password/change/done/', PasswordChangeDoneView.as_view(), name='password_change_done'),
 
     path('captcha/', include('captcha.urls')),
+
+    path('translation-mining/', TemplateView.as_view(template_name='base/translation_mining.html'),
+         {'url': '/translation-mining/'}, name='translation-mining'),
+    path('perfectextractor/introduction/', TemplateView.as_view(template_name='base/perfectextractor.html'),
+         {'url': '/perfectextractor/introduction/'}, name='perfectextractor'),
 
     re_path(r'^timealign/', include(('annotations.urls', 'annotations'), namespace='annotations')),
     re_path(r'^preselect/', include(('selections.urls', 'selections'), namespace='selections')),
@@ -44,8 +50,6 @@ urlpatterns = [
     path('student-research/', views.flatpage, {'url': '/student-research/'}, name='student-research'),
     path('workshops/', views.flatpage, {'url': '/workshops/'}, name='workshops'),
     path('expert-meetings/', views.flatpage, {'url': '/expert-meetings/'}, name='expert-meetings'),
-    path('perfectextractor/introduction/', views.flatpage, {'url': '/perfectextractor/introduction/'}, name='perfectextractor'),
-    path('translation-mining/', views.flatpage, {'url': '/translation-mining/'}, name='translation-mining'),
     path('contact/', views.flatpage, {'url': '/contact/'}, name='contact'),
 
     re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),

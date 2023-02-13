@@ -1,0 +1,21 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+
+{% block content %}
+
+<div class="jumbotron">
+    <div class="container">
+        <h1>PerfectExtractor</h1>
+        <p class="lead">
+            The PerfectExtractor is a stand-alone application that allows to extract <span style="font-variant: small-caps;">perfects</span> from a parallel corpus.
+            <a class="btn btn-primary btn-lg" href="{% url 'perfectextractor_ui:home' %}" role="button">Extract &raquo;</a>
+            <a class="btn btn-primary btn-lg" href="{% url 'login' %}" role="button">Sign in &raquo;</a>
+        </p>
+    </div>
+</div>
+<p>
+    The application is open-source (MIT license) and available for download via GitHub.
+    The application and some preliminary results were presented at the CLIN 2016 conference.
+</p>
+{% endblock %}

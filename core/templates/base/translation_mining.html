@@ -1,0 +1,81 @@
+{% extends "base/base.html" %}
+
+{% load bootstrap3 %}
+{% load static %}
+
+{% block content %}
+
+<h1>Translation Mining for the <span style="font-variant: small-caps;">perfect</span></h1>
+<p>
+    The technique of Translation Mining requires sentence-aligned multilingual corpora. The steps it involves for the
+    <span style="font-variant: small-caps;">perfect</span> are briefly presented here. A pictorial representation is
+    given in Figure 1:
+</p>
+<img src="{% static 'core/images/tm1.png' %}" style="height: 300px;" class="center-block"/>
+<p class="text-center">
+    <em>Figure 1: The steps involved in Translation Mining for the <span style="font-variant: small-caps;">perfect</span></em></p>
+
+<h2>Step 1</h2>
+<p>
+    As with all corpus-based research, the techniques we use come with certain requirements on the corpora and –
+    wherever relevant – some preprocessing (lemmatization, POS-tagging, etc.) might be required.
+</p>
+
+<h2>Step 2</h2>
+<p>
+    In the second step we need language-specific algorithms that allow us to automatically extract Perfects. We have
+    developed these algorithms for five languages up till now (English, French, Dutch, German and Spanish). They go
+    under the name PerfectExtractor and the code is freely available through this website.
+</p>
+
+<h2>Step 3</h2>
+<p>
+    Step 3 is a manual step in which the <span style="font-variant: small-caps;">perfects</span> we have extracted are matched with
+    their counterparts in the other languages of the sample. To limit the effort of the human annotator we designed
+    TimeAlign, a piece of web-based software that limits the work of the annotator to simply clicking on the relevant
+    words in the translation. Figure 2 presents the user-friendly interface. A tutorial and the code are freely
+    available through this website.
+</p>
+<img src="{% static 'core/images/tm2.png' %}" style="height: 300px;" class="center-block"/>
+<p class="text-center"><em>Figure 2: the TimeAlign interface</em></p>
+
+<h2>Step 4</h2>
+<p>
+    After the translations have been identified we analyze the tenses that are used. We are currently using existing
+    morphological taggers and writing small extensions to them to approximate a correct tense analysis. This is however
+    work in progress and the data we are currently working with might still present some tagging problems. In particular
+    we are aware of the fact that our morphological tags are insensitive to morphological ambiguity (e.g. Spanish
+    votamos can be both a present tense and a past tense) and that not all passives are correctly analyzed in the
+    different languages.
+</p>
+
+<h2>Step 5</h2>
+<p>
+    We refer to the final step as <em>TimeMapping</em>. It involves using the output of steps 2 to 4 to make a table in
+    which every Perfect extracted in Step 2 is matched with the tenses of its translations obtained in Steps 3 and 4.
+    This leads – for a sample of five languages – to five-tuples like the following:
+</p>
+<pre>
+&lt;Präteritum,Simple_Past,Passé_Composé,Pretérito_Perfecto_Compuesto,Voltooid_Tegenwoordige_Tijd&gt;
+</pre>
+<p>
+    These five-tuples are the input for an algorithm that calculates the distance between pairs of five-tuples based on
+    their variation in tense use. The output of this algorithm is then two-dimensionally represented in ‘Semantic Maps’
+    like the following:
+</p>
+<img src="{% static 'core/images/tm3.png' %}"  style="height: 300px;" class="center-block"/>
+<p class="text-center"><em>Figure 3: the output of TimeMapping</em></p>
+<p>
+    The different points represent the different five-tuples and the distance between them is based on the variation in
+    tense use they exhibit. In Figure 3 we have highlighted the German tense forms but the same map is available with
+    highlighting of the English, Dutch, Spanish and French tense forms. Hovering over the points immediately shows the
+    five-tuple. Clicking on the points leads to the corpus contexts the five-tuples represent. This is illustrated in
+    Figure 4.
+</p>
+<img src="{% static 'core/images/tm4.png' %}"  style="height: 300px;" class="center-block"/>
+<p class="text-center"><em>Figure 4: Data linked to the points on the Semantic Map</em></p>
+<p>
+    The codes underlying <em>TimeMapping</em> and <em>TimeAlign</em> are currently merged and are made available through
+    this website. The maps are currently only available after login.
+</p>
+{% endblock %}
