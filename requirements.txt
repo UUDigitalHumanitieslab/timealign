@@ -77,7 +77,7 @@ perfectextractor==0.4
     # via perfectextractor-ui
 perfectextractor-ui==0.1.8
     # via -r requirements.in
-pillow==8.4.0
+pillow==10.0.1
     # via
     #   -r requirements.in
     #   django-simple-captcha
