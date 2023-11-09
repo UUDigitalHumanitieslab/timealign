@@ -18,7 +18,7 @@ numpy<1.20.0
 pandas<1.2.0
 perfectextractor-ui
 pillow<9.0.0
-pyarrow<7.0.0
+pyarrow<15.0.0
 requests<2.28.0
 scikit-learn<1.0
 scipy<1.6.0
