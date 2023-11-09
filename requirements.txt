@@ -81,7 +81,7 @@ pillow==8.4.0
     # via
     #   -r requirements.in
     #   django-simple-captcha
-pyarrow==6.0.1
+pyarrow==14.0.1
     # via -r requirements.in
 python-dateutil==2.8.2
     # via pandas
