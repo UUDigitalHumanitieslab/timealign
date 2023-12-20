@@ -1,9 +1,16 @@
+# TimeAlign
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10409456.svg)](https://doi.org/10.5281/zenodo.10409456)
 
-# TimeAlign
+TimeAlign is a web application designed for cross-linguistic research using parallel corpora.
 
-TimeAlign allows you to easily annotate similar forms in aligned phrases.
+It provides:
 
+* An annotation interface where similar forms in aligned phrases can be collected by a team of one or more annotators.
+* Descriptive statistics and multiple visualization methods for cross-linguistic variation data.
+    
+A short demo of the annotation interface is available [here](https://time-in-translation.hum.uu.nl/timealign/instructions/1/)
+
+TimeAlign was created as part of the *Time in Translation* research project. For more information, see the [project website](https://time-in-translation.hum.uu.nl).
 ## Installation
 
 TimeAlign is created with the [Django web framework](https://www.djangoproject.com/) and requires Python 3.
