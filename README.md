@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10409456.svg)](https://doi.org/10.5281/zenodo.10409456)
+
 # TimeAlign
 
 TimeAlign allows you to easily annotate similar forms in aligned phrases.
