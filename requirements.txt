@@ -16,7 +16,7 @@ click==8.0.4
     # via
     #   -r requirements.in
     #   perfectextractor
-django==3.2.16
+django==3.2.23
     # via
     #   -r requirements.in
     #   django-bootstrap3
